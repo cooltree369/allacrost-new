@@ -70,14 +70,14 @@ BattleMedia::BattleMedia() {
 	if (background_image.Load("img/backdrops/battle/desert_cave.png") == false)
 		PRINT_ERROR << "failed to load default background image" << endl;
 
-	if (stamina_icon_selected.Load("img/menus/stamina_icon_selected.png") == false)
-		PRINT_ERROR << "failed to load stamina icon selected image" << endl;
+	if (action_icon_selected.Load("img/menus/action_icon_selected.png") == false)
+		PRINT_ERROR << "failed to load action icon selected image" << endl;
 
 	attack_point_indicator.SetDimensions(16.0f, 16.0f);
 	if (attack_point_indicator.LoadFromFrameGrid("img/icons/battle/attack_point_target.png", vector<uint32>(4, 100), 1, 4) == false)
 		PRINT_ERROR << "failed to load attack point indicator." << endl;
 
-	if (stamina_meter.Load("img/menus/stamina_bar.png") == false)
+	if (action_meter.Load("img/menus/action_bar.png") == false)
 		PRINT_ERROR << "failed to load time meter." << endl;
 
 	if (actor_selection_image.Load("img/icons/battle/character_selector.png") == false)
@@ -818,11 +818,11 @@ void BattleMode::_Initialize() {
 	// Andy: Once every game loop, the SystemManager's timers are updated
 	// However, in between calls, battle mode is constructed. As part
 	// of battle mode's construction, each actor is given a wait timer
-	// that is triggered on initialization. But the moving of the stamina
+	// that is triggered on initialization. But the moving of the action
 	// portrait uses the update time from SystemManager.  Therefore, the
 	// amount of time since SystemManager last updated is greater than
 	// the amount of time that has expired on the actors' wait timers
-	// during the first orund of battle mode.  This gives the portrait an
+	// during the first round of battle mode.  This gives the portrait an
 	// extra boost, so once the wait time expires for an actor, his portrait
 	// is past the designated stopping point
 
@@ -831,16 +831,16 @@ void BattleMode::_Initialize() {
 	// If the SystemManager has its timers updated at A and B, and battle mode is
 	// constructed and initialized at X, you can see the amount of time between
 	// X and B (how much time passed on the wait timers in round 1) is significantly
-	// smaller than the time between A and B.  Hence the extra boost to the stamina
+	// smaller than the time between A and B.  Hence the extra boost to the action
 	// portrait's location
 
 	// FIX ME This will not work in the future (i.e. paralysis)...realized this
 	// after writing all the above crap
-	// CD: Had to move this to before timers are initalized, otherwise this call will give
+	// CD: Had to move this to before timers are initialized, otherwise this call will give
 	// our timers a little extra nudge with regards to time elapsed, thus making the portraits
 	// stop before they reach they yellow/orange line
 	// TODO: This should be fixed once battles have a little smoother start (characters run in from
-	// off screen to their positions, and stamina icons do not move until they are ready in their
+	// off screen to their positions, and action icons do not move until they are ready in their
 	// battle positions). Once that feature is available, remove this call.
 	SystemManager->UpdateTimers();
 
@@ -860,8 +860,8 @@ void BattleMode::_Initialize() {
 	}
 
 	// (5): Randomize each actor's initial idle state progress to be somewhere in the lower half of their total
-	// idle state time. This is performed so that every battle doesn't start will all stamina icons piled on top
-	// of one another at the bottom of the stamina bar
+	// idle state time. This is performed so that every battle doesn't start will all action icons piled on top
+	// of one another at the bottom of the action bar
 	for (uint32 i = 0; i < _character_actors.size(); i++) {
 		uint32 max_init_timer = _character_actors[i]->GetIdleStateTime() / 2;
 		_character_actors[i]->GetStateTimer().Update(RandomBoundedInteger(0, max_init_timer));
@@ -1150,8 +1150,8 @@ void BattleMode::_DrawActionBar() {
 		}
 	}
 
-	// ----- (2): Determine the draw order of stamina icons for all living actors
-	// A container to hold all actors that should have their stamina icons drawn
+	// ----- (2): Determine the draw order of action icons for all living actors
+	// A container to hold all actors that should have their action icons drawn
 	vector<BattleActor*> live_actors;
 
 	for (uint32 i = 0; i < _character_actors.size(); i++) {
@@ -1169,26 +1169,26 @@ void BattleMode::_DrawActionBar() {
 	for (uint32 i = 0; i < live_actors.size(); i++) {
 		switch (live_actors[i]->GetState()) {
 			case ACTOR_STATE_IDLE:
-				draw_positions[i] = STAMINA_LOCATION_BOTTOM + (STAMINA_LOCATION_COMMAND - STAMINA_LOCATION_BOTTOM) *
+				draw_positions[i] = ACTION_LOCATION_BOTTOM + (ACTION_LOCATION_COMMAND - ACTION_LOCATION_BOTTOM) *
 					live_actors[i]->GetStateTimer().PercentComplete();
 				break;
 			case ACTOR_STATE_COMMAND:
-				draw_positions[i] = STAMINA_LOCATION_COMMAND;
+				draw_positions[i] = ACTION_LOCATION_COMMAND;
 				break;
 			case ACTOR_STATE_WARM_UP:
-				draw_positions[i] = STAMINA_LOCATION_COMMAND + (STAMINA_LOCATION_TOP - STAMINA_LOCATION_COMMAND) *
+				draw_positions[i] = ACTION_LOCATION_COMMAND + (ACTION_LOCATION_TOP - ACTION_LOCATION_COMMAND) *
 					live_actors[i]->GetStateTimer().PercentComplete();
 				break;
 			case ACTOR_STATE_READY:
-				draw_positions[i] = STAMINA_LOCATION_TOP;
+				draw_positions[i] = ACTION_LOCATION_TOP;
 				break;
 			case ACTOR_STATE_ACTING:
-				draw_positions[i] = STAMINA_LOCATION_TOP + 25.0f;
+				draw_positions[i] = ACTION_LOCATION_TOP + 25.0f;
 				break;
 			default:
 				// This case is invalid. Instead of printing a debug message that will get echoed every
-				// loop, draw the icon at a clearly invalid position well away from the stamina bar
-				draw_positions[i] = STAMINA_LOCATION_BOTTOM - 50.0f;
+				// loop, draw the icon at a clearly invalid position well away from the action bar
+				draw_positions[i] = ACTION_LOCATION_BOTTOM - 50.0f;
 				break;
 		}
 	}
@@ -1197,28 +1197,28 @@ void BattleMode::_DrawActionBar() {
 // 	sort(draw_positions.begin(), draw_positions.end());
 
 	// ----- (3): Draw the action bar
-	const float STAMINA_BAR_POSITION_X = 970.0f, STAMINA_BAR_POSITION_Y = 128.0f; // The X and Y position of the stamina bar
+	const float ACTION_BAR_POSITION_X = 970.0f, ACTION_BAR_POSITION_Y = 128.0f; // The X and Y position of the action bar
 	VideoManager->SetDrawFlags(VIDEO_X_CENTER, VIDEO_Y_BOTTOM, 0);
-	VideoManager->Move(STAMINA_BAR_POSITION_X, STAMINA_BAR_POSITION_Y); // 1010
-	_battle_media.stamina_meter.Draw();
+	VideoManager->Move(ACTION_BAR_POSITION_X, ACTION_BAR_POSITION_Y); // 1010
+	_battle_media.action_meter.Draw();
 
 	// ----- 4): Draw all action icons in order along with the selector graphic
 	VideoManager->SetDrawFlags(VIDEO_X_CENTER, VIDEO_Y_CENTER, 0);
 	for (uint32 i = 0; i < live_actors.size(); i++) {
 		if (live_actors[i]->IsEnemy() == false)
-			VideoManager->Move(STAMINA_BAR_POSITION_X - 25.0f, draw_positions[i]);
+			VideoManager->Move(ACTION_BAR_POSITION_X - 25.0f, draw_positions[i]);
 		else
-			VideoManager->Move(STAMINA_BAR_POSITION_X + 25.0f, draw_positions[i]);
-		live_actors[i]->GetStaminaIcon().Draw();
+			VideoManager->Move(ACTION_BAR_POSITION_X + 25.0f, draw_positions[i]);
+		live_actors[i]->GetActionIcon().Draw();
 
 		if (draw_icon_selection == true) {
 			if ((is_party_selected == false) && (live_actors[i] == selected_actor))
-				_battle_media.stamina_icon_selected.Draw();
+				_battle_media.action_icon_selected.Draw();
 			else if ((is_party_selected == true) && (live_actors[i]->IsEnemy() == is_party_enemy))
-				_battle_media.stamina_icon_selected.Draw();
+				_battle_media.action_icon_selected.Draw();
 		}
 	}
-} // void BattleMode::_DrawStaminaBar()
+} // void BattleMode::_DrawActionBar()
 
 
 

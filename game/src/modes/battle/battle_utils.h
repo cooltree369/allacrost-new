@@ -53,16 +53,16 @@ const uint32 CATEGORY_RECOVER   = 2;
 //@}
 
 
-//! \brief Position constants representing the significant locations along the stamina meter
+//! \brief Position constants representing the significant locations along the action meter
 //@{
-//! \brief The bottom most position of the stamina bar
-const float STAMINA_LOCATION_BOTTOM = 128.0f;
+//! \brief The bottom most position of the action bar
+const float ACTION_LOCATION_BOTTOM = 128.0f;
 
 //! \brief The location where each actor is allowed to select a command
-const float STAMINA_LOCATION_COMMAND = STAMINA_LOCATION_BOTTOM + 354.0f;
+const float ACTION_LOCATION_COMMAND = ACTION_LOCATION_BOTTOM + 354.0f;
 
-//! \brief The top most position of the stamina bar where actors are ready to execute their actions
-const float STAMINA_LOCATION_TOP = STAMINA_LOCATION_BOTTOM + 508.0f;
+//! \brief The top most position of the action bar where actors are ready to execute their actions
+const float ACTION_LOCATION_TOP = ACTION_LOCATION_BOTTOM + 508.0f;
 //@}
 
 //! \brief Determines how much SP a character regenerates each turn. This value is divided into the character's active max SP
@@ -99,7 +99,7 @@ enum BATTLE_STATE {
 };
 
 
-//! \brief Represents the possible states that a BattleActor may be in as they pertain to the stamina bar
+//! \brief Represents the possible states that a BattleActor may be in as they pertain to the action bar
 enum ACTOR_STATE {
 	ACTOR_STATE_INVALID       = -1,
 	ACTOR_STATE_IDLE          =  0, //!< Actor is recovering stamina so they can execute another action
@@ -429,7 +429,7 @@ protected:
 	***
 	*** This member allows us to show "gradual shifts" whenever the _time_expired member jumps to a new value. For example,
 	*** if a battle skill is used that reduces the _time_expired value of the target to zero, instead of instantly jumping the
-	*** stamina portrait of the target to the zero mark on the stamina bar, this member will show a quick but gradual move downward.
+	*** action portrait of the target to the zero mark on the action bar, this member will show a quick but gradual move downward.
 	**/
 	uint32 _visible_time_expired;
 

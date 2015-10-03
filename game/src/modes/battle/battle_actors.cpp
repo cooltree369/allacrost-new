@@ -375,10 +375,10 @@ BattleCharacter::BattleCharacter(GlobalCharacter* character) :
 	string icon_filename = "img/icons/actors/characters/" + character->GetFilename() + ".png";
 	if (DoesFileExist(icon_filename) == false) {
 		IF_PRINT_WARNING(BATTLE_DEBUG) << "character icon image file did not exist: " << icon_filename << endl;
-		_stamina_icon.Load("", 45.0f, 45.0f); // Load an empty image file
+		_action_icon.Load("", 45.0f, 45.0f); // Load an empty image file
 	}
 	else {
-		_stamina_icon.Load(icon_filename, 45.0f, 45.0f);
+		_action_icon.Load(icon_filename, 45.0f, 45.0f);
 	}
 
 	_last_rendered_hp = GetHitPoints();
@@ -774,10 +774,10 @@ BattleEnemy::BattleEnemy(GlobalEnemy* enemy) :
 	string icon_filename = "img/icons/actors/enemies/" + _global_actor->GetFilename() + ".png";
 	if (DoesFileExist(icon_filename) == false) {
 		IF_PRINT_WARNING(BATTLE_DEBUG) << "enemy icon image file did not exist: " << icon_filename << endl;
-		_stamina_icon.Load("", 45.0f, 45.0f); // Load an empty image
+		_action_icon.Load("", 45.0f, 45.0f); // Load an empty image
 	}
 	else {
-		_stamina_icon.Load(icon_filename, 45.0f, 45.0f);
+		_action_icon.Load(icon_filename, 45.0f, 45.0f);
 	}
 
 	vector<GlobalSkill*>* skills = _global_enemy->GetSkills();

@@ -123,15 +123,15 @@ public:
 	//! \brief An image which contains the covers for the HP and SP bars
 	hoa_video::StillImage character_bar_covers;
 
-	/** \brief The universal stamina bar that is used to represent the state of battle actors
+	/** \brief The universal action bar that is used to represent the state of battle actors
 	*** All battle actors have a portrait that moves along this meter to signify their
 	*** turn in the rotation.  The meter and corresponding portraits must be drawn after the
 	*** character sprites.
 	**/
-	hoa_video::StillImage stamina_meter;
+	hoa_video::StillImage action_meter;
 
-	//! \brief The image used to highlight stamina icons for selected actors
-	hoa_video::StillImage stamina_icon_selected;
+	//! \brief The image used to highlight action icons for selected actors
+	hoa_video::StillImage action_icon_selected;
 
 	// TODO: the character swapping feature is still undecided and for now, we don't need these images
 	/** \brief Image that indicates when a player may perform character swapping
@@ -479,7 +479,7 @@ private:
 	*** This function serves to achieve the following parts of the battle initialization sequence:
 	***  - Fade in the background image
 	***  - Bring in both character and enemy sprites from off screen
-	***  - Bring in the stamina bar and icons from off screen
+	***  - Bring in the action bar and icons from off screen
 	***  - Bring in the bottom battle menu
 	**/
 	void _InitialSequence();
@@ -521,7 +521,7 @@ private:
 	**/
 	void _DrawBottomMenu();
 
-	//! \brief Draws the stamina bar and the icons of the actors of both parties
+	//! \brief Draws the action bar and the icons of the actors of both parties
 	void _DrawActionBar();
 
 	//! \brief Draws indicator text and graphics for each actor on the field

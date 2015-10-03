@@ -394,8 +394,8 @@ void SequenceSupervisor::_DrawGUI() {
 // 		_battle->_character_actors[i]->DrawStatus(i);
 // 	}
 
-	// ----- (2): Determine the draw order of stamina icons for all living actors
-	// A container to hold all actors that should have their stamina icons drawn
+	// ----- (2): Determine the draw order of action icons for all living actors
+	// A container to hold all actors that should have their action icons drawn
 	vector<BattleActor*> live_actors;
 
 	for (uint32 i = 0; i < _battle->_character_actors.size(); i++) {
@@ -413,13 +413,13 @@ void SequenceSupervisor::_DrawGUI() {
 	for (uint32 i = 0; i < live_actors.size(); i++) {
 		switch (live_actors[i]->GetState()) {
 			case ACTOR_STATE_IDLE:
-				draw_positions[i] = STAMINA_LOCATION_BOTTOM + (STAMINA_LOCATION_COMMAND - STAMINA_LOCATION_BOTTOM) *
+				draw_positions[i] = ACTION_LOCATION_BOTTOM + (ACTION_LOCATION_COMMAND - ACTION_LOCATION_BOTTOM) *
 					live_actors[i]->GetStateTimer().PercentComplete();
 				break;
 			default:
 				// All other cases are invalid. Instead of printing a debug message that will get echoed every
-				// loop, draw the icon at a clearly invalid position well away from the stamina bar
-				draw_positions[i] = STAMINA_LOCATION_BOTTOM - 50.0f;
+				// loop, draw the icon at a clearly invalid position well away from the action bar
+				draw_positions[i] = ACTION_LOCATION_BOTTOM - 50.0f;
 				break;
 		}
 	}
@@ -427,20 +427,20 @@ void SequenceSupervisor::_DrawGUI() {
 	// TODO: sort the draw positions container and correspond that to live_actors
 // 	sort(draw_positions.begin(), draw_positions.end());
 
-	// ----- (3): Draw the stamina bar
-	const float STAMINA_BAR_POSITION_X = 970.0f, STAMINA_BAR_POSITION_Y = 128.0f; // The X and Y position of the stamina bar
+	// ----- (3): Draw the action bar
+	const float ACTION_BAR_POSITION_X = 970.0f, ACTION_BAR_POSITION_Y = 128.0f; // The X and Y position of the action bar
 	VideoManager->SetDrawFlags(VIDEO_X_CENTER, VIDEO_Y_BOTTOM, 0);
-	VideoManager->Move(STAMINA_BAR_POSITION_X + _gui_position_offset, STAMINA_BAR_POSITION_Y);
-	_battle->GetMedia().stamina_meter.Draw();
+	VideoManager->Move(ACTION_BAR_POSITION_X + _gui_position_offset, ACTION_BAR_POSITION_Y);
+	_battle->GetMedia().action_meter.Draw();
 
-	// ----- (4): Draw all stamina icons in order
+	// ----- (4): Draw all action icons in order
 	VideoManager->SetDrawFlags(VIDEO_X_CENTER, VIDEO_Y_CENTER, 0);
 	for (uint32 i = 0; i < live_actors.size(); i++) {
 		if (live_actors[i]->IsEnemy() == false)
-			VideoManager->Move(STAMINA_BAR_POSITION_X - 25.0f + _gui_position_offset, draw_positions[i]);
+			VideoManager->Move(ACTION_BAR_POSITION_X - 25.0f + _gui_position_offset, draw_positions[i]);
 		else
-			VideoManager->Move(STAMINA_BAR_POSITION_X + 25.0f + _gui_position_offset, draw_positions[i]);
-		live_actors[i]->GetStaminaIcon().Draw();
+			VideoManager->Move(ACTION_BAR_POSITION_X + 25.0f + _gui_position_offset, draw_positions[i]);
+		live_actors[i]->GetActionIcon().Draw();
 	}
 } // void SequenceSupervisor::_DrawGUI()
 

@@ -108,7 +108,7 @@ private:
 	//! \brief Draws all sprites to the screen
 	void _DrawSprites();
 
-	//! \brief Draws the bottom battle menu, stamina bar, and other GUI objects
+	//! \brief Draws the bottom battle menu, action bar, and other GUI objects
 	void _DrawGUI();
 }; // class SequenceSupervisor
 

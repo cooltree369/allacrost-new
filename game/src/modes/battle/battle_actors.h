@@ -301,8 +301,8 @@ public:
 	uint32 GetIdleStateTime() const
 		{ return _idle_state_time; }
 
-	hoa_video::StillImage& GetStaminaIcon()
-		{ return _stamina_icon; }
+	hoa_video::StillImage& GetActionIcon()
+		{ return _action_icon; }
 
 	BattleTimer& GetStateTimer()
 		{ return _state_timer; }
@@ -366,8 +366,8 @@ protected:
 //	//! \brief When set to true, the actor essentially has immunity and can not be targeted by attacks
 //	bool _not_targetable;
 
-	//! \brief The actor's icon for the stamina meter
-	hoa_video::StillImage _stamina_icon;
+	//! \brief The actor's icon for the action meter
+	hoa_video::StillImage _action_icon;
 
 	//! \brief An assistant class to the actor that manages all the actor's status and elemental effects
 	EffectsSupervisor* _effects_supervisor;
