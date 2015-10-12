@@ -144,7 +144,7 @@ sprites["Vanica"] = {
 	img_half_width = 1.0,
 	img_height = 4.0,
 	movement_speed = NORMAL_SPEED,
-	
+
 	standard_animations = "img/sprites/characters/vanica_walk.png",
 	face_portrait = "img/portraits/face/vanica.png"
 }
@@ -156,7 +156,7 @@ sprites["Alexander"] = {
 	img_half_width = 1.0,
 	img_height = 4.0,
 	movement_speed = NORMAL_SPEED,
-	
+
 	standard_animations = "img/sprites/characters/man_npc02_walk.png"
 }
 
@@ -167,7 +167,7 @@ sprites["Laine"] = {
 	img_half_width = 1.0,
 	img_height = 4.0,
 	movement_speed = NORMAL_SPEED,
-	
+
 	standard_animations = "img/sprites/characters/man_npc01_walk.png"
 }
 
@@ -178,7 +178,7 @@ sprites["Torl"] = {
 	img_half_width = 1.0,
 	img_height = 4.0,
 	movement_speed = NORMAL_SPEED,
-	
+
 	standard_animations = "img/sprites/characters/boy_npc01_walk.png"
 }
 
@@ -189,7 +189,7 @@ sprites["Female Merchant"] = {
 	img_half_width = 1.0,
 	img_height = 4.0,
 	movement_speed = NORMAL_SPEED,
-	
+
 	standard_animations = "img/sprites/characters/woman_npc01_walk.png"
 }
 
@@ -200,7 +200,7 @@ sprites["Livia"] = {
 	img_half_width = 1.0,
 	img_height = 4.0,
 	movement_speed = NORMAL_SPEED,
-	
+
 	standard_animations = "img/sprites/characters/girl_npc02_walk.png"
 }
 
@@ -211,7 +211,7 @@ sprites["Octavia"] = {
 	img_half_width = 1.0,
 	img_height = 4.0,
 	movement_speed = NORMAL_SPEED,
-	
+
 	standard_animations = "img/sprites/characters/woman_npc02_walk.png"
 }
 
@@ -247,17 +247,6 @@ enemies["snake"] = {
 	movement_speed = NORMAL_SPEED,
 	standard_animations = "img/sprites/enemies/snake_walk.png"
 }
-
-
-enemies["scorpion"] = {
-	coll_half_width = 1.0,
-	coll_height = 2.0,
-	img_half_width = 1.0,
-	img_height = 4.0,
-	movement_speed = NORMAL_SPEED,
-	standard_animations = "img/sprites/enemies/scorpion_walk.png"
-}
-
 
 
 enemies["scorpion"] = {
@@ -323,7 +312,7 @@ function ConstructEnemySprite(name, Map)
 	if (enemies[name] == nil) then
 		return nil;
 	end
-	
+
 	local enemy = hoa_map.EnemySprite();
 	enemy:SetObjectID(Map.object_supervisor:GenerateObjectID());
 	enemy:SetContext(hoa_map.MapMode.CONTEXT_01);
@@ -333,7 +322,7 @@ function ConstructEnemySprite(name, Map)
 	enemy:SetImgHeight(enemies[name].img_height);
 	enemy:SetMovementSpeed(enemies[name].movement_speed);
 	enemy:LoadStandardAnimations(enemies[name].standard_animations);
-	
+
 	return enemy;
 end
 
