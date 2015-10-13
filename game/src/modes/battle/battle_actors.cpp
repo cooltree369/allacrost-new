@@ -12,6 +12,7 @@
 *** \author  Viljami Korhonen, mindflayer@allacrost.org
 *** \author  Corey Hoffstein, visage@allacrost.org
 *** \author  Andy Gardner, chopperdave@allacrost.org
+*** \author  Jibran Khan, jibrankhan@somegamez.com
 *** \brief   Source file for actors present in battles.
 *** ***************************************************************************/
 
@@ -47,7 +48,7 @@ const Color HP_RED(0.75f, 0.22f, 0.01f, 1.0f);
 const Color HP_DARKRED(0.42f, 0.12f, 0.0f, 1.0f);
 const Color SP_BLUE(0.0f, 0.76f, 0.90f, 1.0f);
 const Color SP_DARKBLUE(0.0f, 0.43f, 0.51f, 1.0f);
-const Color INDICATOR_YELLOW = Color::yellow;
+const Color INDICATOR_YELLOW(1.0f, 1.0f, 0.0f, 1.0f);
 
 ////////////////////////////////////////////////////////////////////////////////
 // BattleActor class
