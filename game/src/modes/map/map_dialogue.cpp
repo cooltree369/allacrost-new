@@ -131,9 +131,13 @@ void MapDialogue::AddLine(string text, uint32 speaker, int32 next_line) {
 	_line_events.push_back(MapDialogueEventData());
 }
 
+
+
 void MapDialogue::AddLine(string text){
 	AddLine(text,NO_SPRITE, COMMON_DIALOGUE_NEXT_LINE);
 }
+
+
 
 void MapDialogue::AddLineTiming(uint32 display_time) {
 	if (_line_count == 0) {

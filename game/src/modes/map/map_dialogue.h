@@ -124,10 +124,10 @@ public:
 	*** - proceed to next sequential line, no display time
 	**/
 	void AddLine(std::string text);
+
 	/** \brief Sets a a display time for the last line of dialogue added
 	*** \param display_time The number of milliseconds that the line should be displayed for
 	**/
-
 	void AddLineTiming(uint32 display_time);
 
 	/** \brief Sets a a display time for a specific line of dialogue
