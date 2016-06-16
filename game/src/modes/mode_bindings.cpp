@@ -70,7 +70,7 @@ void BindModeCode() {
 			.def_readonly("player_sprite", &MapMode::_player_sprite)
 			.def_readonly("virtual_focus", &MapMode::_virtual_focus)
 			.def_readwrite("unlimited_stamina", &MapMode::_unlimited_stamina)
-			.def_readwrite("running_disabled", &MapMode::_running_disabled)
+			.def_readwrite("run_disabled", &MapMode::_run_disabled)
 			.def_readwrite("run_stamina", &MapMode::_run_stamina)
 
 			.def("PlayMusic", &MapMode::PlayMusic)
