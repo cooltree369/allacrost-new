@@ -378,7 +378,16 @@ private:
 	private_map::MAP_CONTEXT _current_context;
 
 	//! \brief If true, the player is not allowed to run.
-	bool _running_disabled;
+	bool _run_disabled;
+
+	//! \brief When true, the player has activated running for their sprite
+	bool _run_state;
+
+	/** \brief A counter for the player's stamina
+	*** This value ranges from STAMINA_EMPTY to STAMINA_FULL. It takes twice as long to regenerate stamina as
+	*** it does to consume it when running.
+	**/
+	uint32 _run_stamina;
 
 	//! \brief If true, the player's stamina will not drain for actions and the stamina bar will not be shown
 	bool _unlimited_stamina;
@@ -391,12 +400,6 @@ private:
 
 	//! \brief Index of current music track to play
 	uint32 _current_track;
-
-	/** \brief A counter for the player's stamina
-	*** This value ranges from STAMINA_EMPTY to STAMINA_FULL. It takes twice as long to regenerate stamina as
-	*** it does to consume it when running.
-	**/
-	uint32 _run_stamina;
 
 	/** \brief Maintains a stack state for the different modes of operation that the map may be in
 	*** The top (back) of the stack is the active mode

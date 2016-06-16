@@ -57,6 +57,9 @@ namespace hoa_map {
 // Initialize static class variables
 MapMode* MapMode::_current_instance = NULL;
 
+// The maximum value of the run stamina bar
+const uint32 RUN_STAMINA_MAX = 10000;
+
 // ****************************************************************************
 // ********** MapMode Public Class Methods
 // ****************************************************************************
@@ -72,20 +75,21 @@ MapMode::MapMode(string script_filename) :
 	_event_supervisor(NULL),
 	_dialogue_supervisor(NULL),
 	_treasure_supervisor(NULL),
-	_transition_mode(NULL),
 	_camera(NULL),
 	_player_sprite(NULL),
 	_delta_x(0),
 	_delta_y(0),
 	_num_map_contexts(0),
 	_current_context(MAP_CONTEXT_01),
-	_running_disabled(false),
+	_run_disabled(false),
+	_run_state(false),
+	_run_stamina(RUN_STAMINA_MAX),
 	_unlimited_stamina(false),
 	_dialogue_icons_visible(false),
 	_stamina_bar_visible(false),
+	_current_track(INVALID_TRACK),\
 	_fade_out(false),
-	_current_track(INVALID_TRACK),
-	_run_stamina(10000)
+	_transition_mode(NULL)
 {
 	mode_type = MODE_MANAGER_MAP_MODE;
 	_current_instance = this;
@@ -507,30 +511,6 @@ void MapMode::_UpdateExplore() {
 		return;
 	}
 
-	// Update the running state of the camera object. Check if the player wishes to continue running and if so,
-	// update the stamina value if the operation is permitted
-	_camera->is_running = false;
-	if (_running_disabled == false && InputManager->CancelState() == true &&
-		(InputManager->UpState() || InputManager->DownState() || InputManager->LeftState() || InputManager->RightState()))
-	{
-		if (_unlimited_stamina) {
-			_camera->is_running = true;
-		}
-		else if (_run_stamina > SystemManager->GetUpdateTime() * 2) {
-			_run_stamina -= (SystemManager->GetUpdateTime() * 2);
-			_camera->is_running = true;
-		}
-		else {
-			_run_stamina = 0;
-		}
-	}
-	// Regenerate the stamina at 1/2 the consumption rate
-	else if (_run_stamina < 10000) {
-		_run_stamina += SystemManager->GetUpdateTime();
-		if (_run_stamina > 10000)
-			_run_stamina = 10000;
-	}
-
 	// If the user requested a confirm event, check if there is a nearby object that the player may interact with
 	// Interactions are currently limited to dialogue with sprites and opening of treasures
 	if (InputManager->ConfirmPress()) {
@@ -558,12 +538,51 @@ void MapMode::_UpdateExplore() {
 		}
 	}
 
-	// Detect movement input from the user
+	// Check if the player has toggled the run state
+	if (_run_disabled == false && InputManager->CancelPress() == true) {
+		if (_run_state == true) {
+			_run_state = false;
+		}
+		// Only enable the run state if we have at least a little bit of stamina
+		else if (_run_stamina > 0) {
+			_run_state = true;
+		}
+	}
+
+	// Detect movement input from the user and update the stamina counter and run state appropriately
 	if (InputManager->UpState() || InputManager->DownState() || InputManager->LeftState() || InputManager->RightState()) {
 		_camera->moving = true;
+		_camera->is_running = _run_state;
+
+		// Regenerate the stamina at 1/4 the consumption rate if the user is walking
+		if (_run_state == false && _run_stamina < RUN_STAMINA_MAX) {
+			_run_stamina += SystemManager->GetUpdateTime() / 2;
+			if (_run_stamina > RUN_STAMINA_MAX)
+				_run_stamina = RUN_STAMINA_MAX;
+		}
+		// Deplete stamina by the appropriate amount if the player is running and stamina is not unlimited
+		if (_unlimited_stamina == false && _run_state == true) {
+			uint32 deplete_amount = SystemManager->GetUpdateTime() * 2;
+			if (_run_stamina > deplete_amount) {
+				_run_stamina -= deplete_amount;
+			}
+			// When stamina is fully depleted, toggle off the run state
+			else {
+				_run_stamina = 0;
+				_run_state = false;
+			}
+		}
 	}
-	else {
+	else { // User is not moving
 		_camera->moving = false;
+		_camera->is_running = false;
+
+		// Regenerate the stamina at 1/2 the consumption rate
+		if (_run_stamina < RUN_STAMINA_MAX) {
+			_run_stamina += SystemManager->GetUpdateTime();
+			if (_run_stamina > RUN_STAMINA_MAX)
+				_run_stamina = RUN_STAMINA_MAX;
+		}
 	}
 
 	// Determine the direction of movement. Priority of movement is given to: up, down, left, right.
@@ -776,7 +795,7 @@ void MapMode::_DrawGUI() {
 	// ---------- (3) Draw the stamina bar in the lower right corner
 	if (_stamina_bar_visible == true) {
 		// TODO: the code in this section needs better comments to explain what each coloring step is doing
-		float fill_size = static_cast<float>(_run_stamina) / 10000.0f;
+		float fill_size = static_cast<float>(_run_stamina) / RUN_STAMINA_MAX;
 
 		VideoManager->SetDrawFlags(VIDEO_X_LEFT, VIDEO_Y_BOTTOM, VIDEO_BLEND, 0);
 
