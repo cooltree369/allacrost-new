@@ -159,6 +159,31 @@ public:
     bool AttackAllowed()
 		{ return (CurrentState() != private_map::STATE_DIALOGUE && CurrentState() != private_map::STATE_TREASURE && !IsCameraOnVirtualFocus()); }
 
+	/** \brief Instantly changes the current context
+	*** \param new_context The context to change to. If it is invalid or the same as the current context, no change will take place
+	**/
+	void ContextTransitionInstant(private_map::MAP_CONTEXT new_context);
+
+	/** \brief Begins the transition to the new context by blending the outgoing and incoming contexts together
+	*** \param new_context The context to change to. If it is invalid or the same as the current context, no change will take place
+	*** \param time The total time that the transition should take. If set to zero, DEFAULT_CONTEXT_TRANSITION_TIME will be used
+	**/
+	void ContextTransitionBlend(private_map::MAP_CONTEXT new_context, uint32 time);
+
+	/** \brief Begins the transition to the new context by fading the screen to black, then fading back into the new context
+	*** \param new_context The context to change to. If it is invalid or the same as the current context, no change will take place
+	*** \param time The total time that the transition should take. If set to zero, DEFAULT_CONTEXT_TRANSITION_TIME will be used
+	**/
+	void ContextTransitionBlackColor(private_map::MAP_CONTEXT new_context, uint32 time)
+		{ ContextTransitionColor(new_context, time, hoa_video::Color::black); }
+
+	/** \brief Begins the transition to the new context by fading the screen to a color, then fading back into the new context
+	*** \param new_context The context to change to. If it is invalid or the same as the current context, no change will take place
+	*** \param time The total time that the transition should take. If set to zero, DEFAULT_CONTEXT_TRANSITION_TIME will be used
+	*** \param color The color to use for the transition
+	**/
+	void ContextTransitionColor(private_map::MAP_CONTEXT new_context, uint32 time, hoa_video::Color color);
+
 	//! \brief Class member accessor functions
 	//@{
 	static MapMode* const CurrentInstance()
@@ -268,8 +293,8 @@ public:
 	void SetCurrentTrack(uint32 track)
 		{ _current_track = track; }
 
-        /** \brief Transitions to the supplied game mode from the current game mode with a graphical effect.
-        *** \param game_mode that is to be transitioned to from the current mode.
+	/** \brief Transitions to the supplied game mode from the current game mode with a graphical effect.
+	*** \param game_mode that is to be transitioned to from the current mode.
 	**/
 	void _TransitionToMode(GameMode *);
 
@@ -366,16 +391,24 @@ private:
 	//! \brief The way in y-direction, the camera will move
 	float _delta_y;
 
-	//! \brief A time for camera movement
-	hoa_system::SystemTimer _camera_timer;
-
 	//! \brief The number of contexts that this map uses (at least 1, at most 32)
 	uint8 _num_map_contexts;
 
-	/** \brief The currently active map context
-	*** This is always equal to the context of the object pointed to by the _camera member
-	**/
+	//! \brief The currently active map context
 	private_map::MAP_CONTEXT _current_context;
+
+	/** \brief While transitioning between two contexts, holds the value of the context we are
+	*** transitioning from
+	**/
+	private_map::MAP_CONTEXT _previous_context;
+
+	//! \brief Retains the type of transition that is being performed
+	private_map::MAP_CONTEXT_TRANSITION_TYPE _transition_type;
+
+	//! \brief Holds the color to transition with if doing a color transition type
+	hoa_video::Color _transition_color;
+
+	// ----- Members : Running and Stamina -----
 
 	//! \brief If true, the player is not allowed to run.
 	bool _run_disabled;
@@ -418,6 +451,12 @@ private:
 	**/
 	hoa_system::SystemTimer _intro_timer;
 
+	//! \brief A timer used for assisting with camera movement
+	hoa_system::SystemTimer _camera_timer;
+
+	//! \brief A timer used to transition between two contexts smoothly
+	hoa_system::SystemTimer _context_transition_timer;
+
 	//! \brief Freestyle art image of the current map
 	hoa_video::StillImage _location_graphic;
 
@@ -448,6 +487,13 @@ private:
 
 	//! \brief Opens both the map data and script files and loads all necessary data from them
 	void _LoadMapFiles();
+
+	/** \brief Checks if the map can begin transitioning to a new context
+	*** \param new_context The context to change to
+	*** \return True if the transition is okay to proceed. False if the context argument is invalid or
+	*** another transition is already in progress
+	**/
+	bool _IsContextTransitionValid(private_map::MAP_CONTEXT new_context);
 
 	//! \brief A helper function to Update() that is called only when the map is in the explore state
 	void _UpdateExplore();

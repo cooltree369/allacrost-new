@@ -417,12 +417,11 @@ protected:
 
 
 /** ****************************************************************************
-*** \brief Represents an area where the active map context may switch
+*** \brief Represents an area of the map where objects may switch from one context to another
 ***
-*** This type of zone enables map sprites to transfer betweeen two map contexts.
-*** Each zone section added is labeled as corresponding to one context or the
-*** other. When a sprite stands upon a particular section, their context will
-*** be set to the context of that section.
+*** This type of zone enables map objects (usually sprites) to transfer betweeen two map contexts.
+*** Each zone section added is labeled as corresponding to one context or the other. When a sprite
+*** sprite stands upon a particular section, their context will be set to the context of that section.
 ***
 *** \todo In the future collision detection needs to be accounted for when two
 *** objects are in the context zone but have different active map contexts.
@@ -446,11 +445,11 @@ public:
 	**/
 	ContextZone(MAP_CONTEXT one, MAP_CONTEXT two);
 
-	/** \brief Overrides the virtual base method
+	/** \brief Overrides the virtual base method. Do not use.
 	***
 	*** This method should not be called for this class as zone sections which are added need to be
 	*** instructed as to which context they should belong to. The only reason this method is defined
-	*** here is to override the MapZone class' base method. This function prints a warning and will not
+	*** here is to override the MapZone class base method. This function prints a warning and will not
 	*** add the new section
 	**/
 	void AddSection(uint16 left_col, uint16 right_col, uint16 top_row, uint16 bottom_row);

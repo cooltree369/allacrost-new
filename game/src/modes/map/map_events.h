@@ -14,9 +14,11 @@
 ***
 *** Events occur on map mode to alter the state of the map, present a scene to the
 *** player, or do any other custom task we require. Events may be "chained" together
-*** so that one event begins as another ends. Many events are scripted, but this
-*** file contains some C++ implementations of the most common types of events so
-*** that these do not have to be continually re-implemented in every Lua map file.
+*** so that one event begins as another ends. Event class objects are created in the
+*** Lua map script file and triggered. The CustomEvent class defined here allows an
+*** event to be scripted completely within Lua. The other classes are more common to
+*** use and define typical events we may want to see in a map, such as playing a sound
+*** or moving a sprite to a specified destination.
 *** ***************************************************************************/
 
 #ifndef __MAP_EVENTS_HEADER__

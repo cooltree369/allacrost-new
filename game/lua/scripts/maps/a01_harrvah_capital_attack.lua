@@ -81,7 +81,6 @@ function Load(m)
 
 	-- Visuals: night lightning
 	VideoManager:EnableLightOverlay(hoa_video.Color(0.0, 0.0, 0.3, 0.6));
-
 	Map:SetCurrentTrack(0);
 
 	-- TODO: figure out if visuals should be disabled normally, or wait for control to be given to the player before they are displayed
@@ -147,8 +146,8 @@ function CreateZones()
 
 	---------- Context Zones
 	zones["throne_room"] = hoa_map.ContextZone(contexts["exterior"], contexts["interior_a"]);
-	zones["throne_room"]:AddSection(96, 100, 62, 63, false);
-	zones["throne_room"]:AddSection(96, 100, 63, 64, true);
+	zones["throne_room"]:AddSection(96, 100, 60, 61, false);
+	zones["throne_room"]:AddSection(96, 100, 61, 62, true);
 	Map:AddZone(zones["throne_room"]);
 
 	zones["left_tower_entrance"] = hoa_map.ContextZone(contexts["exterior"], contexts["interior_b"]);
@@ -162,8 +161,10 @@ function CreateZones()
 	Map:AddZone(zones["right_tower_entrance"]);
 
 	zones["left_tower_balcony"] = hoa_map.ContextZone(contexts["exterior"], contexts["interior_b"]);
-	zones["left_tower_balcony"]:AddSection(84, 85, 62, 66, false);
-	zones["left_tower_balcony"]:AddSection(85, 86, 62, 66, true);
+	zones["left_tower_balcony"]:AddSection(81, 84, 62, 66, false);
+	zones["left_tower_balcony"]:AddSection(84, 87, 62, 66, true);
+--	zones["left_tower_balcony"]:AddSection(84, 85, 62, 66, false);
+--	zones["left_tower_balcony"]:AddSection(85, 86, 62, 66, true);
 	Map:AddZone(zones["left_tower_balcony"]);
 
 	zones["right_tower_balcony"] = hoa_map.ContextZone(contexts["exterior"], contexts["interior_c"]);
@@ -277,6 +278,19 @@ function CreateDialogues()
 	local text;
 
 	----------------------------------------------------------------------------
+	---------- Dialogues attached to characters
+	----------------------------------------------------------------------------
+	dialogue = hoa_map.MapDialogue.Create(10);
+		text = hoa_system.Translate("The city is under attack by demons. We'll protect the citizens. Make your way to the castle with haste!");
+		dialogue:AddLine(text, sprites["captain"]:GetObjectID());
+	sprites["captain"]:AddDialogueReference(10);
+
+	dialogue = hoa_map.MapDialogue.Create(11);
+		text = hoa_system.Translate("Go! We'll manage here.");
+		dialogue:AddLine(text, sprites["sergeant"]:GetObjectID());
+	sprites["sergeant"]:AddDialogueReference(11);
+
+	----------------------------------------------------------------------------
 	---------- Dialogues triggered by events
 	----------------------------------------------------------------------------
 	event_dialogues["opening"] = 1000;
@@ -294,25 +308,40 @@ function CreateDialogues()
 	dialogue = hoa_map.MapDialogue.Create(event_dialogues["demon_spawn"]);
 		text = hoa_system.Translate("I don't believe what I just saw.");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
-		text = hoa_system.Translate("That demon just emerged from the shadows.");
+		text = hoa_system.Translate("That demon...just emerged from the shadows..?");
 		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
 		text = hoa_system.Translate("Well that's just great! How the hell are we supposed to stop an invasion that comes through shadows?");
 		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
 		text = hoa_system.Translate("Here it comes!");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 
-	----------------------------------------------------------------------------
-	---------- Dialogues attached to characters
-	----------------------------------------------------------------------------
-	dialogue = hoa_map.MapDialogue.Create(10);
-		text = hoa_system.Translate("The city is under attack by demons. We'll protect the citizens. Make your way to the castle with haste!");
-		dialogue:AddLine(text, sprites["captain"]:GetObjectID());
-	sprites["captain"]:AddDialogueReference(10);
+	event_dialogues["save_citizen"] = 1002;
+	dialogue = hoa_map.MapDialogue.Create(event_dialogues["save_citizen"]);
+		text = hoa_system.Translate("Where are you going, Claudius? That's not the way to the castle.");
+		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
+		text = hoa_system.Translate("Our orders are to seek king. We don't have time for this!");
+		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
+		text = hoa_system.Translate("...");
+		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
+		text = hoa_system.Translate("Follow orders and find the king");
+		dialogue:AddOption(text, 3);
+		text = hoa_system.Translate("Ignore orders and help the citizen");
+		dialogue:AddOption(text, 4);
+		text = hoa_system.Translate("You're right, we can't help everyone along our way. Lets keep going.");
+		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
+		text = hoa_system.Translate("But, I can't just leave them to die!");
+		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
+		text = hoa_system.Translate("God dammit rookie!");
+		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
+		text = hoa_system.Translate("We need to stick together. Let's just buy them enough time to escape.");
+		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 
-	dialogue = hoa_map.MapDialogue.Create(11);
-		text = hoa_system.Translate("Go! We'll manage here.");
-		dialogue:AddLine(text, sprites["sergeant"]:GetObjectID());
-	sprites["sergeant"]:AddDialogueReference(11);
+	event_dialogues["citizen_escapes"] = 1003;
+	dialogue = hoa_map.MapDialogue.Create(event_dialogues["citizen_escapes"]);
+		text = hoa_system.Translate("Th, thank you sirs!");
+		dialogue:AddLine(text, sprites["lukar"]:GetObjectID()); -- TODO: change to citizen NPC sprite
+		text = hoa_system.Translate("Get back to your home and barracade your door. Now!");
+		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 end -- function CreateDialogues()
 
 
@@ -324,7 +353,7 @@ function CreateEvents()
 	local event = {};
 
 	-- Event Group #1: Initial map scene -- camera pans across a stretch of the city under attack before focusing on the captain
-	event_chains["intro_scene"] = 10;
+	event_chains["intro_scene"] = 1;
 	event = hoa_map.CustomEvent.Create(event_chains["intro_scene"], "StartIntroScene", "");
 	event:AddEventLinkAtEnd(event_chains["intro_scene"] + 1, 2000);
 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["intro_scene"] + 1, Map.virtual_focus, 98, 130);
@@ -350,6 +379,15 @@ function CreateEvents()
 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["intro_scene"] + 9, sprites["lukar"], 98, 185);
 	event:AddEventLinkAtEnd(event_chains["intro_scene"] + 10);
 	event = hoa_map.CustomEvent.Create(event_chains["intro_scene"] + 10, "", "EndIntroScene");
+
+	-- Event Group #2: Party watches as enemy demon emerges from the shadows and attacks
+	event_chains["shadow_emerges"] = 20;
+
+	-- Event Group #3: Party observes a citizen trying to escape from demons and decides whether or not to help
+	event_chains["citizen_trapped"] = 40;
+
+	-- Event Group #4: Enemies drop down between Claudius and his allies. Claudius continues on alone
+	event_chains["claudius_separated"] = 60;
 
 	----------------------------------------------------------------------------
 	---------- Miscellaneous Events

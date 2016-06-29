@@ -33,8 +33,8 @@ namespace hoa_map {
 
 namespace private_map {
 
-void TileLayer::Draw() const {
-	MapMode::CurrentInstance()->GetTileSupervisor()->DrawTileLayer(_tile_layer_id);
+void TileLayer::Draw(MAP_CONTEXT context) const {
+	MapMode::CurrentInstance()->GetTileSupervisor()->DrawTileLayer(_tile_layer_id, context);
 }
 
 
@@ -328,26 +328,28 @@ void TileSupervisor::Update() {
 
 
 
-void TileSupervisor::DrawTileLayer(uint16 layer_index) {
+void TileSupervisor::DrawTileLayer(uint16 layer_index, MAP_CONTEXT context) {
 	if (layer_index >= _tile_layers.size()) {
 		PRINT_ERROR << "tried to draw a tile layer at an invalid index: " << layer_index << endl;
 		return;
 	}
+	if (context == MAP_CONTEXT_NONE || context == MAP_CONTEXT_ALL) {
+		PRINT_ERROR << "invalid context argument: " << context << endl;
+		return;
+	}
 
 	const MapFrame& frame = MapMode::CurrentInstance()->GetMapFrame();
-
-	MAP_CONTEXT current_context = MapMode::CurrentInstance()->GetCurrentContext();
-	MAP_CONTEXT inherited_context = GetInheritedContext(current_context);
+	MAP_CONTEXT inherited_context = GetInheritedContext(context);
 
 	VideoManager->SetDrawFlags(VIDEO_BLEND, 0);
 	VideoManager->Move(frame.tile_x_start, frame.tile_y_start);
 	for (uint32 r = static_cast<uint32>(frame.starting_row); r < static_cast<uint32>(frame.starting_row + frame.num_draw_rows); ++r)	{
 		for (uint32 c = static_cast<uint32>(frame.starting_col); c < static_cast<uint32>(frame.starting_col + frame.num_draw_cols); ++c)	{
 			// Draw a tile image if it exists at this location
-			if (_tile_grid[current_context][r][c].tile_layers[layer_index] >= 0) {
-				_tile_images[_tile_grid[current_context][r][c].tile_layers[layer_index]]->Draw();
+			if (_tile_grid[context][r][c].tile_layers[layer_index] >= 0) {
+				_tile_images[_tile_grid[context][r][c].tile_layers[layer_index]]->Draw();
 			}
-			else if (_tile_grid[current_context][r][c].tile_layers[layer_index] == INHERITED_TILE) {
+			else if (_tile_grid[context][r][c].tile_layers[layer_index] == INHERITED_TILE) {
 				if (_tile_grid[inherited_context][r][c].tile_layers[layer_index] >= 0) {
 					_tile_images[_tile_grid[inherited_context][r][c].tile_layers[layer_index]]->Draw();
 				}

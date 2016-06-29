@@ -122,9 +122,19 @@ enum MAP_CONTEXT {
 	MAP_CONTEXT_30    = 0x20000000,
 	MAP_CONTEXT_31    = 0x40000000,
 	MAP_CONTEXT_32    = 0x80000000,
-	MAP_CONTEXT_ALL   = 0xFFFFFFFF,
+	MAP_CONTEXT_ALL   = 0xFFFFFFFF
 };
 
+/** \name Map Context Transition Type Constants
+*** \brief Constants that represent the various types of transition between map contexts that can occur
+***
+***
+**/
+enum MAP_CONTEXT_TRANSITION_TYPE {
+	TRANSITION_NONE      = 0, // transition is instaneous, so therefore no transition takes place
+	TRANSITION_BLEND     = 1, // both contexts are drawn on top of each other, and one fades to the other
+	TRANSITION_COLOR     = 2  // original context does a screen fade to a color, then fades back to the new context
+};
 
 /** \name Map Zone Types
 *** \brief Identifier types for the various classes of map zones
@@ -139,7 +149,7 @@ enum ZONE_TYPE {
 	ZONE_RESIDENT   = 3,
 	ZONE_ENEMY      = 4,
 	ZONE_CONTEXT    = 5,
-	MAP_ZONE_TOTAL  = 6,
+	MAP_ZONE_TOTAL  = 6
 };
 
 //! \brief Used to identify the type of map object
@@ -271,10 +281,11 @@ enum DIALOGUE_STATE {
 //! \brief The maximum number of options that a line of dialogue can present to the player
 const uint32 MAX_DIALOGUE_OPTIONS = 5;
 
-
 //! \brief The number of milliseconds to take to fade out the map
 const uint32 MAP_FADE_OUT_TIME = 2000;
 
+//! \brief The number of milliseconds it takes to complete a map context transition, by default
+const uint32 DEFAULT_CONTEXT_TRANSITION_TIME = 400;
 
 //! \brief The standard number of milliseconds it takes for enemies to spawn in an enemy zone
 const uint32 STANDARD_ENEMY_SPAWN_TIME = 3000;
@@ -376,8 +387,10 @@ public:
 	//! \brief Updates all the objects on this layer (animations, position, etc.)
 	virtual void Update() = 0;
 
-	//! \brief
-	virtual void Draw() const = 0;
+	/** \brief Draws the layer to the screen
+	*** \param context Only elements matching this context will be drawn
+	**/
+	virtual void Draw(MAP_CONTEXT context) const = 0;
 }; // class MapLayer
 
 

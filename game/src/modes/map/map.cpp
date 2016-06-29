@@ -81,13 +81,16 @@ MapMode::MapMode(string script_filename) :
 	_delta_y(0),
 	_num_map_contexts(0),
 	_current_context(MAP_CONTEXT_01),
+	_previous_context(MAP_CONTEXT_NONE),
+	_transition_type(TRANSITION_BLEND),
+	_transition_color(Color::black),
 	_run_disabled(false),
 	_run_state(false),
 	_run_stamina(RUN_STAMINA_MAX),
 	_unlimited_stamina(false),
 	_dialogue_icons_visible(false),
 	_stamina_bar_visible(false),
-	_current_track(INVALID_TRACK),\
+	_current_track(INVALID_TRACK),
 	_fade_out(false),
 	_transition_mode(NULL)
 {
@@ -126,12 +129,14 @@ MapMode::MapMode(string script_filename) :
 	_virtual_focus->SetVisible(false);
 	_object_supervisor->AddObject(_virtual_focus, DEFAULT_LAYER_ID);
 
+	_intro_timer.Initialize(7000, 0);
+	_intro_timer.EnableAutoUpdate(this);
+
 	// The camera must never be NULL (otherwise the game will crash), so initially set it to the virtual focus
 	_camera = _virtual_focus;
 	_camera_timer.Initialize(0, 1);
 
-	_intro_timer.Initialize(7000, 0);
-	_intro_timer.EnableAutoUpdate(this);
+	_context_transition_timer.Initialize(DEFAULT_CONTEXT_TRANSITION_TIME, 0);
 
 	// TODO: Load the map files in a seperate thread
 	_LoadMapFiles();
@@ -211,7 +216,8 @@ void MapMode::Update() {
 	else if (InputManager->PausePress() == true) {
 		ModeManager->Push(new PauseMode(false));
 		return;
-	} else if(InputManager->HelpPress() == true) {
+	}
+	else if (InputManager->HelpPress() == true) {
 		ModeManager->Push(new PauseMode(false, true));
 		return;
 	}
@@ -248,8 +254,16 @@ void MapMode::Update() {
 			break;
 	}
 
-	// ---------- (4) Update the camera timer
+	// ---------- (4) Update the timers
 	_camera_timer.Update();
+	_context_transition_timer.Update();
+
+	// TODO: the code only supports color context transitions right now, not blended. Support for blended transitions needs to be added
+	// later
+	if (_context_transition_timer.IsRunning() && _context_transition_timer.PercentComplete() >= 0.50f) {
+		_transition_color.SetAlpha(0.0f); // Set the alpha to zero so we can fade out the color
+		VideoManager->FadeScreen(_transition_color, _context_transition_timer.GetDuration() - _context_transition_timer.GetTimeExpired());
+	}
 
 	// ---------- (5) Update all active map events
 	_event_supervisor->Update();
@@ -345,7 +359,7 @@ void MapMode::PlayMusic(uint32 track_num) {
 
 
 
-void MapMode::SetCamera(private_map::VirtualSprite* sprite, uint32 duration) {
+void MapMode::SetCamera(VirtualSprite* sprite, uint32 duration) {
 	if (_camera == sprite) {
 		IF_PRINT_WARNING(MAP_DEBUG) << "Camera was moved to the same sprite" << endl;
 	}
@@ -408,6 +422,50 @@ void MapMode::MoveVirtualFocus(uint16 x, uint16 y, uint32 duration) {
 		}
 		MoveVirtualFocus(x, y);
 	}
+}
+
+
+void MapMode::ContextTransitionInstant(MAP_CONTEXT new_context) {
+	if (_IsContextTransitionValid(new_context) == false)
+		return;
+
+	_previous_context = _current_context;
+	_current_context = new_context;
+}
+
+
+void MapMode::ContextTransitionBlend(private_map::MAP_CONTEXT new_context, uint32 time) {
+	if (_IsContextTransitionValid(new_context) == false)
+		return;
+
+	if (time == 0) {
+		time = DEFAULT_CONTEXT_TRANSITION_TIME;
+	}
+	_previous_context = _current_context;
+	_current_context = new_context;
+	_transition_type = TRANSITION_BLEND;
+	_context_transition_timer.Initialize(time);
+	_context_transition_timer.Run();
+}
+
+
+void MapMode::ContextTransitionColor(private_map::MAP_CONTEXT new_context, uint32 time, hoa_video::Color color) {
+	if (_IsContextTransitionValid(new_context) == false)
+		return;
+
+	if (time == 0) {
+		time = DEFAULT_CONTEXT_TRANSITION_TIME;
+	}
+	_previous_context = _current_context;
+	_current_context = new_context;
+	_transition_type = TRANSITION_COLOR;
+	_transition_color = color;
+	_transition_color.SetAlpha(1.0f); // Override any alpha requested because we need to fade to the completely opaque color
+	_context_transition_timer.Initialize(time);
+	_context_transition_timer.Run();
+
+	// Begin fading in the screen to the color. A second fade out will occur once the timer has half-way expired
+	VideoManager->FadeScreen(_transition_color, _context_transition_timer.GetDuration() / 2);
 }
 
 // ****************************************************************************
@@ -501,6 +559,24 @@ void MapMode::_LoadMapFiles() {
 	_map_script.CloseAllTables();
 }
 
+
+
+bool MapMode::_IsContextTransitionValid(MAP_CONTEXT new_context) {
+	if (new_context == MAP_CONTEXT_NONE) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "received a context argument with no value" << endl;
+		return false;
+	}
+	else if (static_cast<uint32>(new_context) > static_cast<uint32>(1 << (_num_map_contexts - 1))) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "received a context argument that exceeded the map's context range (" << new_context << ")" << endl;
+		return false;
+	}
+	else if (_context_transition_timer.IsRunning() == true) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "failed to transition to new context (" << new_context << ") because another context transition is in progress" << endl;
+		return true;
+	}
+
+	return true;
+}
 
 
 void MapMode::_UpdateExplore() {
@@ -749,10 +825,21 @@ void MapMode::_CalculateMapFrame() {
 void MapMode::_DrawMapLayers() {
  	VideoManager->SetCoordSys(0.0f, SCREEN_COLS, SCREEN_ROWS, 0.0f);
 
-	for (uint32 i = 0; i < _layer_order.size(); ++i) {
-		_layer_order[i]->Draw();
+	// TODO: blend context transitions need to be supported here, which will require drawing both previous and current
+	// contexts and applying alpha to blend the two together. Right now, only the color transition is supported here.
+
+	MAP_CONTEXT draw_context;
+	if (_context_transition_timer.IsRunning() && _context_transition_timer.PercentComplete() < 0.5f) {
+		draw_context = _previous_context;
 	}
-} // void MapMode::_DrawMapLayers()
+	else {
+		draw_context = _current_context;
+	}
+
+	for (uint32 i = 0; i < _layer_order.size(); ++i) {
+		_layer_order[i]->Draw(draw_context);
+	}
+}
 
 
 
@@ -854,12 +941,16 @@ void MapMode::_DrawGUI() {
 	VideoManager->PopState();
 } // void MapMode::_DrawGUI()
 
+
+
 void MapMode::_DrawModeTransition () {
     if(_fade_out == false) {
         _fade_out = true;
         VideoManager->FadeScreen(Color::black, 1000);
     }
 }
+
+
 
 void MapMode::_UpdateModeTransition() {
     if (_fade_out) {
@@ -874,6 +965,8 @@ void MapMode::_UpdateModeTransition() {
 		}
 	}
 }
+
+
 
 void MapMode::_TransitionToMode(GameMode * game_mode) {
     MapMode::PushState(STATE_TRANSITION);

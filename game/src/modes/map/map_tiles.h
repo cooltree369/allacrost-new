@@ -79,8 +79,10 @@ public:
 	void Update()
 		{}
 
-	//! \brief Makes the appropriate call to TileSupervisor::DrawTileLayer()
-	void Draw() const;
+	/** \brief Makes the appropriate call to TileSupervisor::DrawTileLayer()
+	*** \param context The context of the layer that should be drawn
+	**/
+	void Draw(MAP_CONTEXT context) const;
 
 private:
 	//! \brief Holds the unique ID of this tile layer. The first layer created for a map should use the value DEFAULT_LAYER_ID
@@ -143,13 +145,14 @@ public:
 
 	/** \brief Draws a tile layer to the screen
 	*** \param layer_index The index of the layer that should be drawn
+	*** \param context The context of the tile layer that should be drawn
 	***
 	*** \note This function does not reset the coordinate system and hence require that the proper coordinate system is
 	*** already set prior to this function call (0.0f, SCREEN_COLS, SCREEN_ROWS, 0.0f). These functions do make
 	*** modifications to the blending draw flag and the draw cursor position which are not restored by the function upon
 	*** its return, so take measures to retain this information before calling these functions if necessary.
 	**/
-	void DrawTileLayer(uint16 layer_index);
+	void DrawTileLayer(uint16 layer_index, MAP_CONTEXT context);
 
 private:
 	/** \brief The number of rows of tiles in the map.
