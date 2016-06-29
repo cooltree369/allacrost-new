@@ -309,9 +309,10 @@ void ObjectLayer::Update() {
 
 
 
-void ObjectLayer::Draw() const {
+void ObjectLayer::Draw(MAP_CONTEXT context) const {
 	for (uint32 i = 0; i < _objects.size(); ++i) {
-		_objects[i]->Draw();
+		if (_objects[i]->context == context)
+			_objects[i]->Draw();
 	}
 }
 

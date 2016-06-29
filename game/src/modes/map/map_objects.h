@@ -481,9 +481,10 @@ public:
 	void Update();
 
 	/** \brief Calls the Draw() method for all objects on this layer
+	*** \param context Only objects within this context will be drawn
 	*** \note SortObjects() should be called prior to this function so that objects are drawn in the correct draw order
 	**/
-	void Draw() const;
+	void Draw(MAP_CONTEXT context) const;
 
 	/** \brief Adds an object to this object layer
 	*** \param object A pointer to the object to add
@@ -586,13 +587,14 @@ public:
 
 	/** \brief Draws an object layer to the screen
 	*** \param layer_id The ID of the layer to draw
+	*** \param context Only objects in the layer that are in this context will be drawn
 	*** \note These functions do not reset the coordinate system and hence depend that the proper coordinate system
 	*** is already set prior to these function calls (0.0f, SCREEN_COLS, SCREEN_ROWS, 0.0f). These functions do make
 	*** modifications to the draw flags and the draw cursor position, which are not restored by the function
 	*** upon its return. Take measures to retain this information before calling these functions if necessary.
 	**/
-	void DrawObjectLayer(uint32 layer_id)
-		{ if (layer_id >= _object_layers.size()) return; _object_layers[layer_id].Draw(); }
+	void DrawObjectLayer(uint32 layer_id, MAP_CONTEXT context)
+		{ if (layer_id >= _object_layers.size()) return; _object_layers[layer_id].Draw(context); }
 
 	//! \brief Calls the DrawDialog method for each MapSprite object
 	void DrawDialogIcons();

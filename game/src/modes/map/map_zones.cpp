@@ -277,7 +277,14 @@ void ContextZone::Update() {
 		// (This may result in no change from the object's current context depending on the zone section)
 		index = _IsInsideZone(objects->at(i));
 		if (index >= 0) {
-			objects->at(i)->SetContext(_section_contexts[index] ? _context_one : _context_two);
+			MAP_CONTEXT section_context = _section_contexts[index] ? _context_one : _context_two;
+			if (objects->at(i)->GetContext() != section_context) {
+				objects->at(i)->SetContext(section_context);
+				// If the camera is pointing at the object that just had its context changed, start the context transition
+				if (MapMode::CurrentInstance()->GetCamera() == objects->at(i)) {
+					MapMode::CurrentInstance()->ContextTransitionBlackColor(objects->at(i)->GetContext(), 0);
+				}
+			}
 		}
 	}
 }
