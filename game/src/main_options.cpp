@@ -17,11 +17,12 @@
 #include "defs.h"
 
 #include "audio.h"
-#include "video.h"
-#include "script.h"
 #include "input.h"
-#include "system.h"
 #include "mode_manager.h"
+#include "notification.h"
+#include "script.h"
+#include "system.h"
+#include "video.h"
 
 #include "global.h"
 
@@ -334,6 +335,7 @@ bool EnableDebugging(string vars) {
 			hoa_common::COMMON_DEBUG                = true;
 			hoa_script::SCRIPT_DEBUG                = true;
 			hoa_mode_manager::MODE_MANAGER_DEBUG    = true;
+			hoa_notification::NOTIFICATION_DEBUG    = true;
 			hoa_input::INPUT_DEBUG                  = true;
 			hoa_system::SYSTEM_DEBUG                = true;
 			hoa_global::GLOBAL_DEBUG                = true;
@@ -350,6 +352,7 @@ bool EnableDebugging(string vars) {
 			hoa_audio::AUDIO_DEBUG                  = true;
 			hoa_script::SCRIPT_DEBUG                = true;
 			hoa_mode_manager::MODE_MANAGER_DEBUG    = true;
+			hoa_notification::NOTIFICATION_DEBUG    = true;
 			hoa_input::INPUT_DEBUG                  = true;
 			hoa_system::SYSTEM_DEBUG                = true;
 			hoa_video::VIDEO_DEBUG                  = true;
@@ -381,6 +384,9 @@ bool EnableDebugging(string vars) {
 		}
 		else if (args[i] == "mode_manager") {
 			hoa_mode_manager::MODE_MANAGER_DEBUG = true;
+		}
+		else if (args[i] == "notification") {
+			hoa_notification::NOTIFICATION_DEBUG = true;
 		}
 		else if (args[i] == "input") {
 			hoa_input::INPUT_DEBUG = true;

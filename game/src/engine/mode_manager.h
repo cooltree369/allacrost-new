@@ -10,7 +10,7 @@
 /** ***************************************************************************
 *** \file   mode_manager.h
 *** \author Tyler Olsen, roots@allacrost.org
-*** \brief  Header file for game mode processingd
+*** \brief  Header file for game mode processing
 *** **************************************************************************/
 
 #ifndef __MODE_MANAGER_HEADER__
