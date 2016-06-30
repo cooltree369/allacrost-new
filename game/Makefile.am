@@ -197,6 +197,8 @@ engine_SOURCES = \
 	$(ENGINE_DIR)/input.h \
 	$(ENGINE_DIR)/mode_manager.cpp \
 	$(ENGINE_DIR)/mode_manager.h \
+	$(ENGINE_DIR)/notification.cpp \
+	$(ENGINE_DIR)/notification.h \
 	$(ENGINE_DIR)/engine_bindings.cpp \
 	$(audio_SOURCES) \
 	$(video_SOURCES) \
@@ -330,7 +332,7 @@ allacrost_editor_MOC = $(EDITOR_DIR)/dialogs.moc.cpp \
 	$(EDITOR_DIR)/tile_context.moc.cpp \
 	$(EDITOR_DIR)/tile_layer.moc.cpp \
 	$(EDITOR_DIR)/tileset.moc.cpp \
-	$(EDITOR_DIR)/tileset_editor.moc.cpp	
+	$(EDITOR_DIR)/tileset_editor.moc.cpp
 allacrost_editor_SOURCES = \
 	$(EDITOR_DIR)/dialogs.cpp \
 	$(EDITOR_DIR)/dialogs.h \

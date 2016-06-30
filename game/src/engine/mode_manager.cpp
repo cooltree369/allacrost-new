@@ -10,7 +10,7 @@
 /** ***************************************************************************
 *** \file   mode_manager.cpp
 *** \author Tyler Olsen, roots@allacrost.org
-*** \brief  Source file for managing user settings
+*** \brief  Source file for game mode processing
 *** **************************************************************************/
 
 #include "mode_manager.h"

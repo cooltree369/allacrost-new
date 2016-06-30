@@ -26,6 +26,7 @@
 #include "audio.h"
 #include "input.h"
 #include "mode_manager.h"
+#include "notification.h"
 #include "script.h"
 #include "system.h"
 #include "video.h"
@@ -86,6 +87,28 @@ void BindEngineCode() {
 	];
 
 	} // End using mode manager namespaces
+
+
+
+	// ----- Notification Engine Bindings
+	{
+	using namespace hoa_notification;
+
+	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_notification")
+	[
+		class_<NotificationEvent>("NotificationEvent")
+			.def(constructor<std::string, std::string>())
+			.def_readonly("category", &NotificationEvent::category)
+			.def_readonly("event", &NotificationEvent::event),
+
+		class_<NotificationEngine>("NotificationEngine")
+			.def("Notify", &NotificationEngine::Notify, adopt(_2))
+			.def("CreateAndNotify", &NotificationEngine::CreateAndNotify)
+			.def("GetNotificationCount", &NotificationEngine::GetNotificationCount)
+			.def("GetNotificationEvent", &NotificationEngine::GetNotificationEvent)
+	];
+
+	} // End using script namespaces
 
 
 
@@ -248,12 +271,13 @@ void BindEngineCode() {
 
 	// ---------- Bind engine class objects
 	luabind::object global_table = luabind::globals(hoa_script::ScriptManager->GetGlobalState());
-	global_table["AudioManager"]     = hoa_audio::AudioManager;
-	global_table["InputManager"]     = hoa_input::InputManager;
-	global_table["ModeManager"]      = hoa_mode_manager::ModeManager;
-	global_table["ScriptManager"]    = hoa_script::ScriptManager;
-	global_table["SystemManager"]    = hoa_system::SystemManager;
-	global_table["VideoManager"]     = hoa_video::VideoManager;
+	global_table["AudioManager"]         = hoa_audio::AudioManager;
+	global_table["InputManager"]         = hoa_input::InputManager;
+	global_table["ModeManager"]          = hoa_mode_manager::ModeManager;
+	global_table["ScriptManager"]        = hoa_script::ScriptManager;
+	global_table["SystemManager"]        = hoa_system::SystemManager;
+	global_table["NotificationManager"]  = hoa_notification::NotificationManager;
+	global_table["VideoManager"]         = hoa_video::VideoManager;
 } // void BindEngineCode()
 
 } // namespace hoa_defs

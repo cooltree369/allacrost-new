@@ -146,6 +146,14 @@ namespace hoa_mode_manager {
 	class GameMode;
 }
 
+// Notification declarations, see src/engine/
+namespace hoa_notification {
+	extern bool NOTIFICATION_DEBUG;
+	class NotificationEngine;
+
+	class NotificationEvent;
+}
+
 // Input declarations, see src/engine/
 namespace hoa_input {
 	extern bool INPUT_DEBUG;

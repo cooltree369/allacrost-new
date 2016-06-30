@@ -39,15 +39,16 @@
 #include "defs.h"
 
 #include "audio.h"
-#include "video.h"
-#include "gui.h"
 #include "input.h"
+#include "mode_manager.h"
+#include "notification.h"
 #include "script.h"
 #include "system.h"
+#include "video.h"
 
 #include "global.h"
+#include "gui.h"
 
-#include "mode_manager.h"
 #include "boot.h"
 #include "test.h"
 #include "main_options.h"
@@ -59,6 +60,7 @@ using namespace hoa_audio;
 using namespace hoa_video;
 using namespace hoa_gui;
 using namespace hoa_mode_manager;
+using namespace hoa_notification;
 using namespace hoa_input;
 using namespace hoa_system;
 using namespace hoa_global;
@@ -93,6 +95,7 @@ void QuitAllacrost() {
 	GUISystem::SingletonDestroy();
 	AudioEngine::SingletonDestroy();
 	InputEngine::SingletonDestroy();
+	NotificationEngine::SingletonDestroy();
 	SystemEngine::SingletonDestroy();
 	VideoEngine::SingletonDestroy();
 	// Destroy the script engine last because all Luabind objects must be freed before closing the lua state.
@@ -225,6 +228,7 @@ void InitializeEngine() throw (Exception) {
 	VideoManager = VideoEngine::SingletonCreate();
 	SystemManager = SystemEngine::SingletonCreate();
 	ModeManager = ModeEngine::SingletonCreate();
+	NotificationManager = NotificationEngine::SingletonCreate();
 	GUIManager = GUISystem::SingletonCreate();
 	GlobalManager = GameGlobal::SingletonCreate();
 
@@ -410,7 +414,7 @@ int main(int argc, char *argv[]) {
 			ModeManager->Draw();
 			VideoManager->Display(SystemManager->GetUpdateTime());
 
-			// 2) Process all new events
+			// 2) Process all new input events
 			InputManager->EventHandler();
 
 			// 3) Update any streaming audio sources
@@ -421,6 +425,9 @@ int main(int argc, char *argv[]) {
 
 			// 5) Update the game status
 			ModeManager->Update();
+
+			// 6) Clear any notification events that were generated
+			NotificationManager->DeleteAllNotificationEvents();
 
 		} // while (SystemManager->NotDone())
 	} catch (Exception& e) {
