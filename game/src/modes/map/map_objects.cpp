@@ -18,6 +18,7 @@
 
 // Allacrost engines
 #include "audio.h"
+#include "notification.h"
 #include "system.h"
 #include "video.h"
 
@@ -33,6 +34,7 @@
 using namespace std;
 using namespace hoa_utils;
 using namespace hoa_audio;
+using namespace hoa_notification;
 using namespace hoa_script;
 using namespace hoa_system;
 using namespace hoa_video;
@@ -676,6 +678,7 @@ COLLISION_TYPE ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObjec
 	// ---------- (1) Check if any part of the object's collision rectangle is outside of the map boundary
 	if (coll_rect.left < 0.0f || coll_rect.right >= static_cast<float>(_num_grid_cols) ||
 		coll_rect.top < 0.0f || coll_rect.bottom >= static_cast<float>(_num_grid_rows)) {
+		NotificationManager->Notify(new MapCollisionNotificationEvent(BOUNDARY_COLLISION, sprite));
 		return BOUNDARY_COLLISION;
 	}
 
@@ -687,6 +690,7 @@ COLLISION_TYPE ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObjec
 		for (uint32 c = static_cast<uint32>(coll_rect.left); c <= static_cast<uint32>(coll_rect.right); c++) {
 			// Checks the collision grid at the row-column at the object's current context
 			if ((_collision_grid[r][c] & sprite->context) != 0) {
+				NotificationManager->Notify(new MapCollisionNotificationEvent(GRID_COLLISION, sprite));
 				return GRID_COLLISION;
 			}
 		}
@@ -721,6 +725,7 @@ COLLISION_TYPE ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObjec
 		if (collision_object != NULL) {
 			*collision_object = obstruction_object;
 		}
+		NotificationManager->Notify(new MapCollisionNotificationEvent(GRID_COLLISION, sprite, obstruction_object));
 		return OBJECT_COLLISION;
 	}
 

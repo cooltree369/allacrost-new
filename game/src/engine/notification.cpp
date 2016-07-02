@@ -65,7 +65,7 @@ void NotificationEngine::Notify(NotificationEvent* notification) {
 
 
 
-void NotificationEngine::CreateAndNotify(std::string& category, std::string& event) {
+void NotificationEngine::CreateAndNotify(const string& category, const string& event) {
 	NotificationEvent* new_trigger = new NotificationEvent(category, event);
 	_notification_events.push_back(new_trigger);
 }
@@ -79,5 +79,13 @@ NotificationEvent* NotificationEngine::GetNotificationEvent(uint32 index) const 
 		return _notification_events[index];
 }
 
+
+
+void NotificationEngine::DEBUG_PrintNotificationEvents() const {
+	if (_notification_events.size()) PRINT_DEBUG << "printing list of all stored notifications" << endl;
+	for (uint32 i = 0; i < _notification_events.size(); ++i) {
+		PRINT_DEBUG << i << ": " << _notification_events[i]->DEBUG_PrintInfo() << endl;
+	}
+}
 
 } // namespace hoa_notification

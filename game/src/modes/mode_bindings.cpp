@@ -23,6 +23,9 @@
 
 #include "defs.h"
 
+// Notification engine is used for derived NotificationEvent classes
+#include "notification.h"
+
 // Common code headers
 #include "dialogue.h"
 #include "global_actors.h"
@@ -174,12 +177,23 @@ void BindModeCode() {
 				value("SLOW_SPEED", static_cast<uint32>(SLOW_SPEED)),
 				value("NORMAL_SPEED", static_cast<uint32>(NORMAL_SPEED)),
 				value("FAST_SPEED", static_cast<uint32>(FAST_SPEED)),
-				value("VERY_FAST_SPEED", static_cast<uint32>(VERY_FAST_SPEED))
-			]
-	];
+				value("VERY_FAST_SPEED", static_cast<uint32>(VERY_FAST_SPEED)),
+				// Collision types
+				value("NO_COLLISION", static_cast<uint32>(NO_COLLISION)),
+				value("BOUNDARY_COLLISION", static_cast<uint32>(BOUNDARY_COLLISION)),
+				value("GRID_COLLISION", static_cast<uint32>(GRID_COLLISION)),
+				value("OBJECT_COLLISION", static_cast<uint32>(OBJECT_COLLISION))
+			],
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
+		class_<MapCollisionNotificationEvent, hoa_notification::NotificationEvent>("MapCollisionNotificationEvent")
+			.def_readonly("collision_type", &MapCollisionNotificationEvent::collision_type)
+			.def_readonly("sprite", &MapCollisionNotificationEvent::sprite)
+			.def_readonly("x_position", &MapCollisionNotificationEvent::x_position)
+			.def_readonly("x_offset", &MapCollisionNotificationEvent::x_offset)
+			.def_readonly("y_position", &MapCollisionNotificationEvent::y_position)
+			.def_readonly("y_offset", &MapCollisionNotificationEvent::y_offset)
+			.def_readonly("object", &MapCollisionNotificationEvent::object),
+
 		class_<ObjectSupervisor>("ObjectSupervisor")
 			.def("GenerateObjectID", &ObjectSupervisor::GenerateObjectID)
 			.def("GetNumberObjects", &ObjectSupervisor::GetNumberObjects)
@@ -188,11 +202,8 @@ void BindModeCode() {
 			.def("AddObjectLayer", &ObjectSupervisor::AddObjectLayer)
 			.def("AddObject", (void(private_map::ObjectSupervisor::*)(private_map::MapObject*))&ObjectSupervisor::AddObject, adopt(_2))
 			.def("AddObject", (void(private_map::ObjectSupervisor::*)(private_map::MapObject*, uint32))&ObjectSupervisor::AddObject, adopt(_2))
-			.def("MoveObjectToLayer", &ObjectSupervisor::MoveObjectToLayer)
-	];
+			.def("MoveObjectToLayer", &ObjectSupervisor::MoveObjectToLayer),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<MapObject>("MapObject")
 			.def("SetObjectID", &MapObject::SetObjectID)
 			.def("SetContext", &MapObject::SetContext)
@@ -220,28 +231,19 @@ void BindModeCode() {
 			.def("IsNoCollision", &MapObject::IsNoCollision)
 			// TEMP: because GetXPosition and GetYPostiion seem to give a runtime error in Lua
 			.def_readonly("x_position", &MapObject::x_position)
-			.def_readonly("y_position", &MapObject::y_position)
-	];
+			.def_readonly("y_position", &MapObject::y_position),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<PhysicalObject, MapObject>("PhysicalObject")
 			.def(constructor<>())
 			.def("AddAnimation", (void(PhysicalObject::*)(std::string))&PhysicalObject::AddAnimation)
 			.def("SetCurrentAnimation", &PhysicalObject::SetCurrentAnimation)
 			.def("SetAnimationProgress", &PhysicalObject::SetAnimationProgress)
-			.def("GetCurrentAnimation", &PhysicalObject::GetCurrentAnimation)
-	];
+			.def("GetCurrentAnimation", &PhysicalObject::GetCurrentAnimation),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<TreasureObject, PhysicalObject>("TreasureObject")
 			.def(constructor<std::string, uint8, uint8, uint8>())
-			.def("GetTreasure", &TreasureObject::GetTreasure)
-	];
+			.def("GetTreasure", &TreasureObject::GetTreasure),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<VirtualSprite, MapObject>("VirtualSprite")
 			.def(constructor<>())
 			.def("SetMoving", &VirtualSprite::SetMoving)
@@ -249,11 +251,8 @@ void BindModeCode() {
 			.def("SetMovementSpeed", &VirtualSprite::SetMovementSpeed)
 			.def("IsMoving", &VirtualSprite::IsMoving)
 			.def("GetDirection", &VirtualSprite::GetDirection)
-			.def("GetMovementSpeed", &VirtualSprite::GetMovementSpeed)
-	];
+			.def("GetMovementSpeed", &VirtualSprite::GetMovementSpeed),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<MapSprite, VirtualSprite>("MapSprite")
 			.def(constructor<>())
 			.def("SetName", &MapSprite::SetName)
@@ -267,11 +266,8 @@ void BindModeCode() {
 			.def("LoadAttackAnimations", &MapSprite::LoadAttackAnimations)
 			.def("AddDialogueReference", &MapSprite::AddDialogueReference)
 			.def("ClearDialogueReferences", &MapSprite::ClearDialogueReferences)
-			.def("RemoveDialogueReference", &MapSprite::RemoveDialogueReference)
-	];
+			.def("RemoveDialogueReference", &MapSprite::RemoveDialogueReference),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<EnemySprite, MapSprite>("EnemySprite")
 			.def(constructor<>())
 			.def("Reset", &EnemySprite::Reset)
@@ -296,11 +292,8 @@ void BindModeCode() {
 			.def("ChangeStateActive", &EnemySprite::ChangeStateActive)
 			.def("ChangeStateActiveZoned", &EnemySprite::ChangeStateActiveZoned)
 			.def("ChangeStateDissipate", &EnemySprite::ChangeStateDissipate)
-			.def("ChangeStateInactive", &EnemySprite::ChangeStateInactive)
-	];
+			.def("ChangeStateInactive", &EnemySprite::ChangeStateInactive),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<MapZone>("MapZone")
 			.def(constructor<>())
 			.def(constructor<uint16, uint16, uint16, uint16>())
@@ -308,11 +301,8 @@ void BindModeCode() {
 			.def("AddSection", &MapZone::AddSection)
 			.def("IsInsideZone", &MapZone::IsInsideZone)
 			.def("GetActiveContexts", &MapZone::GetActiveContexts)
-			.def("SetActiveContexts", &MapZone::SetActiveContexts)
-	];
+			.def("SetActiveContexts", &MapZone::SetActiveContexts),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<CameraZone, MapZone>("CameraZone")
 			.def(constructor<>())
 			.def(constructor<uint16, uint16, uint16, uint16>())
@@ -322,11 +312,8 @@ void BindModeCode() {
 			.def("IsCameraExiting", &CameraZone::IsCameraExiting)
 			.def("IsPlayerSpriteInside", &CameraZone::IsPlayerSpriteInside)
 			.def("IsPlayerSpriteEntering", &CameraZone::IsPlayerSpriteEntering)
-			.def("IsPlayerSpriteExiting", &CameraZone::IsPlayerSpriteExiting)
-	];
+			.def("IsPlayerSpriteExiting", &CameraZone::IsPlayerSpriteExiting),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<ResidentZone, MapZone>("ResidentZone")
 			.def(constructor<>())
 			.def(constructor<uint16, uint16, uint16, uint16>())
@@ -347,11 +334,8 @@ void BindModeCode() {
 			.def("GetExitingResident", &ResidentZone::GetExitingResident)
 			.def("GetNumberResidents", &ResidentZone::GetNumberResidents)
 			.def("GetNumberEnteringResidents", &ResidentZone::GetNumberEnteringResidents)
-			.def("GetNumberExitingResidents", &ResidentZone::GetNumberExitingResidents)
-	];
+			.def("GetNumberExitingResidents", &ResidentZone::GetNumberExitingResidents),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<EnemyZone, MapZone>("EnemyZone")
 			.def(constructor<>())
 			.def(constructor<uint16, uint16, uint16, uint16>())
@@ -361,27 +345,18 @@ void BindModeCode() {
 			.def("IsRoamingRestrained", &EnemyZone::IsRoamingRestrained)
 			.def("GetSpawnTime", &EnemyZone::GetSpawnTime)
 			.def("SetRoamingRestrained", &EnemyZone::SetRoamingRestrained)
-			.def("SetSpawnTime", &EnemyZone::SetSpawnTime)
-	];
+			.def("SetSpawnTime", &EnemyZone::SetSpawnTime),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<ContextZone, MapZone>("ContextZone")
 			.def(constructor<MAP_CONTEXT, MAP_CONTEXT>())
-			.def("AddSection", (void(ContextZone::*)(uint16, uint16, uint16, uint16, bool))&ContextZone::AddSection)
-	];
+			.def("AddSection", (void(ContextZone::*)(uint16, uint16, uint16, uint16, bool))&ContextZone::AddSection),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<DialogueSupervisor>("DialogueSupervisor")
 			.def("BeginDialogue", &DialogueSupervisor::BeginDialogue)
 			.def("EndDialogue", &DialogueSupervisor::EndDialogue)
 			.def("GetDialogue", &DialogueSupervisor::GetDialogue)
-			.def("GetCurrentDialogue", &DialogueSupervisor::GetCurrentDialogue)
-	];
+			.def("GetCurrentDialogue", &DialogueSupervisor::GetCurrentDialogue),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<MapDialogue, hoa_common::CommonDialogue>("MapDialogue")
 			.scope
 			[
@@ -402,11 +377,8 @@ void BindModeCode() {
 			.def("AddOptionEvent", (void(MapDialogue::*)(uint32, uint32))&MapDialogue::AddOptionEvent)
 			.def("Validate", &MapDialogue::Validate)
 			.def("SetInputBlocked", &MapDialogue::SetInputBlocked)
-			.def("SetRestoreState", &MapDialogue::SetRestoreState)
-	];
+			.def("SetRestoreState", &MapDialogue::SetRestoreState),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<EventSupervisor>("EventSupervisor")
 			.def("RegisterEvent", &EventSupervisor::RegisterEvent, adopt(_2))
 			.def("StartEvent", (void(EventSupervisor::*)(uint32))&EventSupervisor::StartEvent)
@@ -417,50 +389,34 @@ void BindModeCode() {
 			.def("IsEventActive", &EventSupervisor::IsEventActive)
 			.def("HasActiveEvent", &EventSupervisor::HasActiveEvent)
 			.def("HasLaunchEvent", &EventSupervisor::HasLaunchEvent)
-			.def("GetEvent", &EventSupervisor::GetEvent)
-	];
+			.def("GetEvent", &EventSupervisor::GetEvent),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<MapEvent>("MapEvent")
 			.def("GetEventID", &MapEvent::GetEventID)
 			.def("AddEventLinkAtStart", (void(MapEvent::*)(uint32))&MapEvent::AddEventLinkAtStart)
 			.def("AddEventLinkAtStart", (void(MapEvent::*)(uint32, uint32))&MapEvent::AddEventLinkAtStart)
 			.def("AddEventLinkAtEnd", (void(MapEvent::*)(uint32))&MapEvent::AddEventLinkAtEnd)
-			.def("AddEventLinkAtEnd", (void(MapEvent::*)(uint32, uint32))&MapEvent::AddEventLinkAtEnd)
-	];
+			.def("AddEventLinkAtEnd", (void(MapEvent::*)(uint32, uint32))&MapEvent::AddEventLinkAtEnd),
 
-
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<DialogueEvent, MapEvent>("DialogueEvent")
 			.scope
 			[
 				def("Create", &DialogueEvent::Create)
 			]
-			.def("SetStopCameraMovement", &DialogueEvent::SetStopCameraMovement)
-	];
+			.def("SetStopCameraMovement", &DialogueEvent::SetStopCameraMovement),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<SoundEvent, MapEvent>("SoundEvent")
 			.scope
 			[
 				def("Create", &SoundEvent::Create)
-			]
-	];
+			],
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<MapTransitionEvent, MapEvent>("MapTransitionEvent")
 			.scope
 			[
 				def("Create", &MapTransitionEvent::Create)
-			]
-	];
+			],
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<BattleEncounterEvent, MapEvent>("BattleEncounterEvent")
 			.scope
 			[
@@ -468,35 +424,23 @@ void BindModeCode() {
 			]
 			.def("SetMusic", &BattleEncounterEvent::SetMusic)
 			.def("SetBackground", &BattleEncounterEvent::SetBackground)
-			.def("AddEnemy", &BattleEncounterEvent::AddEnemy)
-	];
+			.def("AddEnemy", &BattleEncounterEvent::AddEnemy),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<CustomEvent, MapEvent>("CustomEvent")
 			.scope
 			[
 				def("Create", &CustomEvent::Create)
-			]
-	];
+			],
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
-		class_<SpriteEvent, MapEvent>("SpriteEvent")
-	];
+		class_<SpriteEvent, MapEvent>("SpriteEvent"),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<ChangeDirectionSpriteEvent, SpriteEvent>("ChangeDirectionSpriteEvent")
 			.scope
 			[
 				def("Create", (ChangeDirectionSpriteEvent*(*)(uint32, VirtualSprite*, uint16))&ChangeDirectionSpriteEvent::Create),
 				def("Create", (ChangeDirectionSpriteEvent*(*)(uint32, uint16, uint16))&ChangeDirectionSpriteEvent::Create)
-			]
-	];
+			],
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<AnimateSpriteEvent, MapEvent>("AnimateSpriteEvent")
 			.scope
 			[
@@ -504,21 +448,15 @@ void BindModeCode() {
 				def("Create", (AnimateSpriteEvent*(*)(uint32, uint16))&AnimateSpriteEvent::Create)
 			]
 			.def("AddFrame", &AnimateSpriteEvent::AddFrame)
-			.def("SetLoopCount", &AnimateSpriteEvent::SetLoopCount)
-	];
+			.def("SetLoopCount", &AnimateSpriteEvent::SetLoopCount),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<RandomMoveSpriteEvent, SpriteEvent>("RandomMoveSpriteEvent")
 			.scope
 			[
 				def("Create", (RandomMoveSpriteEvent*(*)(uint32, VirtualSprite*, uint32, uint32))&RandomMoveSpriteEvent::Create),
 				def("Create", (RandomMoveSpriteEvent*(*)(uint32, uint16, uint32, uint32))&RandomMoveSpriteEvent::Create)
-			]
-	];
+			],
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<PathMoveSpriteEvent, SpriteEvent>("PathMoveSpriteEvent")
 			.scope
 			[
@@ -527,39 +465,28 @@ void BindModeCode() {
 			]
 			.def("SetRelativeDestination", &PathMoveSpriteEvent::SetRelativeDestination)
 			.def("SetDestination", &PathMoveSpriteEvent::SetDestination)
-			.def("SetFinalDirection", &PathMoveSpriteEvent::SetFinalDirection)
-	];
+			.def("SetFinalDirection", &PathMoveSpriteEvent::SetFinalDirection),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<CustomSpriteEvent, SpriteEvent>("CustomSpriteEvent")
 			.scope
 			[
 				def("Create", (CustomSpriteEvent*(*)(uint32, VirtualSprite*, std::string, std::string))&CustomSpriteEvent::Create),
 				def("Create", (CustomSpriteEvent*(*)(uint32, uint16, std::string, std::string))&CustomSpriteEvent::Create)
-			]
-	];
+			],
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<MapTreasure>("MapTreasure")
 			.def(constructor<>())
 			.def("AddDrunes", &MapTreasure::AddDrunes)
 			.def("AddObject", &MapTreasure::AddObject)
 			.def("IsTaken", &MapTreasure::IsTaken)
-			.def("SetTaken", &MapTreasure::SetTaken)
-	];
+			.def("SetTaken", &MapTreasure::SetTaken),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_map")
-	[
 		class_<TreasureSupervisor>("TreasureSupervisor")
 			.def("Initialize", (void(TreasureSupervisor::*)(TreasureObject*))&TreasureSupervisor::Initialize)
 			.def("Initialize", (void(TreasureSupervisor::*)(MapTreasure*))&TreasureSupervisor::Initialize)
 	];
 
 	} // End using map mode namespaces
-
-
 
 	// ----- Battle Mode bindings
 	{
@@ -582,11 +509,8 @@ void BindModeCode() {
 		def("CalculateEtherealDamageAdder", (uint32(*)(BattleActor*, BattleTarget*, int32)) &CalculateEtherealDamageAdder),
 		def("CalculateEtherealDamageAdder", (uint32(*)(BattleActor*, BattleTarget*, int32, float)) &CalculateEtherealDamageAdder),
 		def("CalculateEtherealDamageMultiplier", (uint32(*)(BattleActor*, BattleTarget*, float)) &CalculateEtherealDamageMultiplier),
-		def("CalculateEtherealDamageMultiplier", (uint32(*)(BattleActor*, BattleTarget*, float, float)) &CalculateEtherealDamageMultiplier)
-	];
+		def("CalculateEtherealDamageMultiplier", (uint32(*)(BattleActor*, BattleTarget*, float, float)) &CalculateEtherealDamageMultiplier),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_battle")
-	[
 		class_<BattleMode, hoa_mode_manager::GameMode>("BattleMode")
 			.def(constructor<>())
 			.def("AddEnemy", (void(BattleMode::*)(uint32)) &BattleMode::AddEnemy)
@@ -615,18 +539,12 @@ void BindModeCode() {
 				value("BATTLE_STATE_VICTORY", BATTLE_STATE_VICTORY),
 				value("BATTLE_STATE_DEFEAT", BATTLE_STATE_DEFEAT),
 				value("BATTLE_STATE_EXITING", BATTLE_STATE_EXITING)
-			]
-	];
+			],
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_battle")
-	[
 		class_<BattleMedia>("BattleMedia")
 			.def("SetBackgroundImage", &BattleMedia::SetBackgroundImage)
-			.def("SetBattleMusic", &BattleMedia::SetBattleMusic)
-	];
+			.def("SetBattleMusic", &BattleMedia::SetBattleMusic),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_battle")
-	[
 		class_<BattleActor, hoa_global::GlobalActor>("BattleActor")
 			.def("ChangeSpriteAnimation", &BattleActor::ChangeSpriteAnimation)
 			.def("RegisterDamage", (void(BattleActor::*)(uint32)) &BattleActor::RegisterDamage)
@@ -647,28 +565,16 @@ void BindModeCode() {
 			.def("TotalPhysicalDefense", &BattleActor::TotalPhysicalDefense)
 			.def("TotalEtherealDefense", &BattleActor::TotalEtherealDefense)
 			.def("TotalEvadeRating", &BattleActor::TotalEvadeRating)
-			.def("SetStatePaused", &BattleActor::SetStatePaused)
-	];
+			.def("SetStatePaused", &BattleActor::SetStatePaused),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_battle")
-	[
 		class_<BattleCharacter, BattleActor>("BattleCharacter")
-			.def("ChangeSpriteAnimation", &BattleCharacter::ChangeSpriteAnimation)
-	];
+			.def("ChangeSpriteAnimation", &BattleCharacter::ChangeSpriteAnimation),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_battle")
-	[
 		class_<BattleEnemy, BattleActor>("BattleEnemy")
-			.def("ChangeSpriteAnimation", &BattleEnemy::ChangeSpriteAnimation)
-	];
+			.def("ChangeSpriteAnimation", &BattleEnemy::ChangeSpriteAnimation),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_battle")
-	[
-		class_<CommandSupervisor>("CommandSupervisor")
-	];
+		class_<CommandSupervisor>("CommandSupervisor"),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_battle")
-	[
 		class_<BattleDialogue, hoa_common::CommonDialogue>("BattleDialogue")
 			.def(constructor<uint32>())
 			.def("AddLine", (void(BattleDialogue::*)(std::string, uint32))&BattleDialogue::AddLine)
@@ -678,11 +584,8 @@ void BindModeCode() {
 			.def("AddOption", (void(BattleDialogue::*)(std::string))&BattleDialogue::AddOption)
 			.def("AddOption", (void(BattleDialogue::*)(std::string, int32))&BattleDialogue::AddOption)
 			.def("Validate", &BattleDialogue::Validate)
-			.def("SetHaltBattleAction", &BattleDialogue::SetHaltBattleAction)
-	];
+			.def("SetHaltBattleAction", &BattleDialogue::SetHaltBattleAction),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_battle")
-	[
 		class_<DialogueSupervisor>("DialogueSupervisor")
 			.def("AddDialogue", &DialogueSupervisor::AddDialogue, adopt(_2))
 			.def("AddCharacterSpeaker", &DialogueSupervisor::AddCharacterSpeaker)
@@ -695,11 +598,8 @@ void BindModeCode() {
 			.def("ForceNextLine", &DialogueSupervisor::ForceNextLine)
 			.def("IsDialogueActive", &DialogueSupervisor::IsDialogueActive)
 			.def("GetCurrentDialogue", &DialogueSupervisor::GetCurrentDialogue)
-			.def("GetLineCounter", &DialogueSupervisor::GetLineCounter)
-	];
+			.def("GetLineCounter", &DialogueSupervisor::GetLineCounter),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_battle")
-	[
 		class_<BattleTarget>("BattleTarget")
 			.def("SetPointTarget", &BattleTarget::SetPointTarget)
 			.def("SetActorTarget", &BattleTarget::SetActorTarget)
@@ -710,17 +610,11 @@ void BindModeCode() {
 			.def("GetType", &BattleTarget::GetType)
 			.def("GetPoint", &BattleTarget::GetPoint)
 			.def("GetActor", &BattleTarget::GetActor)
-			.def("GetPartyActor", &BattleTarget::GetPartyActor)
-	];
+			.def("GetPartyActor", &BattleTarget::GetPartyActor),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_battle")
-	[
 		class_<BattleEffect>("BattleEffect")
-			.def("GetEffectActor", &BattleEffect::GetEffectActor)
-	];
+			.def("GetEffectActor", &BattleEffect::GetEffectActor),
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_battle")
-	[
 		class_<StatusEffect, BattleEffect>("StatusEffect")
 			.def("GetDurationTimer", &StatusEffect::GetDurationTimer)
 			.def("GetIntensity", &StatusEffect::GetIntensity)

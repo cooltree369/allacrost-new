@@ -60,6 +60,55 @@ MapMode* MapMode::_current_instance = NULL;
 // The maximum value of the run stamina bar
 const uint32 RUN_STAMINA_MAX = 10000;
 
+namespace private_map {
+
+const string MapCollisionNotificationEvent::DEBUG_PrintInfo() {
+	string line = "MapCollisionNotificationEvent::" + category + "/" + event + " -";
+	line += " Sprite-ID:" + NumberToString(sprite->GetObjectID());
+
+	ostringstream stream;
+	stream.precision(4);
+	stream << (static_cast<float>(x_position) + x_offset);
+	line += " X-Position:" + stream.str();
+	stream.str("");
+	stream << (static_cast<float>(y_position) + y_offset);
+	line += " Y-Position:" + stream.str();
+
+	line += " Collision-Type:";
+	switch (collision_type) {
+		case NO_COLLISION:
+			line += "None";
+			break;
+		case BOUNDARY_COLLISION:
+			line += "Boundary";
+			break;
+		case GRID_COLLISION:
+			line += "Grid";
+			break;
+		case OBJECT_COLLISION:
+			line += "Object";
+			break;
+		default:
+			line += "unknown(" + NumberToString(collision_type) + ")";
+			break;
+	}
+
+	if (object != NULL) {
+		line += " Object-ID: " + NumberToString(object->GetObjectID());
+	}
+
+	return line;
+}
+
+void MapCollisionNotificationEvent::_CopySpritePosition() {
+	x_position = sprite->x_position;
+	x_offset = sprite->x_offset;
+	y_position = sprite->y_position;
+	y_offset = sprite->y_offset;
+}
+
+} // namespace private_map
+
 // ****************************************************************************
 // ********** MapMode Public Class Methods
 // ****************************************************************************
@@ -222,16 +271,12 @@ void MapMode::Update() {
 		return;
 	}
 
-	// ---------- (1) Call the map script's update function
-	if (_update_function)
-		ScriptCallFunction<void>(_update_function);
-
-	// ---------- (2) Update all animated tile images
+	// ---------- (1) Update all animated tile images
 	_tile_supervisor->Update();
 	_object_supervisor->Update();
 	_object_supervisor->SortObjectLayers();
 
-	// ---------- (3) Update the active state of the map
+	// ---------- (2) Update the active state of the map
 	switch (CurrentState()) {
 		case STATE_EXPLORE:
 			_UpdateExplore();
@@ -254,9 +299,13 @@ void MapMode::Update() {
 			break;
 	}
 
-	// ---------- (4) Update the timers
+	// ---------- (3) Update the timers
 	_camera_timer.Update();
 	_context_transition_timer.Update();
+
+	// ---------- (4) Call the map script's update function
+	if (_update_function)
+		ScriptCallFunction<void>(_update_function);
 
 	// TODO: the code only supports color context transitions right now, not blended. Support for blended transitions needs to be added
 	// later
