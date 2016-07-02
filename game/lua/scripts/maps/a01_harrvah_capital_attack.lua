@@ -108,7 +108,24 @@ end -- Load(m)
 
 
 function Update()
-	-- Nothing special required
+	--[[ Uncomment this block to see notifications printed to the screen
+	if (NotificationManager:GetNotificationCount() > 0) then
+		NotificationManager:DEBUG_PrintNotificationEvents();
+	end
+	--]]
+
+	local index = 0;
+	local notification = {};
+	while (true) do
+		notification = NotificationManager:GetNotificationEvent(index);
+		if (notification == nil) then
+			break;
+		elseif (notification.category == "map" and notification.event == "collision") then
+			-- TODO: Examine the collision data and determine if some change should take place
+		end
+
+		index = index + 1;
+	end
 end
 
 

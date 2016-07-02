@@ -106,6 +106,7 @@ void BindEngineCode() {
 			.def("CreateAndNotify", &NotificationEngine::CreateAndNotify)
 			.def("GetNotificationCount", &NotificationEngine::GetNotificationCount)
 			.def("GetNotificationEvent", &NotificationEngine::GetNotificationEvent)
+			.def("DEBUG_PrintNotificationEvents", &NotificationEngine::DEBUG_PrintNotificationEvents)
 	];
 
 	} // End using script namespaces

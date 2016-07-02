@@ -58,6 +58,15 @@ public:
 	virtual ~NotificationEvent()
 		{}
 
+	/** \brief Returns a string representation of the data stored by this object
+	***
+	*** As expected, this function is for debugging purposes only. Derived classes should implement their own version
+	*** of this function and print out the relevant data in a format that they desire. The string should be only one
+	*** line and follow the format: "ClassName::category/event - extra data here" to maintain consistency.
+	**/
+	virtual const std::string DEBUG_PrintInfo()
+		{ return ("NotificationEvent::" + category + "/" + event); }
+
 	//! \brief An identifier that signifies the area of code that generated the notification (ex: "map" for map mode)
 	std::string category;
 
@@ -107,7 +116,7 @@ public:
 	*** \param category The category identifier of the code generating this trigger
 	*** \param event The identifier string for the type of trigger that occurred
 	**/
-	void CreateAndNotify(std::string& category, std::string& event);
+	void CreateAndNotify(const std::string& category, const std::string& event);
 
 	//! \brief Returns the number of notification events currently stored by the class
 	uint32 GetNotificationCount() const
@@ -122,6 +131,9 @@ public:
 	//! \brief Returns a reference to the list of notification events stored by the class
 	std::vector<NotificationEvent*>& GetAllNotificationEvents()
 		{ return _notification_events; }
+
+	//! \brief Prints the category and event name for all notifications currently stored by this class
+	void DEBUG_PrintNotificationEvents() const;
 
 private:
 	NotificationEngine();

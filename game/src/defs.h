@@ -334,6 +334,8 @@ namespace hoa_map {
 		class ResidentZone;
 		class EnemyZone;
 		class ContextZone;
+
+		class MapCollisionNotificationEvent;
 	}
 }
 

@@ -34,6 +34,7 @@
 // Allacrost engines
 #include "audio.h"
 #include "mode_manager.h"
+#include "notification.h"
 #include "script.h"
 #include "video.h"
 #include "system.h"
@@ -49,6 +50,57 @@ namespace private_map {
 
 //! \brief Used to set the current music track to invalid, effectively stops any music from playing
 const uint32 INVALID_TRACK = 0xFFFFFFFF;
+
+/** ****************************************************************************
+*** \brief A notification event class describing sprite collisions
+***
+*** Whenever a sprite of any type moves on the map and has a collision, one of these
+*** notification events is generated to describe the type and particulars about the
+*** collision. This can be used by a map script to determine whether to play a sound,
+*** switch the context of the sprite, or take some other action.
+***
+*** \note Because collision resolution changes the position of the sprite, you can
+*** not rely on the position of the sprite when the notification event is being processed.
+*** This is why this class has members that retain the position of the sprite as the collision
+*** happened.
+*** ***************************************************************************/
+class MapCollisionNotificationEvent : public hoa_notification::NotificationEvent {
+public:
+	/** \param type The type of collision that occurred
+	*** \param sprite The sprite that had the collision
+	*** \note You should \b not use this constructor for object-type collisions
+	**/
+	MapCollisionNotificationEvent(COLLISION_TYPE type, VirtualSprite* sprite) :
+		NotificationEvent("map", "collision"), collision_type(type), sprite(sprite), object(NULL) { _CopySpritePosition(); }
+
+	/** \param type The type of collision that occurred (should be COLLISION_OBJECT)
+	*** \param sprite The sprite that had the collision
+	*** \param object The object that the sprite collided with
+	*** \note You should \b only use this constructor for object-type collisions
+	**/
+	MapCollisionNotificationEvent(COLLISION_TYPE type, VirtualSprite* sprite, MapObject* object) :
+		NotificationEvent("map", "collision"), collision_type(type), sprite(sprite), object(object) { _CopySpritePosition(); }
+
+	//! \brief Returns a string representation of the collision data stored in this object
+	const std::string DEBUG_PrintInfo();
+
+	//! \brief The type of collision that caused the notification to be generated
+	COLLISION_TYPE collision_type;
+
+	//! \brief The sprite that had the collision
+	VirtualSprite* sprite;
+
+	//! \brief Saved position data from the sprite at the time of the collision
+	uint16 x_position, y_position;
+	float x_offset, y_offset;
+
+	//! \brief The object that the sprite collided with, if it was an object type collision. Otherwise will be NULL
+	MapObject* object;
+
+private:
+	//! \brief Retains the state of the sprite's position data in the class members
+	void _CopySpritePosition();
+}; // class MapCollisionNotificationEvent : public hoa_notification::NotificationEvent
 
 } // namespace private_map
 
