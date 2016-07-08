@@ -40,7 +40,7 @@ AudioBuffer::AudioBuffer() :
 	if (AudioManager->CheckALError()) {
 		IF_PRINT_WARNING(AUDIO_DEBUG) << "OpenAL error detected before buffer generation: " << AudioManager->CreateALErrorString() << endl;
 	}
-	
+
 	alGenBuffers(1, &buffer);
 
 	if (AudioManager->CheckALError()) {
@@ -229,8 +229,7 @@ bool AudioDescriptor::LoadAudio(const string& filename, AUDIO_LOAD load_type, ui
 		if (_source == NULL) {
 			IF_PRINT_WARNING(AUDIO_DEBUG) << "could not acquire audio source for new audio file: " << filename << endl;
 		}
-	} // if (load_type == AUDIO_LOAD_STATIC)
-
+	}
 	// Stream the audio from the file data
 	else if (load_type == AUDIO_LOAD_STREAM_FILE) {
 		_buffer = new AudioBuffer[NUMBER_STREAMING_BUFFERS]; // For streaming we need to use multiple buffers
@@ -244,8 +243,7 @@ bool AudioDescriptor::LoadAudio(const string& filename, AUDIO_LOAD load_type, ui
 		if (_source == NULL) {
 			IF_PRINT_WARNING(AUDIO_DEBUG) << "could not acquire audio source for new audio file: " << filename << endl;
 		}
-	} // else if (load_type == AUDIO_LOAD_STREAM_FILE)
-
+	}
 	// Allocate memory for the audio data to remain in and stream it from that location
 	else if (load_type == AUDIO_LOAD_STREAM_MEMORY) {
 		_buffer = new AudioBuffer[NUMBER_STREAMING_BUFFERS]; // For streaming we need to use multiple buffers
@@ -264,8 +262,7 @@ bool AudioDescriptor::LoadAudio(const string& filename, AUDIO_LOAD load_type, ui
 		if (_source == NULL) {
 			IF_PRINT_WARNING(AUDIO_DEBUG) << "could not acquire audio source for new audio file: " << filename << endl;
 		}
-	} // else if (load_type == AUDIO_LOAD_STREAM_MEMORY) {
-
+	}
 	else {
 		IF_PRINT_WARNING(AUDIO_DEBUG) << "unknown load_type argument passed: " << load_type << endl;
 		return false;
@@ -320,8 +317,7 @@ AUDIO_STATE AudioDescriptor::GetState() {
 	// If the last set state was the playing state, we have to double check
 	// with the OpenAL source to make sure that the audio is still playing.
 	if (_state == AUDIO_STATE_PLAYING) {
-		// If the descriptor no longe
-		if (_source == NULL || _data == NULL) {
+		if (_source == NULL) {
 			_state = AUDIO_STATE_STOPPED;
 		}
 		else {
@@ -645,13 +641,13 @@ void AudioDescriptor::_Update() {
 	// Only streaming audio that is playing requires periodic updates
 	if (_stream == NULL || _state != AUDIO_STATE_PLAYING)
 		return;
-	
+
 	ALint queued = 0;
 	alGetSourcei(_source->source, AL_BUFFERS_QUEUED, &queued);
 	if (AudioManager->CheckALError()) {
 		IF_PRINT_WARNING(AUDIO_DEBUG) << "getting queued sources failed: " << AudioManager->CreateALErrorString() << endl;
 	}
-	
+
 	// If there are no more buffers and the end of stream was reached, stop the sound
 	if (queued != 0 && _stream->GetEndOfStream()) {
 		_state = AUDIO_STATE_STOPPED;
@@ -663,7 +659,7 @@ void AudioDescriptor::_Update() {
 	if (AudioManager->CheckALError()) {
 		IF_PRINT_WARNING(AUDIO_DEBUG) << "getting processed sources failed: " << AudioManager->CreateALErrorString() << endl;
 	}
-	
+
 	// If any buffers have finished playing, attempt to refill them
 	if (buffers_processed > 0) {
 		ALuint buffer_finished;
@@ -683,7 +679,7 @@ void AudioDescriptor::_Update() {
 				IF_PRINT_WARNING(AUDIO_DEBUG) << "queueing a source failed: " << AudioManager->CreateALErrorString() << endl;
 			}
 		}
-		
+
 		// This ensures that if a streaming audio piece is stopped because the buffers ran out
 		// of audio data for the source to play, the audio will be automatically replayed again.
 		ALint state;
@@ -743,7 +739,7 @@ void AudioDescriptor::_SetSourceProperties() {
 	if (AudioManager->CheckALError()) {
 		IF_PRINT_WARNING(AUDIO_DEBUG) << "changing volume on a source failed: " << AudioManager->CreateALErrorString() << endl;
 	}
-	
+
 	// Set looping (source has looping disabled by default, so only need to check the true case)
 	if (_stream != NULL) {
 		_stream->SetLooping(_looping);
@@ -756,7 +752,7 @@ void AudioDescriptor::_SetSourceProperties() {
 			}
 		}
 	}
-	
+
 	//! \todo More properties need to be set here, such as source position, etc.
 }
 
@@ -794,7 +790,7 @@ void AudioDescriptor::_PrepareStreamingBuffers() {
 				alSourceQueueBuffers(_source->source, 1, &_buffer[i].buffer);
 		}
 	}
-	
+
 	if (AudioManager->CheckALError()) {
 		IF_PRINT_WARNING(AUDIO_DEBUG) << "failed to fill all buffers: " << AudioManager->CreateALErrorString() << endl;
 	}

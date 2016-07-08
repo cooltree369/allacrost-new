@@ -193,14 +193,22 @@ public:
 
 	/** \brief Loads a new piece of audio data from a file
 	*** \param filename The name of the file that contains the new audio data (should have a .wav or .ogg file extension)
-	*** \param load_type The type of loading to perform (default == AUDIO_LOAD_STATIC)
-	*** \param stream_buffer_size If the loading type is streaming, the buffer size to use (default == DEFAULT_BUFFER_SIZE)
+	***
+	*** The action taken by this function depends on the load type selected. For static sounds, a single OpenAL buffer is
+	*** filled. For streaming, the file/memory is prepared.
+	**/
+	virtual bool LoadAudio(const std::string& filename) = 0;
+
+	/** \brief Loads a new piece of audio data from a file
+	*** \param filename The name of the file that contains the new audio data (should have a .wav or .ogg file extension)
+	*** \param load_type The type of loading to perform
+	*** \param stream_buffer_size If the loading type is streaming, the buffer size to use
 	*** \return True if the audio was succesfully loaded, false if there was an error
 	***
 	*** The action taken by this function depends on the load type selected. For static sounds, a single OpenAL buffer is
 	*** filled. For streaming, the file/memory is prepared.
 	**/
-	virtual bool LoadAudio(const std::string& filename, AUDIO_LOAD load_type = AUDIO_LOAD_STATIC, uint32 stream_buffer_size = private_audio::DEFAULT_BUFFER_SIZE);
+	virtual bool LoadAudio(const std::string& filename, AUDIO_LOAD load_type, uint32 stream_buffer_size);
 
 	/** \brief Frees all data resources and resets class parameters
 	***
@@ -221,15 +229,27 @@ public:
 	**/
 	AUDIO_STATE GetState();
 
+	//! \brief Returns true if the audio is currently in the PLAYING state
+	bool IsPlaying()
+		{ return (GetState() == AUDIO_STATE_PLAYING); }
+
+	//! \brief Returns true if the audio is currently in the STOPPED state
+	bool IsStopped() const
+		{ return (_state == AUDIO_STATE_STOPPED); }
+
+	//! \brief Returns true if the audio is currently in the PAUSED state
+	bool IsPaused() const
+		{ return (_state == AUDIO_STATE_PAUSED); }
+
 	/** \name Audio State Manipulation Functions
 	*** \brief Performs specified operation on the audio
 	***
 	*** These functions will only take effect when the audio is in the state(s) specified below:
-	*** - PlayAudio()     <==>   all states but the playing state
-	*** - PauseAudio()    <==>   playing state
-	*** - ResumeAudio()   <==>   paused state
-	*** - StopAudio()     <==>   all states but the stopped state
-	*** - RewindAudio()   <==>   all states
+	*** - Play()     <==>   all states but the playing state
+	*** - Pause()    <==>   playing state
+	*** - Resume()   <==>   paused state
+	*** - Stop()     <==>   all states but the stopped state
+	*** - Rewind()   <==>   all states
 	**/
 	//@{
 	virtual void Play();
@@ -399,6 +419,9 @@ public:
 
 	SoundDescriptor(const SoundDescriptor& copy);
 
+	bool LoadAudio(const std::string& filename)
+		{ return AudioDescriptor::LoadAudio(filename, AUDIO_LOAD_STATIC, private_audio::DEFAULT_BUFFER_SIZE); }
+
 	bool IsSound() const
 		{ return true; }
 
@@ -426,7 +449,10 @@ public:
 
 	MusicDescriptor(const MusicDescriptor& copy);
 
-	bool LoadAudio(const std::string& filename, AUDIO_LOAD load_type = AUDIO_LOAD_STREAM_FILE, uint32 stream_buffer_size = private_audio::DEFAULT_BUFFER_SIZE);
+	bool LoadAudio(const std::string& filename)
+		{ return LoadAudio(filename, AUDIO_LOAD_STREAM_FILE, private_audio::DEFAULT_BUFFER_SIZE); }
+
+	bool LoadAudio(const std::string& filename, AUDIO_LOAD load_type, uint32 stream_buffer_size);
 
 	bool IsSound() const
 		{ return false; }

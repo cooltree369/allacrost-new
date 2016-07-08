@@ -46,6 +46,52 @@ void BindEngineCode() {
 	[
 		class_<AudioEngine>("GameAudio")
 			.def("PlaySound", &AudioEngine::PlaySound)
+
+			// Namespace constants
+			.enum_("constants") [
+				// Map states
+				value("AUDIO_STATE_UNLOADED", AUDIO_STATE_UNLOADED),
+				value("AUDIO_STATE_STOPPED", AUDIO_STATE_STOPPED),
+				value("AUDIO_STATE_PLAYING", AUDIO_STATE_PLAYING),
+				value("AUDIO_STATE_PAUSED", AUDIO_STATE_PAUSED),
+				value("AUDIO_LOAD_STATIC", AUDIO_LOAD_STATIC),
+				value("AUDIO_LOAD_STREAM_FILE", AUDIO_LOAD_STREAM_FILE),
+				value("AUDIO_LOAD_STREAM_MEMORY", AUDIO_LOAD_STREAM_MEMORY),
+				value("NUMBER_STREAMING_BUFFERS", private_audio::NUMBER_STREAMING_BUFFERS)
+			],
+
+		class_<AudioDescriptor>("AudioDescriptor")
+			.def("LoadAudio", (bool(AudioDescriptor::*)(const std::string&))&AudioDescriptor::LoadAudio)
+			.def("FreeAudio", &AudioDescriptor::FreeAudio)
+			.def("GetState", &AudioDescriptor::GetState)
+			.def("IsPlaying", &AudioDescriptor::IsPlaying)
+			.def("IsStopped", &AudioDescriptor::IsStopped)
+			.def("IsPaused", &AudioDescriptor::IsPaused)
+			.def("Play", &AudioDescriptor::Play)
+			.def("Stop", &AudioDescriptor::Stop)
+			.def("Pause", &AudioDescriptor::Pause)
+			.def("Resume", &AudioDescriptor::Resume)
+			.def("Rewind", &AudioDescriptor::Rewind)
+			.def("IsLooping", &AudioDescriptor::IsLooping)
+			.def("SetLooping", &AudioDescriptor::SetLooping)
+			.def("SetLoopStart", &AudioDescriptor::SetLoopStart)
+			.def("SetLoopEnd", &AudioDescriptor::SetLoopEnd)
+			.def("SeekSample", &AudioDescriptor::SeekSample)
+			.def("SeekSecond", &AudioDescriptor::SeekSecond)
+			.def("GetVolume", &AudioDescriptor::GetVolume)
+			.def("SetVolume", &AudioDescriptor::SetVolume)
+			.def("SetPosition", &AudioDescriptor::SetPosition)
+			.def("SetVelocity", &AudioDescriptor::SetVelocity)
+			.def("SetDirection", &AudioDescriptor::SetDirection)
+			.def("GetPosition", &AudioDescriptor::GetPosition)
+			.def("GetVelocity", &AudioDescriptor::GetVelocity)
+			.def("GetDirection", &AudioDescriptor::GetDirection),
+
+		class_<SoundDescriptor, AudioDescriptor>("SoundDescriptor")
+			.def(constructor<>()),
+
+		class_<MusicDescriptor, AudioDescriptor>("MusicDescriptor")
+			.def(constructor<>())
 	];
 
 	} // End using audio namespaces
