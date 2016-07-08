@@ -971,6 +971,13 @@ public:
 	**/
 	bool IsEventActive(uint32 event_id) const;
 
+	/** \brief Returns the number of times an event has been started
+	*** \param event_id The ID of the event to check
+	*** \return Zero if the event has never been started, otherwise the number of times it has been started
+	*** \note If an invalid ID argument is passed, zero will be returned
+	**/
+	uint32 TimesEventStarted(uint32 event_id) const;
+
 	//! \brief Returns true if any events are active
 	bool HasActiveEvent() const
 		{ return !_active_events.empty(); }
@@ -999,6 +1006,12 @@ private:
 
 	//! \brief A list of all events which have been paused
 	std::list<MapEvent*> _paused_events;
+
+	/** \brief Maintains a history of how many times each event has been started
+	*** The first integer is the event ID and the second is how many times that event has been started.
+	*** It does not track how many times the event has completed or been terminated.
+	**/
+	std::map<uint32, uint32> _event_history;
 
 	/** \brief A function that is called whenever an event starts or finishes to examine that event's links
 	*** \param parent_event The event that has just started or finished

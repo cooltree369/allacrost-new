@@ -1055,6 +1055,7 @@ bool CustomSpriteEvent::_Update() {
 EventSupervisor::~EventSupervisor() {
 	_active_events.clear();
 	_launch_events.clear();
+	_event_history.clear();
 
 	for (map<uint32, MapEvent*>::iterator i = _all_events.begin(); i != _all_events.end(); i++) {
 		delete i->second;
@@ -1102,6 +1103,8 @@ void EventSupervisor::StartEvent(MapEvent* event) {
 
 	_active_events.push_back(event);
 	event->_Start();
+	_event_history.emplace(event->GetEventID(), 0);
+	_event_history[event->GetEventID()] += 1;
 	_ExamineEventLinks(event, true);
 }
 
@@ -1224,6 +1227,18 @@ bool EventSupervisor::IsEventActive(uint32 event_id) const {
 		}
 	}
 	return false;
+}
+
+
+
+uint32 EventSupervisor::TimesEventStarted(uint32 event_id) const {
+	map<uint32, uint32>::const_iterator i = _event_history.find(event_id);
+
+	if (i == _event_history.end()) {
+		return 0;
+	}
+	else
+		return i->second;
 }
 
 
