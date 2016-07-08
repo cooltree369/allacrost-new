@@ -162,6 +162,12 @@ public:
 	bool IsMoving() const
 		{ return moving; }
 
+	/** \brief Used to check if a sprite is facing in a particular direction
+	*** \param check_direction The direction to check. Should be one of the following four directional constants: NORTH, SOUTH, EAST, WEST
+	*** \return True if the sprite is facing the direction being checked
+	**/
+	bool IsFacingDirection(uint16 check_direction) const;
+
 	uint16 GetDirection() const
 		{ return direction; }
 

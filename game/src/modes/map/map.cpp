@@ -304,8 +304,9 @@ void MapMode::Update() {
 	_context_transition_timer.Update();
 
 	// ---------- (4) Call the map script's update function
-	if (_update_function)
-		ScriptCallFunction<void>(_update_function);
+	if (_update_function) {
+		_map_script.ExecuteFunction(_update_function);
+	}
 
 	// TODO: the code only supports color context transitions right now, not blended. Support for blended transitions needs to be added
 	// later

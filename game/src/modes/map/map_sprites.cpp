@@ -132,6 +132,28 @@ void VirtualSprite::Update() {
 
 
 
+bool VirtualSprite::IsFacingDirection(uint16 check_direction) const {
+	switch (check_direction) {
+		case NORTH:
+			return (direction & FACING_NORTH);
+			break;
+		case SOUTH:
+			return (direction & FACING_SOUTH);
+			break;
+		case EAST:
+			return (direction & FACING_EAST);
+			break;
+		case WEST:
+			return (direction & FACING_WEST);
+			break;
+		default:
+			IF_PRINT_WARNING(MAP_DEBUG) << "function received invalid argument: " << check_direction << endl;
+			return false;
+	}
+}
+
+
+
 void VirtualSprite::SetDirection(uint16 dir) {
 	// Nothing complicated needed for lateral directions
 	if (dir & (NORTH | SOUTH | EAST | WEST)) {

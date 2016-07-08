@@ -25,6 +25,12 @@ function IfPrintDebug(debug, message)
 end
 
 
+-- A utility function which converts any number to an integer
+--     value: A numeric value to round to an integer. May be positive or negative
+function RoundToInteger(value)
+	return value >= 0 and math.floor(value + 0.5) or math.ceil(value - 0.5);
+end
+
 
 -- Begins a new game. Called from boot mode to begin
 function NewGame()
@@ -44,7 +50,7 @@ function NewGame()
 	GlobalManager:SetLocation(location_name);
 	local opening_map = hoa_map.MapMode(location_name);
 
-	ModeManager:Pop();	
+	ModeManager:Pop();
 	ModeManager:Push(opening_map);
 end
 
@@ -58,7 +64,7 @@ function LoadNewMap(map_name)
 end
 
 
--- 
+--
 function LoadNewShop(...)
 	local i, v, item;
 	local shop = hoa_shop.ShopMode();
