@@ -80,6 +80,7 @@ void BindModeCode() {
 			.def("AddZone", &MapMode::AddZone, adopt(_2))
 			.def("SetCamera", (void(MapMode::*)(private_map::VirtualSprite*))&MapMode::SetCamera)
 			.def("SetCamera", (void(MapMode::*)(private_map::VirtualSprite*, uint32))&MapMode::SetCamera)
+			.def("GetPlayerSprite", &MapMode::GetPlayerSprite)
 			.def("SetPlayerSprite", &MapMode::SetPlayerSprite)
 			.def("MoveVirtualFocus", (void(MapMode::*)(uint16, uint16))&MapMode::MoveVirtualFocus)
 			.def("MoveVirtualFocus", (void(MapMode::*)(uint16, uint16, uint32))&MapMode::MoveVirtualFocus)
@@ -249,6 +250,7 @@ void BindModeCode() {
 			.def("SetMoving", &VirtualSprite::SetMoving)
 			.def("SetDirection", &VirtualSprite::SetDirection)
 			.def("SetMovementSpeed", &VirtualSprite::SetMovementSpeed)
+			.def("IsFacingDirection", &VirtualSprite::IsFacingDirection)
 			.def("IsMoving", &VirtualSprite::IsMoving)
 			.def("GetDirection", &VirtualSprite::GetDirection)
 			.def("GetMovementSpeed", &VirtualSprite::GetMovementSpeed),

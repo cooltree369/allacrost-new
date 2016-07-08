@@ -108,38 +108,6 @@ end -- Load(m)
 
 
 
-function Update()
-	--[[ Uncomment this block to see notifications printed to the screen
-	if (NotificationManager:GetNotificationCount() > 0) then
-		NotificationManager:DEBUG_PrintNotificationEvents();
-	end
-	--]]
-
-	local index = 0;
-	local notification = {};
-	while (true) do
-		notification = NotificationManager:GetNotificationEvent(index);
-		if (notification == nil) then
-			break;
-		elseif (notification.category == "map" and notification.event == "collision") then
-			if (notification.sprite:GetContext() == contexts["exterior"] and notification.x_position > 80 and notification.x_position < 84) then
-				-- y_position = 179
-				AudioManager:PlaySound("snd/door_locked.ogg");
-			end
-		end
-
-		index = index + 1;
-	end
-end
-
-
-
-function Draw()
-	Map:DrawMapLayers();
-end
-
-
-
 function DEBUG_Load()
 	-- Skip introductory scene and dialogue so player has immediate control
 	if (DEBUG_LOAD_STATE == 1) then
@@ -217,6 +185,7 @@ function CreateSprites()
 	sprites["claudius"]:SetContext(contexts["exterior"]);
 	sprites["claudius"]:SetDirection(hoa_map.MapMode.NORTH);
 	ObjectManager:AddObject(sprites["claudius"]);
+	Map:SetPlayerSprite(sprites["claudius"]);
 
 	sprites["mark"] = ConstructSprite("Knight01", 2, entrance_x + 2, entrance_y - 2);
 	sprites["mark"]:SetContext(contexts["exterior"]);
@@ -408,10 +377,104 @@ function CreateEvents()
 
 end -- function CreateEvents()
 
+
+
+function Update()
+	--[[ Uncomment this block to see notifications printed to the screen
+	if (NotificationManager:GetNotificationCount() > 0) then
+		NotificationManager:DEBUG_PrintNotificationEvents();
+	end
+	--]]
+
+	local index = 0;
+	local notification = {};
+	while (true) do
+		notification = NotificationManager:GetNotificationEvent(index);
+		if (notification == nil) then
+			break;
+		elseif (notification.category == "map" and notification.event == "collision") then
+			HandleCollisionNotification(notification);
+		end
+
+		index = index + 1;
+	end
+end
+
+
+-- Processes collision notifications and takes appropriate action depending on the type and location of the collision
+function HandleCollisionNotification(notification)
+	-- We're only concerned with collisions by the player sprite for this map
+	local sprite = notification.sprite;
+	if (sprite:GetObjectID() ~= Map:GetPlayerSprite():GetObjectID()) then -- TODO: Why does this produce a luabind run-time error?
+		return;
+	elseif (notification.collision_type == hoa_map.MapMode.OBJECT_COLLISION) then
+		-- TODO: we may want to use this collision type to detect of the object was an enemy and start a battle if so
+		return;
+	end
+
+	-- Determine the positions of each side of the sprite's collision rectangle
+	local x_left = RoundToInteger(notification.x_position + notification.x_offset - sprite:GetCollHalfWidth());
+	local x_right = RoundToInteger(notification.x_position + notification.x_offset + sprite:GetCollHalfWidth());
+	local y_top = RoundToInteger(notification.y_position + notification.y_offset - sprite:GetCollHeight());
+	local y_bottom = RoundToInteger(notification.y_position + notification.y_offset);
+	-- Collisions should now be checked to see if they play a "locked door" sound, or start a context switch
+	if (sprite:GetContext() == contexts["exterior"]) then
+		if (sprite:IsFacingDirection(hoa_map.MapMode.NORTH)) then
+			-- There are a lot of south-facing doors, some which are locked (play a sound) and others which need to trigger a context switch
+			-- The list below are the coordinates for every reachable door, starting from the top left of the map and going across and down
+			-- Castle doors
+			if (notification.x_position > 72 and notification.x_position < 76 and y_top == 70) then
+				-- TODO: context switch instead
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			elseif (notification.x_position > 96 and notification.x_position < 100 and y_top == 60) then
+				-- TODO: context switch instead
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			-- City top row doors
+			elseif (notification.x_position > 12 and notification.x_position < 16 and y_top == 120) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			elseif (notification.x_position > 50 and notification.x_position < 54 and y_top == 124) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			elseif (notification.x_position > 116 and notification.x_position < 120 and y_top == 124) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			elseif (notification.x_position > 140 and notification.x_position < 144 and y_top == 120) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			elseif (notification.x_position > 168 and notification.x_position < 172 and y_top == 122) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			-- City middle row doors
+			elseif (notification.x_position > 20 and notification.x_position < 24 and y_top == 150) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			elseif (notification.x_position > 48 and notification.x_position < 52 and y_top == 148) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			elseif (notification.x_position > 78 and notification.x_position < 82 and y_top == 150) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			elseif (notification.x_position > 148 and notification.x_position < 152 and y_top == 152) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			elseif (notification.x_position > 178 and notification.x_position < 182 and y_top == 146) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			-- City bottom row doors
+			elseif (notification.x_position > 22 and notification.x_position < 26 and y_top == 174) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			elseif (notification.x_position > 48 and notification.x_position < 52 and y_top == 178) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			elseif (notification.x_position > 80 and notification.x_position < 84 and y_top == 178) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			elseif (notification.x_position > 116 and notification.x_position < 120 and y_top == 180) then
+				AudioManager:PlaySound("snd/door_locked.ogg");
+			end
+		end
+	end
+end
+
+
+
+function Draw()
+	Map:DrawMapLayers();
+end
+
+
 ----------------------------------------------------------------------------
 ---------- Event Functions
 ----------------------------------------------------------------------------
-
 
 -- Move camera to just below the right staircase leading to the castle for the start of the scene
 functions["StartIntroScene"] = function()
