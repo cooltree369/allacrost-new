@@ -41,6 +41,7 @@ objects = {};
 sprites = {};
 dialogues = {};
 events = {};
+sounds = {};
 
 -- All custom map functions are contained within the following table.
 -- String keys in this table serves as the names of these functions.
@@ -79,6 +80,10 @@ function Load(m)
 	CreateEnemies();
 	CreateDialogues();
 	CreateEvents();
+
+	-- Audio: load sounds
+	sounds["door_locked"] = hoa_audio.SoundDescriptor();
+	sounds["door_locked"]:LoadAudio("snd/door_locked.ogg");
 
 	-- Visuals: night lightning
 	VideoManager:EnableLightOverlay(hoa_video.Color(0.0, 0.0, 0.3, 0.6));
@@ -430,6 +435,7 @@ function HandleCollisionNotification(notification)
 		if (sprite:IsFacingDirection(hoa_map.MapMode.NORTH)) then
 			-- There are a lot of south-facing doors, some which are locked (play a sound) and others which need to trigger a context switch
 			-- The list below are the coordinates for every reachable door, starting from the top left of the map and going across and down
+			-- TODO: there's probably a better/faster way to do this position checking (a lookup table?). For now this solution works fine though
 			-- Castle doors
 			if (notification.x_position > 72 and notification.x_position < 76 and y_top == 70) then
 				-- TODO: context switch instead
@@ -473,9 +479,14 @@ function HandleCollisionNotification(notification)
 	end
 
 	if (locked_door_collision) then
-		AudioManager:PlaySound("snd/door_locked.ogg");
+		-- Prevent playing the sound multiple times concurrently if the player keeps colliding with a locked door
+		if (sounds["door_locked"]:IsPlaying() == false) then
+			sounds["door_locked"]:Play();
+		end
 		if (EventManager:TimesEventStarted(event_chains["locked_door"]) == 0) then
-			EventManager:StartEvent(event_chains["locked_door"], 50);
+			-- TODO: want to add a 50ms delay before starting the event here, but doing so
+			-- somehow causes the user to be unable to exit the dialogue that the event starts
+			EventManager:StartEvent(event_chains["locked_door"]);
 		end
 	end
 end
