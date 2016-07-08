@@ -286,7 +286,12 @@ function CreateDialogues()
 		text = hoa_system.Translate("The rest of us will repel these demons! Now go! Defend our people and our homes!");
 		dialogue:AddLine(text, sprites["captain"]:GetObjectID());
 
-	event_dialogues["demon_spawn"] = 1001;
+	event_dialogues["locked_door"] = 1001;
+	dialogue = hoa_map.MapDialogue.Create(event_dialogues["locked_door"]);
+		text = hoa_system.Translate("With all the chaos going on out here, all the citizens have surely locked themselves in their homes. Stop wasting time and head for the castle.");
+		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
+
+	event_dialogues["demon_spawn"] = 1002;
 	dialogue = hoa_map.MapDialogue.Create(event_dialogues["demon_spawn"]);
 		text = hoa_system.Translate("I don't believe what I just saw.");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
@@ -297,7 +302,7 @@ function CreateDialogues()
 		text = hoa_system.Translate("Here it comes!");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 
-	event_dialogues["save_citizen"] = 1002;
+	event_dialogues["save_citizen"] = 1003;
 	dialogue = hoa_map.MapDialogue.Create(event_dialogues["save_citizen"]);
 		text = hoa_system.Translate("Where are you going, Claudius? That's not the way to the castle.");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
@@ -318,7 +323,7 @@ function CreateDialogues()
 		text = hoa_system.Translate("We need to stick together. Let's just buy them enough time to escape.");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 
-	event_dialogues["citizen_escapes"] = 1003;
+	event_dialogues["citizen_escapes"] = 1004;
 	dialogue = hoa_map.MapDialogue.Create(event_dialogues["citizen_escapes"]);
 		text = hoa_system.Translate("Th, thank you sirs!");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID()); -- TODO: change to citizen NPC sprite
@@ -373,8 +378,9 @@ function CreateEvents()
 
 	----------------------------------------------------------------------------
 	---------- Miscellaneous Events
-	----------------------------------------------------------------------------
-
+	---------------------------------------------------------------------------
+	event_chains["locked_door"] = 1000;
+	event = hoa_map.DialogueEvent.Create(event_chains["locked_door"], event_dialogues["locked_door"]);
 end -- function CreateEvents()
 
 
@@ -417,6 +423,8 @@ function HandleCollisionNotification(notification)
 	local x_right = RoundToInteger(notification.x_position + notification.x_offset + sprite:GetCollHalfWidth());
 	local y_top = RoundToInteger(notification.y_position + notification.y_offset - sprite:GetCollHeight());
 	local y_bottom = RoundToInteger(notification.y_position + notification.y_offset);
+
+	local locked_door_collision = false;
 	-- Collisions should now be checked to see if they play a "locked door" sound, or start a context switch
 	if (sprite:GetContext() == contexts["exterior"]) then
 		if (sprite:IsFacingDirection(hoa_map.MapMode.NORTH)) then
@@ -425,42 +433,49 @@ function HandleCollisionNotification(notification)
 			-- Castle doors
 			if (notification.x_position > 72 and notification.x_position < 76 and y_top == 70) then
 				-- TODO: context switch instead
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			elseif (notification.x_position > 96 and notification.x_position < 100 and y_top == 60) then
 				-- TODO: context switch instead
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			-- City top row doors
 			elseif (notification.x_position > 12 and notification.x_position < 16 and y_top == 120) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			elseif (notification.x_position > 50 and notification.x_position < 54 and y_top == 124) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			elseif (notification.x_position > 116 and notification.x_position < 120 and y_top == 124) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			elseif (notification.x_position > 140 and notification.x_position < 144 and y_top == 120) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			elseif (notification.x_position > 168 and notification.x_position < 172 and y_top == 122) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			-- City middle row doors
 			elseif (notification.x_position > 20 and notification.x_position < 24 and y_top == 150) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			elseif (notification.x_position > 48 and notification.x_position < 52 and y_top == 148) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			elseif (notification.x_position > 78 and notification.x_position < 82 and y_top == 150) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			elseif (notification.x_position > 148 and notification.x_position < 152 and y_top == 152) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			elseif (notification.x_position > 178 and notification.x_position < 182 and y_top == 146) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			-- City bottom row doors
 			elseif (notification.x_position > 22 and notification.x_position < 26 and y_top == 174) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			elseif (notification.x_position > 48 and notification.x_position < 52 and y_top == 178) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			elseif (notification.x_position > 80 and notification.x_position < 84 and y_top == 178) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			elseif (notification.x_position > 116 and notification.x_position < 120 and y_top == 180) then
-				AudioManager:PlaySound("snd/door_locked.ogg");
+				locked_door_collision = true;
 			end
+		end
+	end
+
+	if (locked_door_collision) then
+		AudioManager:PlaySound("snd/door_locked.ogg");
+		if (EventManager:TimesEventStarted(event_chains["locked_door"]) == 0) then
+			EventManager:StartEvent(event_chains["locked_door"], 50);
 		end
 	end
 end

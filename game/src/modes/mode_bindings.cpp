@@ -389,6 +389,7 @@ void BindModeCode() {
 			.def("StartEvent", (void(EventSupervisor::*)(MapEvent*, uint32))&EventSupervisor::StartEvent)
 			.def("TerminateEvent", &EventSupervisor::TerminateEvent)
 			.def("IsEventActive", &EventSupervisor::IsEventActive)
+			.def("TimesEventStarted", &EventSupervisor::TimesEventStarted)
 			.def("HasActiveEvent", &EventSupervisor::HasActiveEvent)
 			.def("HasLaunchEvent", &EventSupervisor::HasLaunchEvent)
 			.def("GetEvent", &EventSupervisor::GetEvent),
