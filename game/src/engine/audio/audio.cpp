@@ -176,37 +176,39 @@ AudioEngine::~AudioEngine() {
 	// We shouldn't have any descriptors registered now -- check that this is true
 	if (_registered_sounds.empty() == false) {
 		IF_PRINT_WARNING(AUDIO_DEBUG) << _registered_sounds.size() << " SoundDescriptor objects were still "
-			"registered when destructor was invoked. The objects will now be freed." << endl;
+			"registered when destructor was invoked." << endl;
 
-		for (list<SoundDescriptor*>::iterator i = _registered_sounds.begin(); i != _registered_sounds.end(); ++i) {
-			string filename = (*i)->GetFilename();
+		// SoundDescriptor objects remove themselves from _registered_sounds in their destructor. So to go through all the registered sounds,
+		// we have to continually grab the first one in the list and delete it, rather than iterating through the list directly.
+		while (_registered_sounds.empty() == false) {
+			list<SoundDescriptor*>::iterator sound = _registered_sounds.begin();
+			string filename = (*sound)->GetFilename();
 			if (filename.empty() == false) {
 				IF_PRINT_WARNING(AUDIO_DEBUG) << "Freeing sound file that was never unloaded: " << filename << endl;
 			}
 			else {
 				IF_PRINT_WARNING(AUDIO_DEBUG) << "Freeing sound file that was never unloaded. Sound did not have an associated filename." << endl;
 			}
-			// TODO: the following delete sometimes causes a seg fault. Investigation is needed because this should not happen here
-			delete *i;
+			delete *sound;
 		}
-		_registered_sounds.clear();
 	}
 	if (_registered_music.empty() == false) {
 		IF_PRINT_WARNING(AUDIO_DEBUG) << _registered_music.size() << " MusicDescriptor objects were still "
-			"registered when destructor was invoked. The objects will now be freed." << endl;
+			"registered when destructor was invoked." << endl;
 
-		for (list<MusicDescriptor*>::iterator i = _registered_music.begin(); i != _registered_music.end(); ++i) {
-			string filename = (*i)->GetFilename();
+		// MusicDescriptor objects remove themselves from _registered_music in their destructor. So to go through all the registered music,
+		// we have to continually grab the first one in the list and delete it, rather than iterating through the list directly.
+		while (_registered_music.empty() == false) {
+			list<MusicDescriptor*>::iterator music = _registered_music.begin();
+			string filename = (*music)->GetFilename();
 			if (filename.empty() == false) {
 				IF_PRINT_WARNING(AUDIO_DEBUG) << "Freeing music file that was never unloaded: " << filename << endl;
 			}
 			else {
-				IF_PRINT_WARNING(AUDIO_DEBUG) << "Freeing sound file that was never unloaded. Sound did not have an associated filename." << endl;
+				IF_PRINT_WARNING(AUDIO_DEBUG) << "Freeing music file that was never unloaded. Music did not have an associated filename." << endl;
 			}
-			// TODO: the following delete sometimes causes a seg fault. Investigation is needed because this should not happen here
-			delete *i;
+			delete *music;
 		}
-		_registered_music.clear();
 	}
 
 	alcMakeContextCurrent(0);

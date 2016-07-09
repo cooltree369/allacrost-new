@@ -91,6 +91,9 @@ void QuitAllacrost() {
 	// Delete the global manager second to remove all object references corresponding to other engine subsystems
 	GameGlobal::SingletonDestroy();
 
+	// Destroy the script engine first to free all Luabind objects must be freed before closing the lua state.
+	ScriptEngine::SingletonDestroy();
+
 	// Delete all of the reamining independent engine components
 	GUISystem::SingletonDestroy();
 	AudioEngine::SingletonDestroy();
@@ -98,8 +101,6 @@ void QuitAllacrost() {
 	NotificationEngine::SingletonDestroy();
 	SystemEngine::SingletonDestroy();
 	VideoEngine::SingletonDestroy();
-	// Destroy the script engine last because all Luabind objects must be freed before closing the lua state.
-	ScriptEngine::SingletonDestroy();
 } // void QuitAllacrost()
 
 /** \brief Reads in all of the saved game settings and sets values in the according game manager classes
