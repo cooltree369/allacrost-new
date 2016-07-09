@@ -310,7 +310,7 @@ void VirtualSprite::_ResolveCollision(COLLISION_TYPE coll_type, MapObject* coll_
 		}
 
 		// If these two conditions are true, begin the battle
-		if (enemy != NULL && (enemy->IsStateActive() || enemy->IsStateActiveZoned()) && MapMode::CurrentInstance()->AttackAllowed()) {
+		if (enemy != NULL && enemy->NumberEnemyParties() != 0 && (enemy->IsStateActive() || enemy->IsStateActiveZoned()) && MapMode::CurrentInstance()->AttackAllowed()) {
 			enemy->ChangeStateInactive();
 
 			BattleMode *BM = new BattleMode();

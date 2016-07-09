@@ -204,7 +204,7 @@ function CreateSprites()
 	sprites["lukar"]:SetName(hoa_system.Translate("Lukar"));
 	ObjectManager:AddObject(sprites["lukar"]);
 
-	-- Create the captain and the NPCs fighting the battle straight ahead of the city entrance
+	-- Create the captain, NPCs, and enemies fighting the battle straight ahead of the city entrance
 	-- Coordinates for NPC battle that lies straight ahead on the road after entering the town
 	sprites["captain"] = ConstructSprite("Knight06", 10, 98, 180);
 	sprites["captain"]:SetContext(contexts["exterior"]);
@@ -221,6 +221,12 @@ function CreateSprites()
 	sprites["knight02"]:SetContext(contexts["exterior"]);
 	sprites["knight02"]:SetDirection(hoa_map.MapMode.NORTH);
 	ObjectManager:AddObject(sprites["knight02"]);
+
+	sprites["enemy_entrance01"] = ConstructEnemySprite("scorpion", 13, 98, 177);
+	sprites["enemy_entrance01"]:SetContext(contexts["exterior"]);
+	sprites["enemy_entrance01"]:SetDirection(hoa_map.MapMode.SOUTH);
+	sprites["enemy_entrance01"]:ChangeStateActive();
+	ObjectManager:AddObject(sprites["enemy_entrance01"]);
 
 	-- Create the senior knight and others fighting near the inn
 	-- Coordinates for NPC battle that lies near the entrance to the inn
@@ -298,9 +304,11 @@ function CreateDialogues()
 
 	event_dialogues["demon_spawn"] = 1002;
 	dialogue = hoa_map.MapDialogue.Create(event_dialogues["demon_spawn"]);
+		text = hoa_system.Translate("...!");
+		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
 		text = hoa_system.Translate("I don't believe what I just saw.");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
-		text = hoa_system.Translate("That demon...just emerged from the shadows..?");
+		text = hoa_system.Translate("That demon...just emerged from the shadow..?");
 		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
 		text = hoa_system.Translate("Well that's just great! How the hell are we supposed to stop an invasion that comes through shadows?");
 		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
