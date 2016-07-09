@@ -430,11 +430,11 @@ class EnemySprite : public MapSprite {
 private:
 	//! \brief The possible states that the enemy sprite may be in
 	enum STATE {
-		SPAWN,       //<! Enemy is in the process of "fading in"
-		ACTIVE,      //<! Enemy is fully visible and active. Behaves like a standard map sprite, even if inside a zone.
+		SPAWN,        //<! Enemy is in the process of "fading in"
+		ACTIVE,       //<! Enemy is fully visible and active. Behaves like a standard map sprite, even if inside a zone.
 		ACTIVE_ZONED, //<! Enemy has completed spawning and is being controlled by an EnemyZone
-		INACTIVE,    //<! Enemy is in a "dead" state, waiting to be spawned or made active by a zone or script call
-		DISSIPATE    //<! Enemy is in the process of disappearing, either due to death or a retreat
+		INACTIVE,     //<! Enemy is in a "dead" state, waiting to be spawned or made active by a zone or script call
+		DISSIPATE     //<! Enemy is in the process of disappearing, either due to death or a retreat
 	};
 
 public:
@@ -462,8 +462,12 @@ public:
 	**/
 	void AddEnemy(uint32 enemy_id);
 
-	//! \brief Returns a reference to a random party of enemies
+	//! \brief Returns a reference to a random battle party of enemies
 	const std::vector<uint32>& RetrieveRandomParty();
+
+	//! \brief Returns the number of enemy battle parties that have been defined
+	uint32 NumberEnemyParties() const
+		{ return _enemy_parties.size(); }
 
 	void ChangeStateSpawn()
 		{ updatable = true; no_collision = false; _state = SPAWN; _state_timer.Initialize(_fade_time); _state_timer.Run(); _fade_color.SetAlpha(0.0f); }
