@@ -122,6 +122,77 @@ void MapObject::CheckPositionOffsets() {
 }
 
 
+void MapObject::ModifyPosition(int16 x, float x_offset, int16 y, float y_offset) {
+	ModifyXPosition(x, x_offset);
+	ModifyYPosition(y, y_offset);
+}
+
+
+
+void MapObject::ModifyXPosition(int16 x, float offset) {
+	// Make sure we aren't going to do an interger overflow
+	if (x < 0 && abs(x) > x_position) {
+		x_position = 0;
+		IF_PRINT_WARNING(MAP_DEBUG) << "tried to set x position to negative value: " << x << ", " << offset << endl;
+	}
+	else {
+		x_position += x;
+	}
+
+	// Adjust the offset and x_position if the offset becomes negative or >= 1.0f
+	if (IsFloatEqual(offset, 0.0f)) {
+		return;
+	}
+	else {
+		x_offset += offset;
+		while (x_offset < 0.0f) {
+			if (x_position == 0) {
+				IF_PRINT_WARNING(MAP_DEBUG) << "tried to set x position to negative value: " << x << ", " << offset << endl;
+				break;
+			}
+			x_position -= 1;
+			x_offset += 1.0f;
+		}
+		while (x_offset > 1.0f) {
+			x_position += 1;
+			x_offset -= 1.0f;
+		}
+	}
+}
+
+
+void MapObject::ModifyYPosition(int16 y, float offset) {
+	// Make sure we aren't going to do an interger overflow
+	if (y < 0 && abs(y) > y_position) {
+		y_position = 0;
+		IF_PRINT_WARNING(MAP_DEBUG) << "tried to set y position to negative value: " << y << ", " << offset << endl;
+	}
+	else {
+		y_position += y;
+	}
+
+	// Adjust the offset and x_position if the offset becomes negative or >= 1.0f
+	if (IsFloatEqual(offset, 0.0f)) {
+		return;
+	}
+	else {
+		y_offset += offset;
+		while (y_offset < 0.0f) {
+			if (y_position == 0) {
+				IF_PRINT_WARNING(MAP_DEBUG) << "tried to set y position to negative value: " << y << ", " << offset << endl;
+				break;
+			}
+			y_position -= 1;
+			y_offset += 1.0f;
+		}
+		while (y_offset > 1.0f) {
+			y_position += 1;
+			y_offset -= 1.0f;
+		}
+	}
+}
+
+
 
 void MapObject::GetCollisionRectangle(MapRectangle& rect) const {
 	float x_pos = static_cast<float>(x_position) + x_offset;

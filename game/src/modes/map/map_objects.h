@@ -183,6 +183,37 @@ public:
 		{ return (static_cast<float>(y_position) + y_offset); }
 	//@}
 
+	/** \brief Modifies the object's position by adding or subtracting numbers from the coordinates
+	*** \param x The amount to move the x position by. Negative moves left, positive moves right
+	*** \param x_offset The amount to modify the x offset by (seldom used, so pass 0 here)
+	*** \param y The amount to move the y position by. Negative moves up, positive moves down
+	*** \param x_offset The amount to modify the y offset by (seldom used, so pass 0 here)
+	***
+	*** \note If the offset modifiers cause the offset to become < 0 or >= 1.0, the corresponding
+	*** x or y positions with be changed accordingly so the offset falls between [0, 1.0)
+	**/
+	void ModifyPosition(int16 x, float x_offset, int16 y, float y_offset);
+
+	/** \brief Modifies the object's x position by adding or subtracting numbers from the coordinates
+	*** \param x The amount to move the x position by. Negative moves left, positive moves right
+	*** \param x_offset The amount to modify the x offset by (seldom used, so pass 0 here)
+
+	***
+	*** \note If the offset modifier cause the x offset to become < 0 or >= 1.0, the corresponding
+	*** x position with be changed accordingly so the offset falls between [0, 1.0)
+	**/
+	void ModifyXPosition(int16 x, float offset);
+
+	/** \brief Modifies the object's y position by adding or subtracting numbers from the coordinates
+	*** \param y The amount to move the y position by. Negative moves up, positive moves down
+	*** \param y_offset The amount to modify the y offset by (seldom used, so pass 0 here)
+
+	***
+	*** \note If the offset modifier cause the y offset to become < 0 or >= 1.0, the corresponding
+	*** y position with be changed accordingly so the offset falls between [0, 1.0)
+	**/
+	void ModifyYPosition(int16 y, float offset);
+
 	//! \brief Retrieves the object type identifier
 	MAP_OBJECT_TYPE GetObjectType() const
 		{ return _object_type; }

@@ -206,6 +206,9 @@ void BindModeCode() {
 			.def("MoveObjectToLayer", &ObjectSupervisor::MoveObjectToLayer),
 
 		class_<MapObject>("MapObject")
+			.def("ModifyPosition", &MapObject::ModifyPosition)
+			.def("ModifyXPosition", &MapObject::ModifyXPosition)
+			.def("ModifyYPosition", &MapObject::ModifyYPosition)
 			.def("SetObjectID", &MapObject::SetObjectID)
 			.def("SetContext", &MapObject::SetContext)
 			.def("SetPosition", &MapObject::SetPosition)
