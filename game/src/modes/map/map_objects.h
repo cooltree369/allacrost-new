@@ -214,6 +214,13 @@ public:
 	**/
 	void ModifyYPosition(int16 y, float offset);
 
+	/** \brief Sets the position of this object to the position of another object
+	*** \param object The object to copy the position members from
+	*** \param change_context If true, the context of the object will be set to that of the other object as well
+	*** \note This does no collision detection
+	**/
+	void MoveToObject(MapObject* object, bool change_context);
+
 	//! \brief Retrieves the object type identifier
 	MAP_OBJECT_TYPE GetObjectType() const
 		{ return _object_type; }
@@ -248,7 +255,7 @@ public:
 	void SetContext(MAP_CONTEXT ctxt)
 		{ context = ctxt; }
 
-	// TODO: need to have input arguments be floats, and then seperate the values into integer and offset components
+	// TODO: add x/y offsets as arguments
 	void SetPosition(uint16 x, uint16 y)
 		{ x_position = x; x_offset = 0.0f; y_position = y; y_offset = 0.0f; }
 
