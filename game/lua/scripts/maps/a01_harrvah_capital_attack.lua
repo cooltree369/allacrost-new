@@ -578,7 +578,9 @@ function SpriteContextTransition(transition_key, sprite)
 	local new_context;
 
 	sprite:SetMoving(false);
-	-- TODO: Set virtual focus to sprite's location, then begin animation of camera movement to new location
+	-- Set the virtual focus to the sprite's original location.
+	Map:GetVirtualFocus():MoveToObject(sprite, true);
+	Map:SetCamera(Map:GetVirtualFocus());
 
 	if (transition_key == "enter_lcastle_side") then
 		new_context = contexts["interior_b"];
@@ -605,6 +607,8 @@ function SpriteContextTransition(transition_key, sprite)
 
 	sprite:SetContext(new_context);
 	Map:ContextTransitionBlackColor(new_context, transition_time);
+	-- Animate the camera moving to the sprite's new location
+	Map:SetCamera(sprite, transition_time);
 	-- Prevent player from controlling sprite until transition completes
 	Map:PushState(hoa_map.MapMode.STATE_SCENE);
 	EventManager:StartEvent(event_chains["pop_state"], transition_time);

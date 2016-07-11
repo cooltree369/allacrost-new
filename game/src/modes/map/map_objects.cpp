@@ -194,6 +194,17 @@ void MapObject::ModifyYPosition(int16 y, float offset) {
 
 
 
+void MapObject::MoveToObject(MapObject* object, bool change_context) {
+	x_position = object->x_position;
+	x_offset = object->x_offset;
+	y_position = object->y_position;
+	y_offset = object->y_offset;
+	if (change_context)
+		context = object->context;
+}
+
+
+
 void MapObject::GetCollisionRectangle(MapRectangle& rect) const {
 	float x_pos = static_cast<float>(x_position) + x_offset;
 	float y_pos = static_cast<float>(y_position) + y_offset;
