@@ -347,7 +347,7 @@ void Editor::_CreateActions() {
 	_tool_action_group->addAction(_tool_area_fill_action);
 	_tool_action_group->addAction(_tool_area_clear_action);
 	_tool_action_group->addAction(_tool_area_inherit_action);
-	_tool_paint_action->setChecked(true);
+	_tool_area_select_action->setChecked(true);
 
 	// Create actions found in the Help menu
 	_help_action = new QAction("&Help", this);
@@ -448,7 +448,7 @@ void Editor::_ClearEditorState() {
 	_map_view->SetGridVisible(false);
 	_map_view->SetMissingOverlayVisible(false);
 	_map_view->SetInheritedOverlayVisible(false);
-	_map_view->SetEditMode(PAINT_MODE);
+	_map_view->SetEditMode(SELECT_AREA_MODE);
 
 	_view_grid_action->setChecked(false);
 	_view_missing_action->setChecked(false);
