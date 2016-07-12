@@ -49,9 +49,13 @@ MapView::MapView(QWidget* parent, MapData* data) :
 	_cursor_tile_y(-1),
 	_press_tile_x(-1),
 	_press_tile_y(-1),
-	_edit_mode(PAINT_MODE),
+	_edit_mode(SELECT_AREA_MODE),
 	_preview_layer(data->GetMapLength(), data->GetMapHeight()),
 	_selection_area(data->GetMapLength(), data->GetMapHeight()),
+	_selection_area_left(data->GetMapLength()),
+	_selection_area_right(0),
+	_selection_area_top(data->GetMapHeight()),
+	_selection_area_bottom(0),
 	_right_click_menu(NULL),
 	_insert_menu(NULL),
 	_delete_menu(NULL),
@@ -203,13 +207,23 @@ void MapView::SetEditMode(EDIT_MODE new_mode) {
 
 
 
+void MapView::SelectNoTiles() {
+	_selection_area.ClearLayer();
+	_selection_area_active = false;
+	_selection_area_left = _map_data->GetMapLength();
+	_selection_area_right = 0;
+	_selection_area_top = _map_data->GetMapHeight();
+	_selection_area_bottom = 0;
+}
+
+
+
 void MapView::UpdateAreaSizes() {
 	_preview_layer.ResizeLayer(_map_data->GetMapLength(), _map_data->GetMapHeight());
 	_preview_layer.ClearLayer();
 
 	_selection_area.ResizeLayer(_map_data->GetMapLength(), _map_data->GetMapHeight());
-	_selection_area.ClearLayer();
-	_selection_area_active = false;
+	SelectNoTiles();
 	_selection_area_press = false;
 }
 
@@ -456,6 +470,8 @@ void MapView::mousePressEvent(QGraphicsSceneMouseEvent* event) {
 			QMessageBox::warning(_graphics_view, "Tile editing mode", "ERROR: Invalid tile editing mode");
 			break;
 	}
+
+	_UpdateStatusBar(event);
 } // void MapView::mousePressEvent(QGraphicsSceneMouseEvent* event)
 
 
@@ -464,15 +480,12 @@ void MapView::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
 	if (_map_data->IsInitialized() == false)
 		return;
 
-	Editor* editor = static_cast<Editor*>(_graphics_view->topLevelWidget());
-
 	int32 mouse_x = event->scenePos().x();
 	int32 mouse_y = event->scenePos().y();
 
 	// Ensure that the coordinates map to a valid tile x and y coordinate
 	if (mouse_x < 0 || (static_cast<uint32>(mouse_x) / TILE_LENGTH) >= _map_data->GetMapLength() ||
 		mouse_y < 0 || (static_cast<uint32>(mouse_y) / TILE_HEIGHT) >= _map_data->GetMapHeight()) {
-		editor->statusBar()->clearMessage(); // Clear any position information since we are outside the map bounds
 		return;
 	}
 
@@ -482,12 +495,7 @@ void MapView::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
 
 	// Don't allow edits to the selected layer if it's not visible
 	if (_map_data->GetSelectedTileLayerProperties()->IsVisible() == false) {
-		// TODO: this is duplicated at the end of the function, figure out a way to reuse this code
-		QString position = QString("Tile: [%1,  %2]").arg(tile_x).arg(tile_y);
-		position.append(QString(" -- Position: [%1,  %2]").arg(event->scenePos().x() * 2 / TILE_LENGTH, 0, 'f', 2)
-			.arg(event->scenePos().y() * 2 / TILE_HEIGHT, 0, 'f', 2));
-		editor->statusBar()->showMessage(position);
-		return;
+		_UpdateStatusBar(event);
 	}
 
 	// Check if the user has moved the cursor over a different tile
@@ -555,12 +563,7 @@ void MapView::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
 		}
 	}
 
-	// Display the mouse position coordinates and the tile that the position corresponds to.
-	// Note that the position coordinates are in units of the collision grid, not the tile grid.
-	QString position = QString("Tile: [%1,  %2]").arg(tile_x).arg(tile_y);
-	position.append(QString(" -- Position: [%1,  %2]").arg(event->scenePos().x() * 2 / TILE_LENGTH, 0, 'f', 2)
-		.arg(event->scenePos().y() * 2 / TILE_HEIGHT, 0, 'f', 2));
-	editor->statusBar()->showMessage(position);
+	_UpdateStatusBar(event);
 } // void MapView::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
 
@@ -623,6 +626,8 @@ void MapView::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
 		default:
 			QMessageBox::warning(_graphics_view, "Tile editing mode", "ERROR: Invalid tile editing mode!");
 	} // switch (_edit_mode)
+
+	_UpdateStatusBar(event);
 } // void MapView::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 
 
@@ -1238,16 +1243,49 @@ void MapView::_SetSelectionArea(uint32 x1, uint32 y1, uint32 x2, uint32 y2) {
 	_selection_area_active = true;
 
 	// When SUBTRACTIVE selection mode is active, we need to examine the entire area to make sure that at least one tile is still selected
+	// We also want to check if we need to update the selection area boundaries, so set them to the ends of the map
 	if (_selection_mode == SUBTRACTIVE) {
+		_selection_area_active = false;
+		_selection_area_left = _selection_area.GetLength();
+		_selection_area_right = 0;
+		_selection_area_top = _selection_area.GetHeight();
+		_selection_area_bottom = 0;
+
 		for (uint32 x = 0; x < _selection_area.GetLength(); ++x) {
 			for (uint32 y = 0; y < _selection_area.GetHeight(); ++y) {
 				if (_selection_area.GetTile(x, y) == SELECTED_TILE) {
-					return;
+					_selection_area_active = true;
+					if (x < _selection_area_left)
+						_selection_area_left = x;
+					if (x > _selection_area_right)
+						_selection_area_right = x;
+					if (y < _selection_area_top)
+						_selection_area_top = y;
+					if (y > _selection_area_bottom)
+						_selection_area_bottom = y;
 				}
 			}
 		}
+	}
+	// Otherwise this is a normal or additive selection mode, and we can simply check if the coordinate arguments are the new min/max values
+	else {
+		if (x1 < _selection_area_left)
+			_selection_area_left = x1;
+		if (x2 < _selection_area_left)
+			_selection_area_left = x2;
+		if (x1 > _selection_area_right)
+			_selection_area_right = x1;
+		if (x2 > _selection_area_right)
+			_selection_area_right = x2;
 
-		_selection_area_active = false;
+		if (y1 < _selection_area_top)
+			_selection_area_top = y1;
+		if (y2 < _selection_area_top)
+			_selection_area_top = y2;
+		if (y1 > _selection_area_bottom)
+			_selection_area_bottom = y1;
+		if (y2 > _selection_area_bottom)
+			_selection_area_bottom = y2;
 	}
 }
 
@@ -1332,6 +1370,31 @@ void MapView::_SelectionToContext(uint32 layer_id, bool copy_or_move) {
 	}
 
 	DrawMap();
+}
+
+
+
+void MapView::_UpdateStatusBar(QGraphicsSceneMouseEvent* event) {
+	Editor* editor = static_cast<Editor*>(_graphics_view->topLevelWidget());
+
+	int32 mouse_x = event->scenePos().x();
+	int32 mouse_y = event->scenePos().y();
+
+	// Determine the tile that maps to the mouse coordinates
+	int32 tile_x = mouse_x / TILE_LENGTH;
+	int32 tile_y = mouse_y / TILE_HEIGHT;
+
+	// Display the mouse position coordinates and the tile that the position corresponds to.
+	// Note that the position coordinates are in units of the collision grid, not the tile grid.
+	QString text = QString("Tile: [%1,  %2]").arg(tile_x).arg(tile_y);
+	text.append(QString(" -- Position: [%1,  %2]").arg(event->scenePos().x() * 2 / TILE_LENGTH, 0, 'f', 2)
+		.arg(event->scenePos().y() * 2 / TILE_HEIGHT, 0, 'f', 2));
+	// If an area of the map is selected, display those dimensions as well
+	if (_selection_area_active == true) {
+		text.append(QString(" -- Selection: [%1/%2, %3/%4]").arg(_selection_area_left).arg(_selection_area_right)
+			.arg(_selection_area_top).arg(_selection_area_bottom));
+	}
+	editor->statusBar()->showMessage(text);
 }
 
 

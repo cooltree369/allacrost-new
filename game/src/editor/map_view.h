@@ -86,8 +86,7 @@ public:
 	//@}
 
 	//! \brief Clears all data from _selection_area by filling it with MISSING_TILE
-	void SelectNoTiles()
-		{ _selection_area.ClearLayer(); _selection_area_active = false; }
+	void SelectNoTiles();
 
 	//! \brief Selects the entire map in the selection area
 	void SelectAllTiles()
@@ -196,6 +195,15 @@ private:
 	*** \note Any map resize operations will clear the selection area before resizing it.
 	**/
 	TileLayer _selection_area;
+
+	/** \brief Tracks the boundaries of the current selection area
+	*** Selection areas are not always rectangular, so these members store the left-most, top-most, etc. tile
+	*** that is currently selected across the entire map.
+	***
+	*** When no selection area is active, left and top are set to the map length and height respectively, while
+	*** right and bottom are set to zero.
+	**/
+	uint32 _selection_area_left, _selection_area_right, _selection_area_top, _selection_area_bottom;
 
 	//! \brief Menus for right-clicks events on the map
 	//@{
@@ -336,6 +344,11 @@ private:
 	*** then all INHERITED_TILE tiles will be converted to MISSING_TILE. A warning message also pops up to inform the user about this condition when it happens.
 	**/
 	void _SelectionToContext(uint32 context_index, bool copy_or_move);
+
+	/** \brief Sets the text in the editor window status bar. Should be called whenever a mouse event occurs
+	*** \param event A pointer to the mouse event that occured. Used to grab the current coorindates of the mouse
+	**/
+	void _UpdateStatusBar(QGraphicsSceneMouseEvent* event);
 
 	//! \brief A helper function to DrawMap() that draws the current selection area when the edit mode is SELECT_AREA
 	void _DrawSelectionArea();
