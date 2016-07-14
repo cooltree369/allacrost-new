@@ -282,6 +282,10 @@ public:
 	bool IsCameraOnPlayerSprite() const
 		{ return (_camera == _player_sprite); }
 
+	//! \brief Returns true if the camera is in the process of moving to a new focus point
+	bool IsCameraMoving() const
+		{ return _camera_timer.IsRunning(); }
+
 	private_map::VirtualSprite* GetPlayerSprite() const
 		{ return _player_sprite; }
 

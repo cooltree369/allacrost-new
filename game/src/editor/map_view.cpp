@@ -1391,8 +1391,9 @@ void MapView::_UpdateStatusBar(QGraphicsSceneMouseEvent* event) {
 		.arg(event->scenePos().y() * 2 / TILE_HEIGHT, 0, 'f', 2));
 	// If an area of the map is selected, display those dimensions as well
 	if (_selection_area_active == true) {
-		text.append(QString(" -- Selection: [%1/%2, %3/%4]").arg(_selection_area_left).arg(_selection_area_right)
-			.arg(_selection_area_top).arg(_selection_area_bottom));
+		// Multiply the bounds by two to convert the coordinates from the tile grid to the collision grid
+		text.append(QString(" -- Selection: [%1/%2, %3/%4]").arg(_selection_area_left * 2).arg(_selection_area_right * 2)
+			.arg(_selection_area_top * 2).arg(_selection_area_bottom * 2));
 	}
 	editor->statusBar()->showMessage(text);
 }

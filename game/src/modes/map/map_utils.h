@@ -254,19 +254,21 @@ enum COLLISION_TYPE {
 //! \brief Identifiers for the similarly named classes of map events
 enum EVENT_TYPE {
 	INVALID_EVENT                   = 0,
-	DIALOGUE_EVENT                  = 1,
-	SHOP_EVENT                      = 2,
-	SOUND_EVENT                     = 3,
-	MAP_TRANSITION_EVENT            = 4,
-	JOIN_PARTY_EVENT                = 5,
-	BATTLE_ENCOUNTER_EVENT          = 6,
-	SCRIPTED_EVENT                  = 7,
-	SCRIPTED_SPRITE_EVENT           = 8,
-	CHANGE_DIRECTION_SPRITE_EVENT   = 9,
-	PATH_MOVE_SPRITE_EVENT          = 10,
-	RANDOM_MOVE_SPRITE_EVENT        = 11,
-	ANIMATE_SPRITE_EVENT            = 12,
-	TOTAL_EVENT                     = 13
+	PUSH_MAP_STATE_EVENT            = 1,
+	POP_MAP_STATE_EVENT             = 2,
+	CAMERA_MOVE_EVENT               = 3,
+	DIALOGUE_EVENT                  = 4,
+	SHOP_EVENT                      = 5,
+	SOUND_EVENT                     = 6,
+	MAP_TRANSITION_EVENT            = 7,
+	BATTLE_ENCOUNTER_EVENT          = 8,
+	SCRIPTED_EVENT                  = 9,
+	SCRIPTED_SPRITE_EVENT           = 10,
+	CHANGE_DIRECTION_SPRITE_EVENT   = 11,
+	PATH_MOVE_SPRITE_EVENT          = 12,
+	RANDOM_MOVE_SPRITE_EVENT        = 13,
+	ANIMATE_SPRITE_EVENT            = 14,
+	TOTAL_EVENT                     = 15
 };
 
 

@@ -123,8 +123,15 @@ function DEBUG_Load()
 		sprites["lukar"]:SetVisible(false);
 		sprites["claudius"]:SetXPosition(98, 0);
 		sprites["claudius"]:SetYPosition(185, 0);
-	-- Move player to just outside the throne room
+	-- Move player to just below the zone that triggers the demon spawn event
 	elseif (DEBUG_LOAD_STATE == 2) then
+		Map:SetCamera(sprites["claudius"]);
+		sprites["mark"]:SetVisible(false);
+		sprites["lukar"]:SetVisible(false);
+		sprites["claudius"]:SetXPosition(5, 0);
+		sprites["claudius"]:SetYPosition(174, 0);
+	-- Move player to just outside the throne room
+	elseif (DEBUG_LOAD_STATE == 3) then
 		Map:SetCamera(sprites["claudius"]);
 		sprites["mark"]:SetVisible(false);
 		sprites["lukar"]:SetVisible(false);
@@ -140,33 +147,31 @@ end
 function CreateZones()
 	IfPrintDebug(DEBUG_PRINT, "Creating zones...");
 
-	---------- Context Zones
--- 	zones["throne_room"] = hoa_map.ContextZone(contexts["exterior"], contexts["interior_a"]);
--- 	zones["throne_room"]:AddSection(96, 100, 60, 61, false);
--- 	zones["throne_room"]:AddSection(96, 100, 61, 62, true);
--- 	Map:AddZone(zones["throne_room"]);
---
--- 	zones["left_tower_entrance"] = hoa_map.ContextZone(contexts["exterior"], contexts["interior_b"]);
--- 	zones["left_tower_entrance"]:AddSection(72, 76, 70, 71, false);
--- 	zones["left_tower_entrance"]:AddSection(72, 76, 71, 72, true);
--- 	Map:AddZone(zones["left_tower_entrance"]);
---
--- 	zones["right_tower_entrance"] = hoa_map.ContextZone(contexts["exterior"], contexts["interior_c"]);
--- 	zones["right_tower_entrance"]:AddSection(120, 124, 70, 71, false);
--- 	zones["right_tower_entrance"]:AddSection(120, 124, 71, 72, true);
--- 	Map:AddZone(zones["right_tower_entrance"]);
---
--- 	zones["left_tower_balcony"] = hoa_map.ContextZone(contexts["exterior"], contexts["interior_b"]);
--- 	zones["left_tower_balcony"]:AddSection(81, 84, 62, 66, false);
--- 	zones["left_tower_balcony"]:AddSection(84, 87, 62, 66, true);
--- --	zones["left_tower_balcony"]:AddSection(84, 85, 62, 66, false);
--- --	zones["left_tower_balcony"]:AddSection(85, 86, 62, 66, true);
--- 	Map:AddZone(zones["left_tower_balcony"]);
---
--- 	zones["right_tower_balcony"] = hoa_map.ContextZone(contexts["exterior"], contexts["interior_c"]);
--- 	zones["right_tower_balcony"]:AddSection(110, 111, 62, 66, true);
--- 	zones["right_tower_balcony"]:AddSection(111, 112, 62, 66, false);
--- 	Map:AddZone(zones["right_tower_balcony"]);
+	-- Bottom-left of map: triggers the scene where the characters observe a demon spawning in from the shadows
+	zones["witness_spawn"] = hoa_map.CameraZone(2, 12, 170, 172, contexts["exterior"]);
+	Map:AddZone(zones["witness_spawn"]);
+
+	-- Mid-right of map: triggers the scene where the player watches a citizen being chased by a demon
+	zones["witness_chase"] = hoa_map.CameraZone(160, 164, 138, 140, contexts["exterior"]);
+	Map:AddZone(zones["witness_chase"]);
+
+	---------- Enemy Spawning Zones
+	-- Zone #01: Bottom left of map
+	zones["enemy01"] = hoa_map.EnemyZone(14, 62, 176, 188);
+	Map:AddZone(zones["enemy01"]);
+
+	-- Zone #02: Left of main road, second row of buildings
+	zones["enemy02"] = hoa_map.EnemyZone(32, 88, 150, 158);
+	Map:AddZone(zones["enemy02"]);
+
+	-- Zone #03: Weapon shop area
+	zones["enemy03"] = hoa_map.EnemyZone(140, 192, 150, 162);
+	Map:AddZone(zones["enemy03"]);
+
+	-- Zone #04: North of park, below left cliff face
+	zones["enemy04"] = hoa_map.EnemyZone(62, 102, 96, 110);
+	Map:AddZone(zones["enemy04"]);
+
 end
 
 
@@ -290,6 +295,12 @@ function CreateSprites()
 	sprites["enemy_07"]:ChangeStateActive();
 	ObjectManager:AddObject(sprites["enemy_07"]);
 
+	-- This enemy spawns in during an event scene, so it is in the initial unspawned state
+	sprites["enemy_spawn"] = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 8, 150);
+	sprites["enemy_spawn"]:SetContext(contexts["exterior"]);
+	sprites["enemy_spawn"]:SetDirection(hoa_map.MapMode.SOUTH);
+	ObjectManager:AddObject(sprites["enemy_spawn"]);
+
 end -- function CreateSprites()
 
 
@@ -324,7 +335,7 @@ function CreateDialogues()
 	----------------------------------------------------------------------------
 	---------- Dialogues triggered by events
 	----------------------------------------------------------------------------
-	event_dialogues["opening"] = 1000;
+	event_dialogues["opening"] = 100;
 	dialogue = hoa_map.MapDialogue.Create(event_dialogues["opening"]);
 		text = hoa_system.Translate("Wh...what the hell is going on? What the hell are they?!");
 		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
@@ -335,46 +346,51 @@ function CreateDialogues()
 		text = hoa_system.Translate("The rest of us will repel these demons! Now go! Defend our people and our homes!");
 		dialogue:AddLine(text, sprites["captain"]:GetObjectID());
 
-	event_dialogues["locked_door"] = 1001;
+	event_dialogues["locked_door"] = 101;
 	dialogue = hoa_map.MapDialogue.Create(event_dialogues["locked_door"]);
 		text = hoa_system.Translate("With all the chaos going on out here, all the citizens have surely locked themselves in their homes. Stop wasting time and head for the castle.");
 		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
 
-	event_dialogues["demon_spawn"] = 1002;
-	dialogue = hoa_map.MapDialogue.Create(event_dialogues["demon_spawn"]);
+	event_dialogues["demon_spawn1"] = 102;
+	dialogue = hoa_map.MapDialogue.Create(event_dialogues["demon_spawn1"]);
 		text = hoa_system.Translate("...!");
 		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
+
+	event_dialogues["demon_spawn2"] = 103;
+	dialogue = hoa_map.MapDialogue.Create(event_dialogues["demon_spawn2"]);
 		text = hoa_system.Translate("I don't believe what I just saw.");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 		text = hoa_system.Translate("That demon...just emerged from the shadow..?");
 		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
-		text = hoa_system.Translate("Well that's just great! How the hell are we supposed to stop an invasion that comes through shadows?");
+		text = hoa_system.Translate("Well, that's just great! How the hell are we supposed to stop an invasion that comes through shadows?");
 		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
 		text = hoa_system.Translate("Here it comes!");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 
-	event_dialogues["save_citizen"] = 1003;
+	event_dialogues["save_citizen"] = 104;
 	dialogue = hoa_map.MapDialogue.Create(event_dialogues["save_citizen"]);
 		text = hoa_system.Translate("Where are you going, Claudius? That's not the way to the castle.");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 		text = hoa_system.Translate("Our orders are to find the king. We don't have time for this!");
 		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
+		text = hoa_system.Translate("I understand that you want to help that citizen. We do as well. But we were given a mission of grave importance. Are you abandoning your duty?");
+		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 		text = hoa_system.Translate("...");
 		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
-		text = hoa_system.Translate("Follow orders and find the king");
+		text = hoa_system.Translate("Follow orders and continue searching for the king.");
 		dialogue:AddOption(text, 3);
-		text = hoa_system.Translate("Ignore orders and help the citizen");
+		text = hoa_system.Translate("Ignore orders and help the cornered citizen.");
 		dialogue:AddOption(text, 4);
-		text = hoa_system.Translate("You're right, we can't help everyone along our way. Lets keep going.");
+		text = hoa_system.Translate("You're right, we can't help everyone along our way. Let's keep going.");
 		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
-		text = hoa_system.Translate("But, I can't just leave them to die!");
+		text = hoa_system.Translate("But, I can't just leave them to die! I'll catch up with you at the castle.");
 		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
 		text = hoa_system.Translate("God dammit rookie!");
 		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
-		text = hoa_system.Translate("We need to stick together. Let's just buy them enough time to escape.");
+		text = hoa_system.Translate("If that's your decision, so be it. Try to catch back up to us. And stay alive.");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 
-	event_dialogues["citizen_escapes"] = 1004;
+	event_dialogues["citizen_escapes"] = 105;
 	dialogue = hoa_map.MapDialogue.Create(event_dialogues["citizen_escapes"]);
 		text = hoa_system.Translate("Th, thank you sirs!");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID()); -- TODO: change to citizen NPC sprite
@@ -419,19 +435,31 @@ function CreateEvents()
 	event = hoa_map.CustomEvent.Create(event_chains["intro_scene"] + 10, "", "EndIntroScene");
 
 	-- Event Group #2: Party watches as enemy demon emerges from the shadows and attacks
-	event_chains["shadow_emerges"] = 20;
+	event_chains["demon_spawns"] = 20;
+	event = hoa_map.PushMapStateEvent.Create(event_chains["demon_spawns"], hoa_map.MapMode.STATE_SCENE);
+ 	event:AddEventLinkAtStart(event_chains["demon_spawns"] + 1);
+	event = hoa_map.DialogueEvent.Create(event_chains["demon_spawns"] + 1, event_dialogues["demon_spawn1"]);
+	event:AddEventLinkAtEnd(event_chains["demon_spawns"] + 2);
+	event = hoa_map.CustomEvent.Create(event_chains["demon_spawns"] + 2, "SpawnSceneDemon", "IsSceneDemonActive");
+	event:AddEventLinkAtEnd(event_chains["demon_spawns"] + 3);
+	event = hoa_map.DialogueEvent.Create(event_chains["demon_spawns"] + 3, event_dialogues["demon_spawn2"]);
+	event:AddEventLinkAtEnd(event_chains["demon_spawns"] + 4);
+	event = hoa_map.PopMapStateEvent.Create(event_chains["demon_spawns"] + 4);
+
+	-- Event Group #3: NPCs running around
+	event_chains["fleeing_market"] = 40;
 
 	-- Event Group #3: Party observes a citizen trying to escape from demons and decides whether or not to help
-	event_chains["citizen_trapped"] = 40;
+	event_chains["citizen_trapped"] = 60;
 
 	-- Event Group #4: Enemies drop down between Claudius and his allies. Claudius continues on alone
-	event_chains["claudius_separated"] = 60;
+	event_chains["claudius_separated"] = 80;
 
 	-- Event Group #5: Claudius enters the throne room
-	event_chains["throne_entered"] = 80;
+	event_chains["throne_entered"] = 100;
 
 	-- Event Group #6: Closing scene of map
-	event_chains["closing_scene"] = 80;
+	event_chains["closing_scene"] = 120;
 
 	----------------------------------------------------------------------------
 	---------- Miscellaneous Events
@@ -440,7 +468,7 @@ function CreateEvents()
 	event = hoa_map.DialogueEvent.Create(event_chains["locked_door"], event_dialogues["locked_door"]);
 
 	event_chains["pop_state"] = 1010;
-	event = hoa_map.CustomEvent.Create(event_chains["pop_state"], "PopState", "")
+	event = hoa_map.PopMapStateEvent.Create(event_chains["pop_state"])
 end -- function CreateEvents()
 
 ----------------------------------------------------------------------------
@@ -448,12 +476,6 @@ end -- function CreateEvents()
 ----------------------------------------------------------------------------
 
 function Update()
-	--[[ Uncomment this block to see notifications printed to the screen
-	if (NotificationManager:GetNotificationCount() > 0) then
-		NotificationManager:DEBUG_PrintNotificationEvents();
-	end
-	--]]
-
 	local index = 0;
 	local notification = {};
 	while (true) do
@@ -466,6 +488,13 @@ function Update()
 
 		index = index + 1;
 	end
+
+	-- Check map zones for necessary actions
+	if (zones["witness_spawn"]:IsPlayerSpriteEntering() == true) then
+		if (EventManager:TimesEventStarted(event_chains["demon_spawns"]) == 0) then
+			EventManager:StartEvent(event_chains["demon_spawns"]);
+		end
+	end
 end
 
 
@@ -473,10 +502,10 @@ end
 function HandleCollisionNotification(notification)
 	-- We're only concerned with collisions by the player sprite for this map
 	local sprite = notification.sprite;
-	if (sprite:GetObjectID() ~= Map:GetPlayerSprite():GetObjectID()) then -- TODO: Why does this produce a luabind run-time error?
+	if (sprite:GetObjectID() ~= Map:GetPlayerSprite():GetObjectID()) then
 		return;
 	elseif (notification.collision_type == hoa_map.MapMode.OBJECT_COLLISION) then
-		-- TODO: we may want to use this collision type to detect of the object was an enemy and start a battle if so
+		-- TODO: we may want to use this collision type to detect if the object was an enemy and start a battle if so
 		return;
 	end
 
@@ -654,13 +683,19 @@ functions["EndIntroScene"] = function()
 end
 
 
--- Sprite function: Focus map camera on sprite
-functions["FocusCameraOnSprite"] = function(sprite)
-	Map:SetCamera(sprite, 1000);
+-- Spawn the enemy demon and move the camera to it
+functions["SpawnSceneDemon"] = function()
+	sprites["enemy_spawn"]:ChangeStateSpawn();
+	Map:SetCamera(sprites["enemy_spawn"], 2000);
 end
 
 
--- Pop current map state
-functions["PopState"] = function()
-	Map:PopState();
+-- Returns true once the enemy_spawn demon is in the active state and fully spawned in
+functions["IsSceneDemonActive"] = function()
+	if (sprites["enemy_spawn"]:IsStateActive() == true) then
+		Map:SetCamera(sprites["enemy_spawn"], 1000); -- Move the camera back to the player
+		return true;
+	else
+		return false;
+	end
 end

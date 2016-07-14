@@ -587,7 +587,14 @@ void MapMode::_LoadMapFiles() {
 	// ---------- (4) Call the map script's Load function and get a reference to all other script functions used
 	ScriptObject map_table(luabind::from_stack(_map_script.GetLuaState(), hoa_script::private_script::STACK_TOP));
 	ScriptObject function = map_table["Load"];
-	ScriptCallFunction<void>(function, this);
+	try {
+	    ScriptCallFunction<void>(function, this);
+	}
+	// TODO: this catch block isn't catching the exceptions thrown from Lua.
+	catch (luabind::error e) {
+		PRINT_ERROR << "caught Luabind error while loading map script" << endl;
+		ScriptManager->HandleLuaError(e);
+	}
 
 	_update_function = _map_script.ReadFunctionPointer("Update");
 	_draw_function = _map_script.ReadFunctionPointer("Draw");
