@@ -172,6 +172,137 @@ private:
 
 
 /** ****************************************************************************
+*** \brief Used to activate a new map state by pushing to the top of the state stack
+***
+*** This class exists simply because changing the map state is a very simple and
+*** common operation. SCENE_STATE is the most frequently pushed state on maps. You must
+*** be careful about which state you push, as certain states expect other properties to
+*** be active when they are. For example, STATE_DIALOGUE assumes there is an active dialogue,
+*** and simply pushing the state does not also activate a dialogue.
+*** ***************************************************************************/
+class PushMapStateEvent : public MapEvent {
+public:
+	/** \brief Creates an instance of the class and registers it with the event supervisor
+	*** \param event_id The ID of this event
+	*** \param state The map state that should be activated when this event runs
+	*** \return A pointer to the instance of the event created
+	**/
+	static PushMapStateEvent* Create(uint32 event_id, MAP_STATE state);
+
+protected:
+	PushMapStateEvent(uint32 event_id, MAP_STATE state) :
+		MapEvent(event_id, PUSH_MAP_STATE_EVENT), _state(state) {}
+
+	~PushMapStateEvent()
+		{}
+
+	//! \brief The new map state to push
+	MAP_STATE _state;
+
+	//! \brief Pushes the state to the map state stack
+	void _Start();
+
+	//! \brief No operation (always returns true)
+	bool _Update()
+		{ return true; }
+}; // class PushMapStateEvent
+
+
+/** ****************************************************************************
+*** \brief Removes the active map state and restores the previous state
+***
+*** Like PushMapStateEvent, the purpose of this simple class is because removing
+*** the active map state is a frequent and common operation that map scripts require.
+*** The class makes no assumptions about the state stack when it runs, so it is entirely
+*** up to the user to make sure that a desired and valid state is waiting below the
+*** active state. If the map state stack is empty when the pop operation is called,
+*** it will behave in the manner documented by MapMode::PopState().
+*** ***************************************************************************/
+class PopMapStateEvent : public MapEvent {
+public:
+	/** \brief Creates an instance of the class and registers it with the event supervisor
+	*** \param event_id The ID of this event
+	*** \return A pointer to the instance of the event created
+	**/
+	static PopMapStateEvent* Create(uint32 event_id);
+
+protected:
+	PopMapStateEvent(uint32 event_id) :
+		MapEvent(event_id, POP_MAP_STATE_EVENT) {}
+
+	~PopMapStateEvent()
+		{}
+
+	//! \brief Pops the top state from the map state stack
+	void _Start();
+
+	//! \brief No operation (always returns true)
+	bool _Update()
+		{ return true; }
+}; // class PopMapStateEvent
+
+
+/** ****************************************************************************
+*** \brief Moves the map camera to focus on an object
+***
+*** Camera movement is a frequent operation done in map scripting. This class is used
+*** to easily setup and create events that perform camera movement. For convenience,
+*** the class also allows you to move to a specific X/Y position on the map by altering
+*** the position of the map's virtual focus object to these coordinates and setting the
+*** camera on the virtual focus.
+***
+*** Camera movement may be done instantly or over a period of time. If the movement
+*** is not instant, the event will complete when the camera has finished moving.
+*** ***************************************************************************/
+class CameraMoveEvent : public MapEvent {
+public:
+	/** \brief Creates an instance of the class and registers it with the event supervisor
+	*** \param event_id The ID of this event
+	*** \param focus The sprite that the camera should move its focus to
+	*** \param move_time The number of milliseconds to spend moving the camera. Zero moves it instantly
+	*** \return A pointer to the instance of the event created
+	**/
+	static CameraMoveEvent* Create(uint32 event_id, VirtualSprite* focus, uint32 move_time);
+
+	/** \brief Creates an instance of the class and registers it with the event supervisor
+	*** \param event_id The ID of this event
+	*** \param x_position The x position to move the camera to
+	*** \param y_position The y position to move the camera to
+	*** \param move_time The number of milliseconds to spend moving the camera. Zero moves it instantly
+	*** \return A pointer to the instance of the event created
+	***
+	*** \note This version of Create() automatically moves the map's virtual focus to the requested position
+	*** and focuses the camera on the virtual focus. Don't call this function if you don't want to make any
+	*** changes to the current state of the virtual focus.
+	**/
+	static CameraMoveEvent* Create(uint32 event_id, uint32 x_position, uint32 y_position, uint32 move_time);
+
+protected:
+	CameraMoveEvent(uint32 event_id, VirtualSprite* focus, uint32 x_position, uint32 y_position, uint32 move_time);
+
+	~CameraMoveEvent()
+		{}
+
+	//! \brief The object that the camera should focus on when it moves
+	VirtualSprite* _focus;
+
+	/** \brief X/Y coordinates on the map where the virtual focus should be moved to
+	*** \note This is only used when focus is NULL
+	**/
+	uint32 _x_position, _y_position;
+
+	//! \brief The number of milliseconds to finish the camera movement. If zero, the movement is instantaneous
+	uint32 _move_time;
+
+	//! \brief Begins the camera movement, and may also alter the position of the virtual focus
+	void _Start();
+
+	//! \brief Returns true once the camera movement has completed
+	bool _Update();
+}; // class CameraMoveEvent
+
+
+/** ****************************************************************************
 *** \brief An event which activates a dialogue on the map
 ***
 *** Note that a dialogue may execute script actions, which would somewhat act
@@ -342,33 +473,6 @@ protected:
 	bool _Update();
 }; // class MapTransitionEvent : public MapEvent
 
-
-/** ****************************************************************************
-*** \brief
-***
-***
-*** ***************************************************************************/
-class JoinPartyEvent : public MapEvent {
-public:
-	/** \brief Creates an instance of the class and registers it with the event supervisor
-	*** \param event_id The ID of this event
-	*** \return A pointer to the instance of the event created
-	**/
-	static JoinPartyEvent* Create(uint32 event_id);
-
-protected:
-	/** \param event_id The ID of this event
-	**/
-	JoinPartyEvent(uint32 event_id);
-
-	~JoinPartyEvent();
-
-	//! \brief
-	void _Start();
-
-	//! \brief
-	bool _Update();
-}; // class JoinPartyEvent : public MapEvent
 
 
 /** ****************************************************************************

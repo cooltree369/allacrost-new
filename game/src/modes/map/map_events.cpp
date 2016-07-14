@@ -46,6 +46,96 @@ namespace hoa_map {
 namespace private_map {
 
 // -----------------------------------------------------------------------------
+// ---------- PushMapStateEvent Class Methods
+// -----------------------------------------------------------------------------
+
+PushMapStateEvent* PushMapStateEvent::Create(uint32 event_id, MAP_STATE state) {
+	PushMapStateEvent* event = new PushMapStateEvent(event_id, state);
+	MapMode::CurrentInstance()->GetEventSupervisor()->RegisterEvent(event);
+	return event;
+}
+
+
+
+void PushMapStateEvent::_Start() {
+	MapMode::CurrentInstance()->PushState(_state);
+}
+
+// -----------------------------------------------------------------------------
+// ---------- PopMapStateEvent Class Methods
+// -----------------------------------------------------------------------------
+
+PopMapStateEvent* PopMapStateEvent::Create(uint32 event_id) {
+	PopMapStateEvent* event = new PopMapStateEvent(event_id);
+	MapMode::CurrentInstance()->GetEventSupervisor()->RegisterEvent(event);
+	return event;
+}
+
+
+
+void PopMapStateEvent::_Start() {
+	MapMode::CurrentInstance()->PopState();
+}
+
+// -----------------------------------------------------------------------------
+// ---------- CameraMoveEvent Class Methods
+// -----------------------------------------------------------------------------
+
+CameraMoveEvent* CameraMoveEvent::Create(uint32 event_id, VirtualSprite* focus, uint32 move_time) {
+	if (focus == NULL) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "function received NULL argument" << endl;
+		return NULL;
+	}
+
+	CameraMoveEvent* event = new CameraMoveEvent(event_id, focus, 0, 0, move_time);
+	MapMode::CurrentInstance()->GetEventSupervisor()->RegisterEvent(event);
+	return event;
+}
+
+
+
+CameraMoveEvent* CameraMoveEvent::Create(uint32 event_id, uint32 x_position, uint32 y_position, uint32 move_time) {
+	CameraMoveEvent* event = new CameraMoveEvent(event_id, NULL, x_position, y_position, move_time);
+	MapMode::CurrentInstance()->GetEventSupervisor()->RegisterEvent(event);
+	return event;
+}
+
+
+
+CameraMoveEvent::CameraMoveEvent(uint32 event_id, VirtualSprite* focus, uint32 x_position, uint32 y_position, uint32 move_time) :
+	MapEvent(event_id, CAMERA_MOVE_EVENT),
+	_focus(focus),
+	_x_position(x_position),
+	_y_position(y_position),
+	_move_time(move_time)
+{}
+
+
+
+void CameraMoveEvent::_Start() {
+	MapMode* map = MapMode::CurrentInstance();
+
+	if (_focus != NULL) {
+		map->SetCamera(_focus, _move_time);
+	}
+	else {
+		map->MoveVirtualFocus(_x_position, _y_position);
+		map->SetCamera(map->GetVirtualFocus(), _move_time);
+	}
+}
+
+
+
+bool CameraMoveEvent::_Update() {
+	if (_move_time == 0) {
+		return true;
+	}
+	else {
+		return MapMode::CurrentInstance()->IsCameraMoving();
+	}
+}
+
+// -----------------------------------------------------------------------------
 // ---------- DialogueEvent Class Methods
 // -----------------------------------------------------------------------------
 
@@ -217,43 +307,6 @@ bool MapTransitionEvent::_Update() {
 	}
 
 	return false;
-}
-
-// -----------------------------------------------------------------------------
-// ---------- JoinPartyEvent Class Methods
-// -----------------------------------------------------------------------------
-
-JoinPartyEvent::JoinPartyEvent(uint32 event_id) :
-	MapEvent(event_id, JOIN_PARTY_EVENT)
-{
-	// TODO
-}
-
-
-
-JoinPartyEvent::~JoinPartyEvent() {
-	// TODO
-}
-
-
-
-JoinPartyEvent* JoinPartyEvent::Create(uint32 event_id) {
-	JoinPartyEvent* event = new JoinPartyEvent(event_id);
-	MapMode::CurrentInstance()->GetEventSupervisor()->RegisterEvent(event);
-	return event;
-}
-
-
-
-void JoinPartyEvent::_Start() {
-	// TODO
-}
-
-
-
-bool JoinPartyEvent::_Update() {
-	// TODO
-	return true;
 }
 
 // -----------------------------------------------------------------------------

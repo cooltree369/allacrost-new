@@ -406,6 +406,25 @@ void BindModeCode() {
 			.def("AddEventLinkAtEnd", (void(MapEvent::*)(uint32))&MapEvent::AddEventLinkAtEnd)
 			.def("AddEventLinkAtEnd", (void(MapEvent::*)(uint32, uint32))&MapEvent::AddEventLinkAtEnd),
 
+		class_<PushMapStateEvent, MapEvent>("PushMapStateEvent")
+			.scope
+			[
+				def("Create", &PushMapStateEvent::Create)
+			],
+
+		class_<PopMapStateEvent, MapEvent>("PopMapStateEvent")
+			.scope
+			[
+				def("Create", &PopMapStateEvent::Create)
+			],
+
+		class_<CameraMoveEvent, MapEvent>("CameraMoveEvent")
+			.scope
+			[
+				def("Create", (CameraMoveEvent*(*)(uint32, VirtualSprite*, uint32))&CameraMoveEvent::Create),
+				def("Create", (CameraMoveEvent*(*)(uint32, uint32, uint32, uint32))&CameraMoveEvent::Create)
+			],
+
 		class_<DialogueEvent, MapEvent>("DialogueEvent")
 			.scope
 			[
