@@ -396,11 +396,11 @@ protected:
 /** ****************************************************************************
 *** \brief A mobile map object that represents a hostile force
 ***
-*** Enemy sprites are have all the same features and functionality as a map sprite.
+*** Enemy sprites have all the same features and functionality as a map sprite.
 *** In addition to this, they have some additional data and methods that are commonly
 *** needed for enemies encountered on a map, including:
 ***
-*** - State information to determine if an enemy is spawning or active
+*** - State information to determine if an enemy is spawning, dead, etc.
 *** - Ability to be controlled by an EnemyZone, used for restricting the area where an enemy may roam
 *** - Battle data to determine what enemies, music, etc. are loaded when a battle begins
 ***
@@ -427,20 +427,19 @@ protected:
 *** that it may spawn once more.
 *** ***************************************************************************/
 class EnemySprite : public MapSprite {
-private:
+public:
 	//! \brief The possible states that the enemy sprite may be in
-	enum STATE {
-		SPAWN,        //<! Enemy is in the process of "fading in"
-		ACTIVE,       //<! Enemy is fully visible and active. Behaves like a standard map sprite, even if inside a zone.
-		ACTIVE_ZONED, //<! Enemy has completed spawning and is being controlled by an EnemyZone
+	enum ENEMY_STATE {
 		INACTIVE,     //<! Enemy is in a "dead" state, waiting to be spawned or made active by a zone or script call
+		SPAWN,        //<! Enemy is in the process of "fading in"
+		ACTIVE,       //<! Fully visible and active. Behaves like a standard map sprite, even if inside a zone.
+		HUNT,         //<! Roaming around and will pursue the player if they get too close
 		DISSIPATE     //<! Enemy is in the process of disappearing, either due to death or a retreat
 	};
 
-public:
 	EnemySprite();
 
-	//! \brief Resets various members of the class so that the enemy is dead, invisible, and does not produce a collision
+	//! \brief Resets various members of the class so that the enemy is inactive, invisible, and does not produce a collision
 	void Reset();
 
 	//! \brief Updates the sprite's position and state.
@@ -465,27 +464,27 @@ public:
 	//! \brief Returns a reference to a random battle party of enemies
 	const std::vector<uint32>& RetrieveRandomParty();
 
-	//! \brief Returns the number of enemy battle parties that have been defined
-	uint32 NumberEnemyParties() const
-		{ return _enemy_parties.size(); }
+	//! \brief Returns true if the sprite has at least one party
+	bool HasEnemyParties() const
+		{ return !_enemy_parties.empty(); }
 
-	void ChangeStateSpawn()
-		{ updatable = true; no_collision = false; _state = SPAWN; _state_timer.Initialize(_fade_time); _state_timer.Run(); _fade_color.SetAlpha(0.0f); }
-
-	void ChangeStateActive()
-		{ updatable = true; no_collision = false; _state = ACTIVE; }
-
-	void ChangeStateActiveZoned()
-		{ updatable = true; no_collision = false; moving = true; _state = ACTIVE_ZONED; _state_timer.Initialize(_directional_change_time); _state_timer.Run(); }
-
-	void ChangeStateDissipate()
-		{ _state = DISSIPATE; _state_timer.Initialize(_fade_time); _state_timer.Run(); _fade_color.SetAlpha(1.0f); }
-
-	void ChangeStateInactive()
-		{ Reset(); if (_zone) _zone->EnemyDead(); }
+	/** \brief Changes the current state of the sprite and updates other class members appropriately
+	*** \param new_state The state to change to. If it is the same as the current state, no change will happen
+	***
+	**/
+	void ChangeState(ENEMY_STATE new_state);
 
 	//! \name Class Member Access Functions
 	//@{
+	ENEMY_STATE GetState() const
+		{ return _state; }
+
+	ENEMY_STATE GetSpawnedState() const
+		{ return _spawned_state; }
+
+	EnemyZone* GetZone() const
+		{ return _zone; }
+
 	float GetPursuitRange() const
 		{ return _pursuit_range; }
 
@@ -504,20 +503,8 @@ public:
 	std::string GetBattleScriptFile() const
 		{ return _battle_script_file; }
 
-	bool IsStateSpawn() const
-		{ return _state == SPAWN; }
-
-	bool IsStateActive() const
-		{ return _state == ACTIVE; }
-
-	bool IsStateActiveZoned() const
-		{ return _state == ACTIVE_ZONED; }
-
-	bool IsStateDissipate() const
-		{ return _state == DISSIPATE; }
-
-	bool IsStateInactive() const
-		{ return _state == INACTIVE; }
+	void SetSpawnedState(ENEMY_STATE state)
+		{ _spawned_state = state; }
 
 	void SetZone(EnemyZone* zone)
 		{ _zone = zone; }
@@ -543,7 +530,10 @@ public:
 
 private:
 	//! \brief The state that the enemy sprite is currently in
-	STATE _state;
+	ENEMY_STATE _state;
+
+	//! \brief The state that the sprite will be changed to after spawning completes (default == HUNT)
+	ENEMY_STATE _spawned_state;
 
 	//! \brief The zone that the enemy sprite belongs to
 	private_map::EnemyZone* _zone;
@@ -563,8 +553,8 @@ private:
 	//! \brief The total time to take to fade an enemy sprite during the SPAWN or DISSIPATE states
 	uint32 _fade_time;
 
-	//! \brief Indicates if the enemy is outside of its zone. If it is, it won't change direction until it gets back in.
-	bool _out_of_zone;
+	//! \brief Set to true when the enemy has gone outside of its zone
+	bool _returning_to_zone;
 
 	//! \brief The filename of the music to play for the battle
 	std::string _battle_music_file;

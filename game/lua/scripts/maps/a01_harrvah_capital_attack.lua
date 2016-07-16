@@ -148,7 +148,7 @@ function CreateZones()
 	IfPrintDebug(DEBUG_PRINT, "Creating zones...");
 
 	-- Bottom-left of map: triggers the scene where the characters observe a demon spawning in from the shadows
-	zones["witness_spawn"] = hoa_map.CameraZone(2, 12, 170, 172, contexts["exterior"]);
+	zones["witness_spawn"] = hoa_map.CameraZone(2, 12, 162, 164, contexts["exterior"]);
 	Map:AddZone(zones["witness_spawn"]);
 
 	-- Mid-right of map: triggers the scene where the player watches a citizen being chased by a demon
@@ -222,7 +222,7 @@ function CreateSprites()
 	sprites["enemy_01"] = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 98, 177);
 	sprites["enemy_01"]:SetContext(contexts["exterior"]);
 	sprites["enemy_01"]:SetDirection(hoa_map.MapMode.SOUTH);
-	sprites["enemy_01"]:ChangeStateActive();
+	sprites["enemy_01"]:ChangeState(hoa_map.EnemySprite.ACTIVE);
 	ObjectManager:AddObject(sprites["enemy_01"]);
 
 	sprites["knight01"] = ConstructSprite("Knight01", ObjectManager:GenerateObjectID(), 93, 177);
@@ -233,7 +233,7 @@ function CreateSprites()
 	sprites["enemy_02"] = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 93, 174);
 	sprites["enemy_02"]:SetContext(contexts["exterior"]);
 	sprites["enemy_02"]:SetDirection(hoa_map.MapMode.SOUTH);
-	sprites["enemy_02"]:ChangeStateActive();
+	sprites["enemy_02"]:ChangeState(hoa_map.EnemySprite.ACTIVE);
 	ObjectManager:AddObject(sprites["enemy_02"]);
 
 	sprites["knight02"] = ConstructSprite("Knight02", ObjectManager:GenerateObjectID(), 103.5, 176.5);
@@ -244,7 +244,7 @@ function CreateSprites()
 	sprites["enemy_03"] = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 104, 173.5);
 	sprites["enemy_03"]:SetContext(contexts["exterior"]);
 	sprites["enemy_03"]:SetDirection(hoa_map.MapMode.SOUTH);
-	sprites["enemy_03"]:ChangeStateActive();
+	sprites["enemy_03"]:ChangeState(hoa_map.EnemySprite.ACTIVE);
 	ObjectManager:AddObject(sprites["enemy_03"]);
 
 	-- Create the senior knight and others fighting near the inn
@@ -257,7 +257,7 @@ function CreateSprites()
 	sprites["enemy_04"] = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 118, 183);
 	sprites["enemy_04"]:SetContext(contexts["exterior"]);
 	sprites["enemy_04"]:SetDirection(hoa_map.MapMode.NORTH);
-	sprites["enemy_04"]:ChangeStateActive();
+	sprites["enemy_04"]:ChangeState(hoa_map.EnemySprite.ACTIVE);
 	ObjectManager:AddObject(sprites["enemy_04"]);
 
 	sprites["knight03"] = ConstructSprite("Knight03", ObjectManager:GenerateObjectID(), 112, 186);
@@ -268,7 +268,7 @@ function CreateSprites()
 	sprites["enemy_05"] = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 114, 185.5);
 	sprites["enemy_05"]:SetContext(contexts["exterior"]);
 	sprites["enemy_05"]:SetDirection(hoa_map.MapMode.WEST);
-	sprites["enemy_05"]:ChangeStateActive();
+	sprites["enemy_05"]:ChangeState(hoa_map.EnemySprite.ACTIVE);
 	ObjectManager:AddObject(sprites["enemy_05"]);
 
 	-- Create the sergeant and others fighting near the item shop entrance
@@ -281,7 +281,7 @@ function CreateSprites()
 	sprites["enemy_06"] = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 82, 180.5);
 	sprites["enemy_06"]:SetContext(contexts["exterior"]);
 	sprites["enemy_06"]:SetDirection(hoa_map.MapMode.SOUTH);
-	sprites["enemy_06"]:ChangeStateActive();
+	sprites["enemy_06"]:ChangeState(hoa_map.EnemySprite.ACTIVE);
 	ObjectManager:AddObject(sprites["enemy_06"]);
 
 	sprites["knight04"] = ConstructSprite("Knight01", ObjectManager:GenerateObjectID(), 90, 189);
@@ -292,11 +292,11 @@ function CreateSprites()
 	sprites["enemy_07"] = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 88, 188);
 	sprites["enemy_07"]:SetContext(contexts["exterior"]);
 	sprites["enemy_07"]:SetDirection(hoa_map.MapMode.EAST);
-	sprites["enemy_07"]:ChangeStateActive();
+	sprites["enemy_07"]:ChangeState(hoa_map.EnemySprite.ACTIVE);
 	ObjectManager:AddObject(sprites["enemy_07"]);
 
 	-- This enemy spawns in during an event scene, so it is in the initial unspawned state
-	sprites["enemy_spawn"] = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 8, 150);
+	sprites["enemy_spawn"] = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 9, 152);
 	sprites["enemy_spawn"]:SetContext(contexts["exterior"]);
 	sprites["enemy_spawn"]:SetDirection(hoa_map.MapMode.SOUTH);
 	ObjectManager:AddObject(sprites["enemy_spawn"]);
@@ -360,7 +360,7 @@ function CreateDialogues()
 	dialogue = hoa_map.MapDialogue.Create(event_dialogues["demon_spawn2"]);
 		text = hoa_system.Translate("I don't believe what I just saw.");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
-		text = hoa_system.Translate("That demon...just emerged from the shadow..?");
+		text = hoa_system.Translate("That demon...just emerged from the shadows...?");
 		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
 		text = hoa_system.Translate("Well, that's just great! How the hell are we supposed to stop an invasion that comes through shadows?");
 		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
@@ -439,12 +439,17 @@ function CreateEvents()
 	event = hoa_map.PushMapStateEvent.Create(event_chains["demon_spawns"], hoa_map.MapMode.STATE_SCENE);
  	event:AddEventLinkAtStart(event_chains["demon_spawns"] + 1);
 	event = hoa_map.DialogueEvent.Create(event_chains["demon_spawns"] + 1, event_dialogues["demon_spawn1"]);
+	event:SetStopCameraMovement(true);
 	event:AddEventLinkAtEnd(event_chains["demon_spawns"] + 2);
 	event = hoa_map.CustomEvent.Create(event_chains["demon_spawns"] + 2, "SpawnSceneDemon", "IsSceneDemonActive");
-	event:AddEventLinkAtEnd(event_chains["demon_spawns"] + 3);
+	event:AddEventLinkAtEnd(event_chains["demon_spawns"] + 3, 1000);
 	event = hoa_map.DialogueEvent.Create(event_chains["demon_spawns"] + 3, event_dialogues["demon_spawn2"]);
 	event:AddEventLinkAtEnd(event_chains["demon_spawns"] + 4);
+	event:AddEventLinkAtEnd(event_chains["demon_spawns"] + 5);
 	event = hoa_map.PopMapStateEvent.Create(event_chains["demon_spawns"] + 4);
+	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["demon_spawns"] + 5, sprites["enemy_spawn"], 0, 8);
+	event:SetRelativeDestination(true);
+	-- TODO: tell enemy sprite to roam and hunt
 
 	-- Event Group #3: NPCs running around
 	event_chains["fleeing_market"] = 40;
@@ -685,15 +690,17 @@ end
 
 -- Spawn the enemy demon and move the camera to it
 functions["SpawnSceneDemon"] = function()
-	sprites["enemy_spawn"]:ChangeStateSpawn();
+	sprites["enemy_spawn"]:ChangeState(hoa_map.EnemySprite.SPAWN);
+	sprites["enemy_spawn"]:SetSpawnedState(hoa_map.EnemySprite.ACTIVE);
 	Map:SetCamera(sprites["enemy_spawn"], 2000);
 end
 
 
 -- Returns true once the enemy_spawn demon is in the active state and fully spawned in
 functions["IsSceneDemonActive"] = function()
-	if (sprites["enemy_spawn"]:IsStateActive() == true) then
-		Map:SetCamera(sprites["enemy_spawn"], 1000); -- Move the camera back to the player
+	if (sprites["enemy_spawn"]:GetState() == hoa_map.EnemySprite.ACTIVE) then
+		Map:SetCamera(sprites["claudius"], 1000); -- Move the camera back to the player
+		sprites["enemy_spawn"]:ChangeState(hoa_map.EnemySprite.HUNT);
 		return true;
 	else
 		return false;

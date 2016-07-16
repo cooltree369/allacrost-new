@@ -280,14 +280,11 @@ void BindModeCode() {
 			.def("Reset", &EnemySprite::Reset)
 			.def("NewEnemyParty", &EnemySprite::NewEnemyParty)
 			.def("AddEnemy", &EnemySprite::AddEnemy)
+			.def("GetState", &EnemySprite::GetState)
 			.def("GetPursuitRange", &EnemySprite::GetPursuitRange)
 			.def("GetDirectionChangeTime", &EnemySprite::GetDirectionChangeTime)
 			.def("GetFadeTime", &EnemySprite::GetFadeTime)
-			.def("IsStateSpawn", &EnemySprite::IsStateSpawn)
-			.def("IsStateActive", &EnemySprite::IsStateActive)
-			.def("IsStateActiveZoned", &EnemySprite::IsStateActiveZoned)
-			.def("IsStateDissipate", &EnemySprite::IsStateDissipate)
-			.def("IsStateInactive", &EnemySprite::IsStateInactive)
+			.def("SetSpawnedState", &EnemySprite::SetSpawnedState)
 			.def("SetZone", &EnemySprite::SetZone)
 			.def("SetPursuitRange", &EnemySprite::SetPursuitRange)
 			.def("SetDirectionChangeTime", &EnemySprite::SetDirectionChangeTime)
@@ -295,11 +292,16 @@ void BindModeCode() {
 			.def("SetBattleMusicFile", &EnemySprite::SetBattleMusicFile)
 			.def("SetBattleBackgroundFile", &EnemySprite::SetBattleBackgroundFile)
 			.def("SetBattleScriptFile", &EnemySprite::SetBattleScriptFile)
-			.def("ChangeStateSpawn", &EnemySprite::ChangeStateSpawn)
-			.def("ChangeStateActive", &EnemySprite::ChangeStateActive)
-			.def("ChangeStateActiveZoned", &EnemySprite::ChangeStateActiveZoned)
-			.def("ChangeStateDissipate", &EnemySprite::ChangeStateDissipate)
-			.def("ChangeStateInactive", &EnemySprite::ChangeStateInactive),
+			.def("ChangeState", &EnemySprite::ChangeState)
+
+			// State constants
+			.enum_("constants") [
+				value("INACTIVE", EnemySprite::INACTIVE),
+				value("SPAWN", EnemySprite::SPAWN),
+				value("ACTIVE", EnemySprite::ACTIVE),
+				value("HUNT", EnemySprite::HUNT),
+				value("DISSIPATE", EnemySprite::DISSIPATE)
+			],
 
 		class_<MapZone>("MapZone")
 			.def(constructor<>())

@@ -368,7 +368,6 @@ function CreateSprites()
 	sprites["scorpion_boss"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["scorpion_boss"]:SetNoCollision(true);
 	sprites["scorpion_boss"]:SetMovementSpeed(hoa_map.MapMode.SLOW_SPEED);
-	sprites["scorpion_boss"]:ChangeStateInactive();
 	sprites["scorpion_boss"]:SetFadeTime(1000);
 	ObjectManager:AddObject(sprites["scorpion_boss"]);
 end -- function CreateSprites()
@@ -1247,7 +1246,7 @@ functions["SpawnFirstEnemy"] = function()
 	enemy:SetXLocation(Map.camera.x_position, 0);
 	enemy:SetYLocation(Map.camera.y_position - 4, 0);
 	enemy:SetFadeTime(1000);
-	enemy:ChangeStateSpawn();
+	enemy:ChangeState(hoa_map.EnemySprite.SPAWN);
 	--]]
 end
 
@@ -1349,7 +1348,7 @@ functions["SwitchContextUnblocked"] = function()
 	SwapContextForAllObjects(contexts["unblocked"]);
 
 	-- The boss has been defeated at this point, so hide it from the map
-	sprites["scorpion_boss"]:ChangeStateInactive();
+	sprites["scorpion_boss"]:ChangeState(hoa_map.EnemySprite.INACTIVE);
 
 	-- Move the character sprite and all NPCs so they are no longer standing in the now flowing riverbed
 	sprites["captain"]:SetPosition(251, 13);
@@ -1461,14 +1460,14 @@ end
 
 -- Begins spawning the boss sprite at the end of the cave
 functions["SpawnBoss"] = function()
-	sprites["scorpion_boss"]:ChangeStateSpawn();
+	sprites["scorpion_boss"]:ChangeState(hoa_map.EnemySprite.SPAWN);
 	-- Changing the state of an enemy sprite also changes the no_collision property, which we want to remain off
 	sprites["scorpion_boss"]:SetNoCollision(true);
 end
 
 -- Returns true when the boss sprite has finished spawning
 functions["SpawnBossComplete"] = function()
-	if (sprites["scorpion_boss"]:IsStateActive() == true) then
+	if (sprites["scorpion_boss"]:GetState() == hoa_map.EnemySprite.ACTIVE) then
 		-- Ensure that the no collision property remains active in the sprite's new state
 		sprites["scorpion_boss"]:SetNoCollision(true);
 		return true;

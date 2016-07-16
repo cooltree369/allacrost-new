@@ -310,8 +310,10 @@ void VirtualSprite::_ResolveCollision(COLLISION_TYPE coll_type, MapObject* coll_
 		}
 
 		// If these two conditions are true, begin the battle
-		if (enemy != NULL && enemy->NumberEnemyParties() != 0 && (enemy->IsStateActive() || enemy->IsStateActiveZoned()) && MapMode::CurrentInstance()->AttackAllowed()) {
-			enemy->ChangeStateInactive();
+		if (enemy != NULL && enemy->HasEnemyParties() == true && (enemy->GetState() == EnemySprite::ACTIVE || enemy->GetState() == EnemySprite::HUNT)
+				&& MapMode::CurrentInstance()->AttackAllowed())
+		{
+			enemy->ChangeState(EnemySprite::INACTIVE);
 
 			BattleMode *BM = new BattleMode();
 
@@ -331,8 +333,7 @@ void VirtualSprite::_ResolveCollision(COLLISION_TYPE coll_type, MapObject* coll_
 			string enemy_battle_script = enemy->GetBattleScriptFile();
 			if (enemy_battle_script != "")
 				BM->LoadBattleScript(enemy_battle_script);
-
-                        MapMode::CurrentInstance()->_TransitionToMode(BM);
+			MapMode::CurrentInstance()->_TransitionToMode(BM);
 
 			// TODO: some sort of map-to-battle transition animation sequence needs to start here
 			return;
@@ -829,6 +830,8 @@ void MapSprite::RestoreState() {
 // *****************************************************************************
 
 EnemySprite::EnemySprite() :
+	_state(INACTIVE),
+	_spawned_state(HUNT),
 	_zone(NULL),
 	_fade_color(1.0f, 1.0f, 1.0f, 0.0f),
 	_pursuit_range(8.0f),
@@ -850,7 +853,7 @@ void EnemySprite::Reset() {
 	_state = INACTIVE;
 	_state_timer.Reset();
 	_fade_color.SetAlpha(0.0f);
-	_out_of_zone = false;
+	_returning_to_zone = false;
 }
 
 
@@ -889,17 +892,61 @@ const std::vector<uint32>& EnemySprite::RetrieveRandomParty() {
 
 
 
+void EnemySprite::ChangeState(ENEMY_STATE new_state) {
+	if (_state == new_state)
+		return;
+
+	_state = new_state;
+	switch (_state) {
+		case INACTIVE:
+			Reset();
+			if (_zone)
+				_zone->EnemyDead();
+			break;
+		case SPAWN:
+			updatable = true;
+			no_collision = false;
+			_state_timer.Initialize(_fade_time);
+			_state_timer.Run();
+			_fade_color.SetAlpha(0.0f);
+			break;
+		case ACTIVE:
+			updatable = true;
+			no_collision = false;
+			break;
+		case HUNT:
+			updatable = true;
+			no_collision = false;
+			moving = true;
+			_state_timer.Initialize(_directional_change_time);
+			_state_timer.Run();
+			break;
+		case DISSIPATE:
+			_state_timer.Initialize(_fade_time);
+			_state_timer.Run();
+			_fade_color.SetAlpha(1.0f);
+			break;
+		default:
+			PRINT_ERROR << "function received unknown state argument: " << _state << endl;
+			updatable = false;
+			no_collision = true;
+	}
+}
+
+
+
 void EnemySprite::Update() {
 	switch (_state) {
+		// Nothing should be done in this state. If the enemy has a zone, the zone will change the state back to spawning when appropriate
+		case INACTIVE:
+			break;
+
 		// Gradually increase the fade color alpha while the sprite is fading in spawning
 		case SPAWN:
 			_state_timer.Update();
 			if (_state_timer.IsFinished() == true) {
 				_fade_color.SetAlpha(1.0f);
-				if (_zone == NULL)
-					ChangeStateActive();
-				else
-					ChangeStateActiveZoned();
+				ChangeState(_spawned_state);
 			}
 			else {
 				_fade_color.SetAlpha(_state_timer.PercentComplete());
@@ -911,32 +958,32 @@ void EnemySprite::Update() {
 			break;
 
 		// Set the sprite's direction so that it seeks to collide with the map camera's position
-		case ACTIVE_ZONED:
+		case HUNT:
 			// Holds the x and y deltas between the sprite and map camera coordinate pairs
 			float xdelta, ydelta;
 			_state_timer.Update();
 
-			xdelta = ComputeXLocation() - MapMode::CurrentInstance()->GetCamera()->ComputeXLocation();
-			ydelta = ComputeYLocation() - MapMode::CurrentInstance()->GetCamera()->ComputeYLocation();
+			xdelta = ComputeXLocation() - MapMode::CurrentInstance()->GetPlayerSprite()->ComputeXLocation();
+			ydelta = ComputeYLocation() - MapMode::CurrentInstance()->GetPlayerSprite()->ComputeYLocation();
 
 			// If the sprite has moved outside of its zone and it should not, reverse the sprite's direction
 			if (_zone != NULL && _zone->IsInsideZone(x_position, y_position) == false && _zone->IsRoamingRestrained()) {
 				// Make sure it wasn't already out (stuck on boundaries fix)
-				if (_out_of_zone == false) {
+				if (_returning_to_zone == false) {
 					SetDirection(CalculateOppositeDirection(GetDirection()));
 					// The sprite is now finding its way back into the zone
-					_out_of_zone = true;
+					_returning_to_zone = true;
 				}
 			}
 			// Otherwise, determine the direction that the sprite should move if the camera is within the sprite's aggression range
 			else {
-				_out_of_zone = false;
+				_returning_to_zone = false;
 
 				// Enemies will only pursue if the camera is inside the zone, or the zone is non-restrictive
 				// TODO: this logic needs to be revisited; it is messy and should be cleaned up
 				if (MapMode::CurrentInstance()->AttackAllowed() && (_zone == NULL || (fabs(xdelta) <= _pursuit_range && fabs(ydelta) <= _pursuit_range
 					 && (!_zone->IsRoamingRestrained() ||
-					 _zone->IsInsideZone(MapMode::CurrentInstance()->GetCamera()->x_position, MapMode::CurrentInstance()->GetCamera()->y_position)))))
+					 _zone->IsInsideZone(MapMode::CurrentInstance()->GetPlayerSprite()->x_position, MapMode::CurrentInstance()->GetPlayerSprite()->y_position)))))
 				{
 					if (xdelta > -0.5 && xdelta < 0.5 && ydelta < 0)
 						SetDirection(SOUTH);
@@ -977,16 +1024,12 @@ void EnemySprite::Update() {
 			}
 			break;
 
-		// Nothing should be done in this state. If the enemy has a zone, the zone will change the state back to spawning when appropriate
-		case INACTIVE:
-			break;
-
 		// Gradually decrease the fade color alpha while the sprite is fading out and disappearing
 		case DISSIPATE:
 			_state_timer.Update();
 			if (_state_timer.IsFinished() == true) {
 				_fade_color.SetAlpha(0.0f);
-				ChangeStateInactive();
+				_state = INACTIVE;
 			}
 			else {
 				_fade_color.SetAlpha(1.0f - _state_timer.PercentComplete());

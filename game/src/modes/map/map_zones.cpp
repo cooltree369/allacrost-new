@@ -438,7 +438,7 @@ void EnemyZone::ForceSpawnAllEnemies() {
 		return;
 
 	for (uint32 i = 0; i < _enemies.size(); ++i) {
-		if (_enemies[i]->IsStateInactive() == true) {
+		if (_enemies[i]->GetState() == EnemySprite::INACTIVE) {
 			_SpawnEnemy(i);
 		}
 	}
@@ -479,7 +479,7 @@ void EnemyZone::Update() {
 	// Otherwise, select an inactive enemy to spawn
 	uint32 index = 0;
 	for (uint32 i = 0; i < _enemies.size(); i++) {
-		if (_enemies[i]->IsStateInactive() == true) {
+		if (_enemies[i]->GetState() == EnemySprite::INACTIVE) {
 			index = i;
 			break;
 		}
@@ -535,7 +535,7 @@ bool EnemyZone::_SpawnEnemy(uint32 enemy_index) {
 	else {
 		_spawn_timer.Reset();
 		_spawn_timer.Run();
-		_enemies[enemy_index]->ChangeStateSpawn();
+		_enemies[enemy_index]->ChangeState(EnemySprite::SPAWN);
 		_active_enemies++;
 		return true;
 	}
