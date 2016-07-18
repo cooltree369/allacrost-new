@@ -53,43 +53,8 @@ class VirtualSprite : public MapObject {
 public:
 	VirtualSprite();
 
-	~VirtualSprite();
-
-	// ---------- Public Members: Orientation and Movement
-
-	/** \brief A bit-mask for the sprite's draw orientation and direction vector.
-	*** This member determines both where to move the sprite (8 directions) and
-	*** which way the sprite is facing (4 directions). See the Sprite direction
-	*** constants for the values that this member may be set to.
-	**/
-	uint16 direction;
-
-	//! \brief The speed at which the sprite moves around the map.
-	float movement_speed;
-
-	/** \brief Set to true when the sprite is currently in motion.
-	*** This does not necessarily mean that the sprite actually is moving, but rather
-	*** that the sprite is <i>trying</i> to move in a certain direction.
-	**/
-	bool moving;
-
-	/** \brief Set to true whenever the sprite's position was changed due to movement
-	*** This is distinctly different than the moving member. Whereas the moving member
-	*** indicates desired movement, this member indicates that positional change due to
-	*** movement actually occurred. It is used for drawing functions to determine if they
-	*** should draw the sprite in motion or not in motion
-	**/
-	bool moved_position;
-
-	//! \brief Set to true when the sprite is running rather than walking
-	bool is_running;
-
-	// ---------- Public Members: Events
-
-	//! \brief A pointer to the event that is controlling the action of this sprite
-	SpriteEvent* control_event;
-
-	// ---------- Public methods
+	~VirtualSprite()
+		{}
 
 	//! \brief Updates the virtual object's position if it is moving, otherwise does nothing.
 	virtual void Update();
@@ -98,17 +63,16 @@ public:
 	virtual void Draw()
 		{}
 
-	/** \note This method takes into account the current direction when setting the new direction
-	*** in the case of diagonal movement. For example, if the sprite is currently facing north
-	*** and this function indicates that the sprite should move northwest, it will face north
-	*** during the northwest movement.
+	/** \brief Used to check if a sprite is facing in a particular direction
+	*** \param direction The direction to check. Should be one of the following four directional constants: NORTH, SOUTH, EAST, WEST
+	*** \return True if the sprite is facing the direction being checked
 	**/
-	void SetDirection(uint16 dir);
+	bool IsFacingDirection(uint16 direction) const;
 
 	/** \brief Sets the sprite's direction to a random value
 	*** This function is used mostly for the ActionRandomMove class.
 	**/
-	void SetRandomDirection();
+	virtual void SetRandomDirection();
 
 	/** \brief Calculates the distance the sprite should move given its velocity (speed and direction)
 	*** \return A floating point value representing the distance moved
@@ -146,41 +110,64 @@ public:
 	**/
 	virtual void RestoreState();
 
-	/** \name Lua Access Functions
+	/** \name Class Member Access Functions
 	*** These functions are specifically written to enable Lua to access the members of this class.
 	**/
 	//@{
-	bool IsStateSaved() const
-		{ return _state_saved; }
-
-	void SetMovementSpeed(float speed)
-		{ movement_speed = speed; }
-
-	void SetMoving(bool motion)
-		{ moving = motion; }
-
-	bool IsMoving() const
-		{ return moving; }
-
-	/** \brief Used to check if a sprite is facing in a particular direction
-	*** \param check_direction The direction to check. Should be one of the following four directional constants: NORTH, SOUTH, EAST, WEST
-	*** \return True if the sprite is facing the direction being checked
-	**/
-	bool IsFacingDirection(uint16 check_direction) const;
-
 	uint16 GetDirection() const
-		{ return direction; }
+		{ return _direction; }
+
+	/** \note This method takes into account the current direction when setting the new direction
+	*** in the case of diagonal movement. For example, if the sprite is currently facing north
+	*** and this function indicates that the sprite should move northwest, it will face north
+	*** during the northwest movement.
+	**/
+	virtual void SetDirection(uint16 direction);
 
 	float GetMovementSpeed() const
-		{ return movement_speed; }
+		{ return _movement_speed; }
+
+	virtual void SetMovementSpeed(float speed)
+		{ _movement_speed = speed; }
+
+	bool IsMoving() const
+		{ return _moving; }
+
+	virtual void SetMoving(bool moving)
+		{ _moving = moving; }
+
+	bool IsRunning() const
+		{ return _running; }
+
+	virtual void SetRunning(bool running)
+		{ _running = running; }
+
+	bool IsStateSaved() const
+		{ return _state_saved; }
 	//@}
 
 protected:
-	/** \brief Determines an appropriate resolution when the sprite collides with an obstruction
-	*** \param coll_type The type of collision that has occurred
-	*** \param coll_obj A pointer to the MapObject that the sprite has collided with, if any
+	/** \brief A bit-mask for the sprite's draw orientation and direction vector.
+	*** This member determines both where to move the sprite (8 directions) and
+	*** which way the sprite is facing (4 directions). See the Sprite direction
+	*** constants for the values that this member may be set to.
 	**/
-	void _ResolveCollision(COLLISION_TYPE coll_type, MapObject* coll_obj);
+	uint16 _direction;
+
+	//! \brief The speed at which the sprite moves around the map.
+	float _movement_speed;
+
+	/** \brief Set to true when the sprite is currently in motion.
+	*** \note This does not necessarily mean that the sprite actually is moving, but rather
+	*** that the sprite is <i>trying</i> to move in a certain direction.
+	**/
+	bool _moving;
+
+	//! \brief True when the sprite movement is running, false and movement will be by walking
+	bool _running;
+
+	//! \brief A pointer to the event that is controlling the action of this sprite. If NULL, no event is controlling
+	SpriteEvent* _control_event;
 
 	/** \name Saved state attributes
 	*** These attributes are used to save and restore the state of a VirtualSprite
@@ -192,6 +179,12 @@ protected:
 	float _saved_movement_speed;
 	bool _saved_moving;
 	//@}
+
+	/** \brief Determines an appropriate resolution when the sprite collides with an obstruction
+	*** \param coll_type The type of collision that has occurred
+	*** \param coll_obj A pointer to the MapObject that the sprite has collided with, if any
+	**/
+	void _ResolveCollision(COLLISION_TYPE coll_type, MapObject* coll_obj);
 }; // class VirtualSprite : public MapObject
 
 
@@ -242,6 +235,19 @@ public:
     //! \brief Draws the dialogue icon at the top of the sprite
     virtual void DrawDialog();
 
+	/** \brief Sets the sprite's direction to a random value and updates the new animation appropriately
+	*** \note Do not call this function until after you have loaded all of the standard sprite animations.
+	*** Otherwise you will get a seg fault.
+	**/
+	void SetRandomDirection()
+		{ VirtualSprite::SetRandomDirection(); _ChangeCurrentAnimation(); }
+
+	bool IsStationaryMovement() const
+		{ return _stationary_movement; }
+
+	void SetStationaryMovement(bool movement)
+		{ if (_stationary_movement != movement) { _stationary_movement = movement; _ChangeCurrentAnimation(); } }
+
 	/** \brief Adds a new reference to a dialogue that the sprite uses
 	*** \param dialogue_id The ID number of the dialogue
 	*** \note It is valid for a dialogue to be referenced more than once by a sprite
@@ -290,10 +296,20 @@ public:
 	**/
 	virtual void RestoreState();
 
-	/** \name Lua Access Functions
-	*** These functions are specifically written to enable Lua to access the members of this class.
-	**/
+	//! \name Class Member Access Functions
 	//@{
+	/** \note Do not call this function until after you have loaded all of the standard sprite animations.
+	*** Otherwise you will get a seg fault.
+	**/
+	void SetDirection(uint16 direction)
+		{ if (_direction != direction) { VirtualSprite::SetDirection(direction); _ChangeCurrentAnimation(); } }
+
+	void SetMoving(bool moving)
+		{ if (_moving != moving) { _moving = moving; _ChangeCurrentAnimation(); } }
+
+	void SetRunning(bool running)
+		{ if (_running != running) { _running = running; _ChangeCurrentAnimation(); } }
+
 	// TODO: needs to be a ustring
 	void SetName(std::string na)
 		{ _name = hoa_utils::MakeUnicodeString(na); }
@@ -352,11 +368,24 @@ protected:
 	**/
 	hoa_video::StillImage* _face_portrait;
 
+	//! \brief The index to the animations vector containing the current sprite image to display
+	uint8 _current_animation;
+
 	//! \brief Set to true if the sprite has running animations loaded
 	bool _has_running_animations;
 
-	//! \brief The index to the animations vector containing the current sprite image to display
-	uint8 _current_animation;
+	//! \brief When true, the sprite will always be drawn with a movement animation, even if they are not physically moving
+	bool _stationary_movement;
+
+	//! \brief True if a custom animation is currently in use
+	bool _custom_animation_on;
+
+	/** \name Saved state attributes
+	*** These attributes are used to save and load the state of a VirtualSprite
+	**/
+	//@{
+	uint8 _saved_current_animation;
+	//@}
 
 	/** \brief A vector containing all the sprite's various animations.
 	*** The first four entries in this vector are the walking animation frames.
@@ -381,15 +410,8 @@ protected:
 	//! \brief True if at least one dialogue referenced by this sprite has not yet been viewed -and- is available to be viewed
 	bool _has_unseen_dialogue;
 
-	//! \brief True if a custom animation is in use
-	bool _custom_animation_on;
-
-	/** \name Saved state attributes
-	*** These attributes are used to save and load the state of a VirtualSprite
-	**/
-	//@{
-	uint8 _saved_current_animation;
-	//@}
+	//! \brief Called when a change to the sprite takes place that may require a different animation to be displayed
+	void _ChangeCurrentAnimation();
 }; // class MapSprite : public VirtualSprite
 
 

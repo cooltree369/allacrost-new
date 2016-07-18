@@ -173,7 +173,7 @@ MapMode::MapMode(string script_filename) :
 	_virtual_focus = new VirtualSprite();
 	_virtual_focus->SetXPosition(0, 0.0f);
 	_virtual_focus->SetYPosition(0, 0.0f);
-	_virtual_focus->movement_speed = NORMAL_SPEED;
+	_virtual_focus->SetMovementSpeed(NORMAL_SPEED);
 	_virtual_focus->SetNoCollision(true);
 	_virtual_focus->SetVisible(false);
 	_object_supervisor->AddObject(_virtual_focus, DEFAULT_LAYER_ID);
@@ -287,7 +287,7 @@ void MapMode::Update() {
 			_dialogue_supervisor->Update();
 			break;
 		case STATE_TREASURE:
-			_camera->moving = false;
+			_camera->SetMoving(false);
 			_treasure_supervisor->Update();
 			break;
         case STATE_TRANSITION:
@@ -654,8 +654,8 @@ void MapMode::_UpdateExplore() {
 				MapSprite *sp = reinterpret_cast<MapSprite*>(obj);
 
 				if (sp->HasAvailableDialogue()) {
-					_camera->moving = false;
-					_camera->is_running = false;
+					_camera->SetMoving(false);
+					_camera->SetRunning(false);
 					sp->InitiateDialogue();
 					return;
 				}
@@ -664,7 +664,7 @@ void MapMode::_UpdateExplore() {
 				TreasureObject* treasure_object = reinterpret_cast<TreasureObject*>(obj);
 
 				if (treasure_object->GetTreasure()->IsTaken() == false) {
-				    _camera->moving = false;
+				    _camera->SetMoving(false);
 					treasure_object->Open();
 				}
 			}
@@ -684,8 +684,8 @@ void MapMode::_UpdateExplore() {
 
 	// Detect movement input from the user and update the stamina counter and run state appropriately
 	if (InputManager->UpState() || InputManager->DownState() || InputManager->LeftState() || InputManager->RightState()) {
-		_camera->moving = true;
-		_camera->is_running = _run_state;
+		_camera->SetMoving(true);
+		_camera->SetRunning(_run_state);
 
 		// Regenerate the stamina at 1/4 the consumption rate if the user is walking
 		if (_run_state == false && _run_stamina < RUN_STAMINA_MAX) {
@@ -707,8 +707,8 @@ void MapMode::_UpdateExplore() {
 		}
 	}
 	else { // User is not moving
-		_camera->moving = false;
-		_camera->is_running = false;
+		_camera->SetMoving(false);
+		_camera->SetRunning(false);
 
 		// Regenerate the stamina at 1/2 the consumption rate
 		if (_run_stamina < RUN_STAMINA_MAX) {
@@ -720,7 +720,7 @@ void MapMode::_UpdateExplore() {
 
 	// Determine the direction of movement. Priority of movement is given to: up, down, left, right.
 	// In the case of diagonal movement, the direction that the sprite should face also needs to be deduced.
-	if (_camera->moving == true) {
+	if (_camera->IsMoving() == true) {
 		if (InputManager->UpState())
 		{
 			if (InputManager->LeftState())
@@ -745,7 +745,7 @@ void MapMode::_UpdateExplore() {
 		else if (InputManager->RightState()) {
 			_camera->SetDirection(EAST);
 		}
-	} // if (_camera->moving == true)
+	} // if (_camera->IsMoving() == true)
 } // void MapMode::_UpdateExplore()
 
 

@@ -156,8 +156,8 @@ DialogueEvent* DialogueEvent::Create(uint32 event_id, uint32 dialogue_id) {
 
 void DialogueEvent::_Start() {
 	if (_stop_camera_movement == true) {
-		MapMode::CurrentInstance()->GetCamera()->moving = false;
-		MapMode::CurrentInstance()->GetCamera()->is_running = false;
+		MapMode::CurrentInstance()->GetCamera()->SetMoving(false);
+		MapMode::CurrentInstance()->GetCamera()->SetRunning(false);
 	}
 
 	MapMode::CurrentInstance()->GetDialogueSupervisor()->BeginDialogue(_dialogue_id);
@@ -669,7 +669,7 @@ RandomMoveSpriteEvent* RandomMoveSpriteEvent::Create(uint32 event_id, uint16 spr
 void RandomMoveSpriteEvent::_Start() {
 	SpriteEvent::_Start();
 	_sprite->SetRandomDirection();
-	_sprite->moving = true;
+	_sprite->SetMoving(true);
 }
 
 
@@ -686,7 +686,7 @@ bool RandomMoveSpriteEvent::_Update() {
 
 	if (_movement_timer >= _total_movement_time) {
 		_movement_timer = 0;
-		_sprite->moving = false;
+		_sprite->SetMoving(false);
 		_sprite->ReleaseControl(this);
 		return true;
 	}
@@ -825,7 +825,7 @@ void PathMoveSpriteEvent::_Start() {
 // 	}
 
 	if (MapMode::CurrentInstance()->GetObjectSupervisor()->FindPath(_sprite, _path, _destination_node) == true) {
-		_sprite->moving = true;
+		_sprite->SetMoving(true);
 		_SetSpriteDirection();
 	}
 	else {
@@ -848,7 +848,7 @@ bool PathMoveSpriteEvent::_Update() {
 
 		// When the current node index is at the end of the path, the event is finished
 		if (_current_node >= _path.size() - 1) {
-			_sprite->moving = false;
+			_sprite->SetMoving(false);
 			_sprite->ReleaseControl(this);
 			if (_final_direction != 0)
 				_sprite->SetDirection(_final_direction);

@@ -609,24 +609,24 @@ MapObject* ObjectSupervisor::FindNearestObject(const VirtualSprite* sprite, floa
 
 	// ---------- (1) Using the sprite's direction, determine the boundaries of the search area to check for objects
 	sprite->GetCollisionRectangle(search_area);
-	if (sprite->direction & FACING_NORTH) {
+	if (sprite->IsFacingDirection(NORTH) == true) {
 		search_area.bottom = search_area.top;
 		search_area.top = search_area.top - search_distance;
 	}
-	else if (sprite->direction & FACING_SOUTH) {
+	else if (sprite->IsFacingDirection(SOUTH) == true) {
 		search_area.top = search_area.bottom;
 		search_area.bottom = search_area.bottom + search_distance;
 	}
-	else if (sprite->direction & FACING_WEST) {
+	else if (sprite->IsFacingDirection(WEST) == true) {
 		search_area.right = search_area.left;
 		search_area.left = search_area.left - search_distance;
 	}
-	else if (sprite->direction & FACING_EAST) {
+	else if (sprite->IsFacingDirection(EAST) == true) {
 		search_area.left = search_area.right;
 		search_area.right = search_area.right + search_distance;
 	}
 	else {
-		IF_PRINT_WARNING(MAP_DEBUG) << "sprite was set to invalid direction: " << sprite->direction << endl;
+		IF_PRINT_WARNING(MAP_DEBUG) << "sprite was set to invalid direction: " << sprite->GetDirection() << endl;
 		return NULL;
 	}
 
@@ -874,7 +874,7 @@ bool ObjectSupervisor::AdjustSpriteAroundCollision(private_map::VirtualSprite* s
 		MAP_OBJECT_TYPE obj_type = coll_obj->GetType();
 		if ((obj_type == VIRTUAL_TYPE) || (obj_type == SPRITE_TYPE) || (obj_type == ENEMY_TYPE)) {
 			VirtualSprite* coll_sprite = dynamic_cast<VirtualSprite*>(coll_obj);
-			if (coll_sprite->moving == true) {
+			if (coll_sprite->IsMoving() == true) {
 				return false;
 			}
 		}
@@ -888,15 +888,15 @@ bool ObjectSupervisor::AdjustSpriteAroundCollision(private_map::VirtualSprite* s
 	}
 
 	// Attempt alignment and adjustment changes to the sprite as appropriate
-	if (sprite->direction & MOVING_ORTHOGONALLY) {
-		if (_AlignSpriteWithCollision(sprite, sprite->direction, coll_type, sprite_coll_rect, object_coll_rect) == true) {
+	if (sprite->GetDirection() & MOVING_ORTHOGONALLY) {
+		if (_AlignSpriteWithCollision(sprite, sprite->GetDirection(), coll_type, sprite_coll_rect, object_coll_rect) == true) {
 			return true;
 		}
 		else if (coll_type != BOUNDARY_COLLISION) {
 			return _MoveSpriteAroundCollisionCorner(sprite, coll_type, sprite_coll_rect, object_coll_rect);
 		}
 	}
-	else { // then (sprite->direction & MOVING_DIAGONALLY)
+	else { // then (sprite->GetDirection() & MOVING_DIAGONALLY)
 		return _MoveSpriteAroundCollisionDiagonal(sprite, coll_type, sprite_coll_rect, object_coll_rect);
 	}
 	return false;
@@ -1160,7 +1160,7 @@ bool ObjectSupervisor::_MoveSpriteAroundCollisionCorner(VirtualSprite* sprite, C
 	const MapRectangle& sprite_coll_rect, const MapRectangle& object_coll_rect)
 {
 	// A horizontal adjustment means that the sprite was trying to move vertically and needs to be adjusted horizontally around a collision
-	bool horizontal_adjustment = (sprite->direction & (NORTH | SOUTH));
+	bool horizontal_adjustment = (sprite->GetDirection() & (NORTH | SOUTH));
 	// Determines if the start or end directions of the grid should be examined in future steps
 	bool check_start = true, check_end = true;
 
@@ -1221,7 +1221,7 @@ bool ObjectSupervisor::_MoveSpriteAroundCollisionCorner(VirtualSprite* sprite, C
 	// Stores the row/col axis of the line
 	int16 line_axis = 0;
 
-	switch (sprite->direction) {
+	switch (sprite->GetDirection()) {
 		case NORTH:
 			// Set to the row above the top of the sprite's collision rectangle
 			line_axis = static_cast<int16>(sprite_coll_rect.top) - 1;
@@ -1374,7 +1374,7 @@ bool ObjectSupervisor::_MoveSpriteAroundCollisionDiagonal(VirtualSprite* sprite,
 	bool check_horizontal_align = false, check_vertical_align = false;
 
 	// ---------- (1): Determine the orthogonal movement directions and reconstruct the sprite's invalid collision rectangle
-	switch (sprite->direction) {
+	switch (sprite->GetDirection()) {
 		case NE_NORTH:
 		case NE_EAST:
 			north_or_south = true;
@@ -1426,7 +1426,7 @@ bool ObjectSupervisor::_MoveSpriteAroundCollisionDiagonal(VirtualSprite* sprite,
 		else {
 			check_vertical_align = (mod_sprite_rect.bottom > static_cast<float>(_num_grid_rows)) ? true : false;
 		}
-		if (sprite->direction == MOVING_EASTWARD) {
+		if (east_or_west == true) {
 			check_horizontal_align = (mod_sprite_rect.right > static_cast<float>(_num_grid_cols)) ? true : false;
 		}
 		else {
@@ -1545,7 +1545,6 @@ bool ObjectSupervisor::_ModifySpritePosition(VirtualSprite* sprite, uint16 direc
 	else {
 		// The adjustment was successful, check the position offsets and state that the position has been changed
 		sprite->CheckPositionOffsets();
-		sprite->moved_position = true;
 		return true;
 	}
 } // bool ObjectSupervisor::_ModifySpritePosition(VirtualSprite* sprite, uint16 direction, float distance)
