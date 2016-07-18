@@ -56,7 +56,6 @@ function ConstructSprite(name, id, x, y)
 	sprite:SetImgHalfWidth(sprites[name].img_half_width);
 	sprite:SetImgHeight(sprites[name].img_height);
 	sprite:SetMovementSpeed(sprites[name].movement_speed);
-	sprite:SetDirection(direction);
 	sprite:LoadStandardAnimations(sprites[name].standard_animations);
 	if (sprites[name].running_animations) then
 		sprite:LoadRunningAnimations(sprites[name].running_animations);
@@ -64,6 +63,7 @@ function ConstructSprite(name, id, x, y)
 	if (sprites[name].face_portrait) then
 		sprite:LoadFacePortrait(sprites[name].face_portrait);
 	end
+	sprite:SetDirection(direction);
 	return sprite;
 end
 
@@ -106,8 +106,8 @@ function ConstructEnemySprite(name, id, x, y)
 	enemy:SetImgHalfWidth(enemies[name].img_half_width);
 	enemy:SetImgHeight(enemies[name].img_height);
 	enemy:SetMovementSpeed(enemies[name].movement_speed);
-	enemy:SetDirection(direction);
 	enemy:LoadStandardAnimations(enemies[name].standard_animations);
+	enemy:SetDirection(direction);
 	return enemy;
 end
 
