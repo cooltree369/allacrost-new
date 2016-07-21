@@ -746,7 +746,7 @@ bool ObjectSupervisor::DoObjectsCollide(const MapObject* const obj1, const MapOb
 
 
 
-COLLISION_TYPE ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObject** collision_object) {
+COLLISION_TYPE ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObject** collision_object, bool ignore_sprites) {
 	// NOTE: We don't check if the argument is NULL here for performance reasons
 
 	// If the sprite has this property set it can not collide
@@ -790,12 +790,14 @@ COLLISION_TYPE ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObjec
 
 	for (uint32 i = 0; i < objects->size(); i++) {
 		// Check for conditions where we would not want to do collision detection between the two objects
-		if ((*objects)[i]->object_id == sprite->object_id) // Object and sprite are the same
-			continue;
-		if ((*objects)[i]->no_collision == true) // Object has no collision detection property set
-			continue;
-		if (((*objects)[i]->context & sprite->context) == 0) // Sprite and object do not exist in the same context
-			continue;
+		if ((*objects)[i]->object_id == sprite->object_id)
+			continue; // Object and sprite are the same
+		if ((*objects)[i]->no_collision == true)
+			continue; // Object has no collision detection property set
+		if (((*objects)[i]->context & sprite->context) == 0)
+			continue; // Sprite and object do not exist in the same context
+		if (ignore_sprites == true && ((*objects)[i]->GetType() == SPRITE_TYPE || (*objects)[i]->GetType() == ENEMY_TYPE))
+			continue; // Object is a sprite and caller instructed to avoid sprite collisions
 
 		if (CheckObjectCollision(sprite_rect, (*objects)[i]) == true) {
 			obstruction_object = (*objects)[i];
@@ -812,7 +814,7 @@ COLLISION_TYPE ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObjec
 	}
 
 	return NO_COLLISION;
-} // bool ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObject** collision_object)
+} // bool ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObject** collision_object, bool ignore_sprites)
 
 
 
@@ -943,7 +945,7 @@ bool ObjectSupervisor::FindPath(VirtualSprite* sprite, vector<PathNode>& path, c
 	sprite->x_offset = 0.5f;
 	sprite->y_offset = 0.5f;
 
-	if (DetectCollision(sprite, NULL) != NO_COLLISION) {
+	if (DetectCollision(sprite, NULL, true) != NO_COLLISION) {
 		sprite->x_position = source_node.col;
 		sprite->y_position = source_node.row;
 		sprite->x_offset = x_offset;
@@ -981,7 +983,7 @@ bool ObjectSupervisor::FindPath(VirtualSprite* sprite, vector<PathNode>& path, c
 			sprite->x_position = nodes[i].col;
 			sprite->y_position = nodes[i].row;
 
-			if (DetectCollision(sprite, NULL) != NO_COLLISION) {
+			if (DetectCollision(sprite, NULL, true) != NO_COLLISION) {
 				continue;
 			}
 
