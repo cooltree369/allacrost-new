@@ -733,6 +733,7 @@ public:
 	*** \param collision_object A pointer to a pointer to the object that collides with the sprite.
 	*** This member may be set to NULL if this information is not required by the callee. Otherwise, the callee
 	*** should declare a pointer member of type MapObject and pass the address of that pointer to this parameter.
+	*** \param ignore_sprites If true, collisions with any type of sprite object will be disregarded (default == false)
 	*** \return The type of collision detected, which may include NO_COLLISION if none was detected
 	***
 	*** This method is invoked by a map sprite who wishes to check for its own collision.
@@ -743,7 +744,7 @@ public:
 	*** -# Object collision: where the sprite's collision rectangle overlaps that of another object's,
 	***    where the object is in the same draw layer and context as the original sprite.
 	**/
-	COLLISION_TYPE DetectCollision(private_map::VirtualSprite* sprite, private_map::MapObject** collision_object);
+	COLLISION_TYPE DetectCollision(private_map::VirtualSprite* sprite, private_map::MapObject** collision_object, bool ignore_sprites = false);
 
 	/** \brief Attempts to modify a sprite's position in response to an obstruction that it has collided with
 	*** \param coll_type The type of collision that has occurred

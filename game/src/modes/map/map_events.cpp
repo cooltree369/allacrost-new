@@ -838,7 +838,7 @@ void PathMoveSpriteEvent::_Start() {
 
 bool PathMoveSpriteEvent::_Update() {
 	if (_path.empty() == true) {
-		PRINT_ERROR << "no path to destination" << endl;
+		PRINT_ERROR << "no path to destination: [" << _destination_col << ", " << _destination_row << "]" << endl;
 		return true;
 	}
 

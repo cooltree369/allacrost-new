@@ -44,7 +44,9 @@ function ConstructSprite(name, id, x, y)
 	local direction = (2 ^ math.random(0, 3));
 
 	local sprite = hoa_map.MapSprite();
-	sprite:SetName(sprites[name].name);
+	if (sprites[name].name) then
+		sprite:SetName(sprites[name].name);
+	end
 	sprite:SetObjectID(id);
 	sprite:SetContext(hoa_map.MapMode.CONTEXT_01);
 	if (x and y) then
@@ -241,19 +243,7 @@ sprites["Vanica"] = {
 	face_portrait = "img/portraits/face/vanica.png"
 }
 
-sprites["Alexander"] = {
-	name = hoa_system.Translate("Alexander"),
-	coll_half_width = 0.95,
-	coll_height = 1.9,
-	img_half_width = 1.0,
-	img_height = 4.0,
-	movement_speed = NORMAL_SPEED,
-
-	standard_animations = "img/sprites/characters/man_npc02_walk.png"
-}
-
-sprites["Laine"] = {
-	name = hoa_system.Translate("Laine"),
+sprites["Man01"] = {
 	coll_half_width = 0.95,
 	coll_height = 1.9,
 	img_half_width = 1.0,
@@ -263,8 +253,17 @@ sprites["Laine"] = {
 	standard_animations = "img/sprites/characters/man_npc01_walk.png"
 }
 
-sprites["Torl"] = {
-	name = hoa_system.Translate("Torl"),
+sprites["Man02"] = {
+	coll_half_width = 0.95,
+	coll_height = 1.9,
+	img_half_width = 1.0,
+	img_height = 4.0,
+	movement_speed = NORMAL_SPEED,
+
+	standard_animations = "img/sprites/characters/man_npc02_walk.png"
+}
+
+sprites["MaleChild01"] = {
 	coll_half_width = 0.95,
 	coll_height = 1.9,
 	img_half_width = 1.0,
