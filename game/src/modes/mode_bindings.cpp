@@ -403,7 +403,12 @@ void BindModeCode() {
 			.def("TimesEventStarted", &EventSupervisor::TimesEventStarted)
 			.def("HasActiveEvent", &EventSupervisor::HasActiveEvent)
 			.def("HasLaunchEvent", &EventSupervisor::HasLaunchEvent)
-			.def("GetEvent", &EventSupervisor::GetEvent),
+			.def("GetEvent", &EventSupervisor::GetEvent)
+			.def("GetDataKeyValue", &EventSupervisor::GetDataKeyValue)
+			.def("CheckSetDataKeyValue", &EventSupervisor::CheckSetDataKeyValue)
+			.def("SetDataKeyValue", &EventSupervisor::SetDataKeyValue)
+			.def("ModifyDataKeyValue", &EventSupervisor::ModifyDataKeyValue)
+			.def("DeleteDataKeyValue", &EventSupervisor::DeleteDataKeyValue),
 
 		class_<MapEvent>("MapEvent")
 			.def("GetEventID", &MapEvent::GetEventID)
