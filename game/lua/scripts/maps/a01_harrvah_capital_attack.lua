@@ -432,6 +432,7 @@ function CreateDialogues()
 	dialogue = hoa_map.MapDialogue.Create(event_dialogues["citizen_chased"]);
 		text = hoa_system.Translate("Help! Get it away from me!");
 		dialogue:AddLine(text, sprites["trap_citizen"]:GetObjectID());
+		dialogue:AddLineTiming(2000);
 
 	event_dialogues["save_citizen"] = 105;
 	dialogue = hoa_map.MapDialogue.Create(event_dialogues["save_citizen"]);
@@ -458,10 +459,10 @@ function CreateDialogues()
 
 	event_dialogues["citizen_escapes"] = 106;
 	dialogue = hoa_map.MapDialogue.Create(event_dialogues["citizen_escapes"]);
-		text = hoa_system.Translate("Th, thank you sirs!");
-		dialogue:AddLine(text, sprites["lukar"]:GetObjectID()); -- TODO: change to citizen NPC sprite
+		text = hoa_system.Translate("Th, thank you sir!");
+		dialogue:AddLine(text, sprites["trap_citizen"]:GetObjectID());
 		text = hoa_system.Translate("Get back to your home and barracade your door. Now!");
-		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
+		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
 end -- function CreateDialogues()
 
 
@@ -532,8 +533,6 @@ function CreateEvents()
 	event:AddEventLinkAtStart(event_chains["citizen_trapped"] + 3);
 	event:AddEventLinkAtStart(event_chains["citizen_trapped"] + 4);
 	event = hoa_map.CameraMoveEvent.Create(event_chains["citizen_trapped"] + 1, sprites["trap_citizen"], 1000);
-	-- TODO: Need to add ability to make this dialogue timed. If the user doesn't close out the dialogue before the end of the event chain,
-	-- then the dialogue state is popped from the stack and the player is stuck in the scene state and unable to move
 	event = hoa_map.DialogueEvent.Create(event_chains["citizen_trapped"] + 2, event_dialogues["citizen_chased"]);
 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["citizen_trapped"] + 3, sprites["trap_citizen"], 190, 130);
 	event:AddEventLinkAtEnd(event_chains["citizen_trapped"] + 5);
@@ -695,10 +694,8 @@ function HandleCollisionNotification(notification)
 		if (sounds["door_locked"]:IsPlaying() == false) then
 			sounds["door_locked"]:Play();
 		end
-		if (EventManager:TimesEventStarted(event_chains["locked_door"]) == 0) then
-			-- TODO: want to add a 50ms delay before starting the event here, but doing so
-			-- somehow causes the user to be unable to exit the dialogue that the event starts
-			EventManager:StartEvent(event_chains["locked_door"]);
+		if (EventManager:CheckSetDataKeyValue("locked_door") == 0) then
+			EventManager:StartEvent(event_chains["locked_door"], 500);
 		end
 	end
 end
