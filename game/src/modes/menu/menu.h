@@ -291,6 +291,37 @@ private:
 	void _DrawItemListHeader();
 }; // class MenuMode : public hoa_mode_manager::GameMode
 
+   /** **************************************************************************
+   *** \brief A window to display a message to the player
+   *** Displays a message to the user in the center of the screen
+   *** This class is not private because it's a handy message box and
+   *** it could be used else where.
+   *** **************************************************************************/
+class MessageWindow : public hoa_gui::MenuWindow
+{
+public:
+	MessageWindow(const hoa_utils::ustring &message, float w, float h);
+	~MessageWindow();
+
+	//! \brief Set the text to display in the window
+	void SetText(const hoa_utils::ustring &message)
+	{
+		_message = message; _textbox.SetDisplayText(message);
+	}
+
+	//! \brief Standard Window Functions
+	//@{
+	void Draw();
+	//@}
+
+private:
+	//! \brief the message to display
+	hoa_utils::ustring _message;
+
+	//! \brief used to display the message
+	hoa_gui::TextBox _textbox;
+}; // class MessageWindow
+
 } // namespace hoa_menu
 
 #endif // __MENU_HEADER__
