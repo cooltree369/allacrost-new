@@ -631,7 +631,7 @@ protected:
 	enum PROPERTY_NAME {
 		UPDATABLE           = 0,
 		VISIBLE             = 1,
-		NOCOLLISION         = 2,
+		COLLIDABLE          = 2,
 		CONTEXT             = 3,
 		POSITION            = 4,
 		DIRECTION           = 5,
@@ -679,8 +679,8 @@ public:
 	void Visible(bool visible)
 		{ _properties.set(VISIBLE); _visible = visible; }
 
-	void NoCollision(bool no_collision)
-		{ _properties.set(NOCOLLISION); _no_collision = no_collision; }
+	void Collidable(bool collidable)
+		{ _properties.set(COLLIDABLE); _collidable = collidable; }
 
 	void Context(MAP_CONTEXT context)
 		{ _properties.set(CONTEXT); _context = context; }
@@ -733,7 +733,7 @@ protected:
 	//@{
 	bool _updatable;
 	bool _visible;
-	bool _no_collision;
+	bool _collidable;
 	MAP_CONTEXT _context;
 	//! \note X/Y position are stored as signed integers here because they can be used for relative movement.
 	int16 _x_position, _y_position;

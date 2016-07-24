@@ -261,18 +261,18 @@ function CreateSprites()
 	-- Group #1: Playable character sprites
 	sprites["claudius"] = ConstructSprite("Claudius", 1, 11, 227);
 	sprites["claudius"]:SetDirection(hoa_map.MapMode.NORTH);
-	sprites["claudius"]:SetNoCollision(true);
+	sprites["claudius"].collidable = false;
 	ObjectManager:AddObject(sprites["claudius"]);
 
 	sprites["mark"] = ConstructSprite("Knight01", 2, 17, 227);
 	sprites["mark"]:SetDirection(hoa_map.MapMode.NORTH);
-	sprites["mark"]:SetNoCollision(true);
+	sprites["mark"].collidable = false;
 	sprites["mark"]:SetName(hoa_system.Translate("Mark"));
 	ObjectManager:AddObject(sprites["mark"]);
 
 	sprites["lukar"] = ConstructSprite("Knight01", 3, 14, 225);
 	sprites["lukar"]:SetDirection(hoa_map.MapMode.NORTH);
-	sprites["lukar"]:SetNoCollision(true);
+	sprites["lukar"].collidable = false;
 	sprites["lukar"]:SetName(hoa_system.Translate("Lukar"));
 	ObjectManager:AddObject(sprites["lukar"]);
 
@@ -307,57 +307,57 @@ function CreateSprites()
 	-- All of the following NPCs are encountered at the end of the cave in the riverbed
 	sprites["captain"] = ConstructSprite("Knight06", 2500, 248, 16);
 	sprites["captain"]:SetDirection(hoa_map.MapMode.WEST);
-	sprites["captain"]:SetNoCollision(true);
+	sprites["captain"].collidable = false;
 	ObjectManager:AddObject(sprites["captain"]);
 
 	sprites["sergeant"] = ConstructSprite("Knight05", 2501, 249, 19);
 	sprites["sergeant"]:SetDirection(hoa_map.MapMode.WEST);
-	sprites["sergeant"]:SetNoCollision(true);
+	sprites["sergeant"].collidable = false;
 	ObjectManager:AddObject(sprites["sergeant"]);
 
 	sprites["river_knight1"] = ConstructSprite("Knight04", 2502, 245, 11);
 	sprites["river_knight1"]:SetDirection(hoa_map.MapMode.SOUTH);
-	sprites["river_knight1"]:SetNoCollision(true);
+	sprites["river_knight1"].collidable = false;
 	ObjectManager:AddObject(sprites["river_knight1"]);
 
 	sprites["river_knight2"] = ConstructSprite("Knight03", 2503, 242, 8);
 	sprites["river_knight2"]:SetDirection(hoa_map.MapMode.SOUTH);
-	sprites["river_knight2"]:SetNoCollision(true);
+	sprites["river_knight2"].collidable = false;
 	ObjectManager:AddObject(sprites["river_knight2"]);
 
 	sprites["river_knight3"] = ConstructSprite("Knight02", 2504, 239, 9);
 	sprites["river_knight3"]:SetDirection(hoa_map.MapMode.SOUTH);
-	sprites["river_knight3"]:SetNoCollision(true);
+	sprites["river_knight3"].collidable = false;
 	ObjectManager:AddObject(sprites["river_knight3"]);
 
 	sprites["river_knight4"] = ConstructSprite("Knight01", 2505, 240, 22);
 	sprites["river_knight4"]:SetDirection(hoa_map.MapMode.NORTH);
-	sprites["river_knight4"]:SetNoCollision(true);
+	sprites["river_knight4"].collidable = false;
 	ObjectManager:AddObject(sprites["river_knight4"]);
 
 	sprites["river_knight5"] = ConstructSprite("Knight02", 2506, 243, 23);
 	sprites["river_knight5"]:SetDirection(hoa_map.MapMode.NORTH);
-	sprites["river_knight5"]:SetNoCollision(true);
+	sprites["river_knight5"].collidable = false;
 	ObjectManager:AddObject(sprites["river_knight5"]);
 
 	sprites["river_knight6"] = ConstructSprite("Knight03", 2507, 245, 21);
 	sprites["river_knight6"]:SetDirection(hoa_map.MapMode.NORTH);
-	sprites["river_knight6"]:SetNoCollision(true);
+	sprites["river_knight6"].collidable = false;
 	ObjectManager:AddObject(sprites["river_knight6"]);
 
 	sprites["river_knight7"] = ConstructSprite("Knight01", 2508, 234, 20);
 	sprites["river_knight7"]:SetDirection(hoa_map.MapMode.EAST);
-	sprites["river_knight7"]:SetNoCollision(true);
+	sprites["river_knight7"].collidable = false;
 	ObjectManager:AddObject(sprites["river_knight7"]);
 
 	sprites["river_knight8"] = ConstructSprite("Knight01", 2509, 233, 17);
 	sprites["river_knight8"]:SetDirection(hoa_map.MapMode.EAST);
-	sprites["river_knight8"]:SetNoCollision(true);
+	sprites["river_knight8"].collidable = false;
 	ObjectManager:AddObject(sprites["river_knight8"]);
 
 	sprites["river_knight9"] = ConstructSprite("Knight02", 2510, 235, 14);
 	sprites["river_knight9"]:SetDirection(hoa_map.MapMode.EAST);
-	sprites["river_knight9"]:SetNoCollision(true);
+	sprites["river_knight9"].collidable = false;
 	ObjectManager:AddObject(sprites["river_knight9"]);
 
 	-- This sprite represents the boss encountered at the end of the map
@@ -366,7 +366,7 @@ function CreateSprites()
 	sprites["scorpion_boss"]:SetContext(contexts["collapsed"]);
 	sprites["scorpion_boss"]:SetPosition(274, 20);
 	sprites["scorpion_boss"]:SetDirection(hoa_map.MapMode.WEST);
-	sprites["scorpion_boss"]:SetNoCollision(true);
+	sprites["scorpion_boss"].collidable = false;
 	sprites["scorpion_boss"]:SetMovementSpeed(hoa_map.MapMode.SLOW_SPEED);
 	sprites["scorpion_boss"]:SetFadeTime(1000);
 	ObjectManager:AddObject(sprites["scorpion_boss"]);
@@ -1231,9 +1231,9 @@ end -- function CreateEvents()
 -- Called at the end of the first event chain to hide all character sprites but Claudius
 -- and give control over to the player.
 functions["EndOpeningScene"] = function()
-	sprites["mark"]:SetVisible(false);
-	sprites["lukar"]:SetVisible(false);
-	sprites["claudius"]:SetNoCollision(false);
+	sprites["mark"].visible = false;
+	sprites["lukar"].visible = false;
+	sprites["claudius"].collidable = true;
 	Map:PopState();
 end
 
@@ -1394,8 +1394,8 @@ end
 
 -- Makes the knight that moved along the short path disappear
 functions["VanishPathSprite"] = function()
-	sprites["passage_knight2"]:SetNoCollision(true);
-	sprites["passage_knight2"]:SetVisible(false);
+	sprites["passage_knight2"].collidable = false;
+	sprites["passage_knight2"].visible = false;
 end
 
 
@@ -1403,15 +1403,15 @@ end
 functions["HideCameraSprite"] = function()
 	Map.camera:SetMoving(false);
 	Map:PushState(hoa_map.MapMode.STATE_SCENE);
-	Map.camera:SetVisible(false);
-	Map.camera:SetNoCollision(true);
+	Map.camera.visible = false;
+	Map.camera.collidable = false;
 end
 
 -- Exit scene state and restore camera sprite visibility and collision status
 functions["ShowCameraSprite"] = function()
 	Map:PopState();
-	Map.camera:SetVisible(true);
-	Map.camera:SetNoCollision(false);
+	Map.camera.visible = true;
+	Map.camera.collidable = true;
 end
 
 -- Replace dialogue of the knight that guides the player to the right path after the passage collapse
@@ -1468,14 +1468,14 @@ end
 functions["SpawnBoss"] = function()
 	sprites["scorpion_boss"]:ChangeState(hoa_map.EnemySprite.SPAWN);
 	-- Changing the state of an enemy sprite also changes the no_collision property, which we want to remain off
-	sprites["scorpion_boss"]:SetNoCollision(true);
+	sprites["scorpion_boss"].collidable = false;
 end
 
 -- Returns true when the boss sprite has finished spawning
 functions["SpawnBossComplete"] = function()
 	if (sprites["scorpion_boss"]:GetState() == hoa_map.EnemySprite.ACTIVE) then
 		-- Ensure that the no collision property remains active in the sprite's new state
-		sprites["scorpion_boss"]:SetNoCollision(true);
+		sprites["scorpion_boss"].collidable = false;
 		return true;
 	else
 		return false;

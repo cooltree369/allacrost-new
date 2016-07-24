@@ -90,9 +90,9 @@ function Load(m)
 
 	-- All character sprites are initially uncollidable, since they will "merge" into one sprite at the end of the opening scene
 	Map:SetCamera(sprites["claudius"]);
-	sprites["claudius"]:SetNoCollision(true);
-	sprites["mark"]:SetNoCollision(true);
-	sprites["lukar"]:SetNoCollision(true);
+	sprites["claudius"].collidable = false;
+	sprites["mark"].collidable = false;
+	sprites["lukar"].collidable = false;
 
 	EventManager:StartEvent(event_chains["intro_scene"]);
 	IfPrintDebug(DEBUG, "Map loading complete");
@@ -434,9 +434,9 @@ functions["EndIntroScene"] = function()
 		return false;
 	end
 
-	sprites["mark"]:SetVisible(false);
-	sprites["lukar"]:SetVisible(false);
-	sprites["claudius"]:SetNoCollision(false);
+	sprites["mark"].visible = false;
+	sprites["lukar"].visible = false;
+	sprites["claudius"].collidable = true;
 	sprites["claudius"]:SetDirection(hoa_map.MapMode.NORTH);
 	Map:SetCamera(sprites["claudius"], 500);
 	Map:PopState();

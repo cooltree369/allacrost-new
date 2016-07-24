@@ -36,18 +36,14 @@ namespace private_map {
 /** ****************************************************************************
 *** \brief A special type of sprite with no physical image
 ***
-*** The VirtualSprite is a special type of MapObject because it has no physical
-*** form (no image). Virtual sprites may be manipulated to move around on the screen
-*** just like any other sprite. VirtualSprites do take collision detection into account
-*** by default, unless the no_collision member is set to true. Here are some examples of
-*** where virtual sprites may be of use:
+*** The VirtualSprite is a special type of MapObject because it has no physical form (no image). Virtual sprites may be
+*** manipulated to move around on the screen just like any other sprite. The visible and collidable properties are set
+*** to false during construction. Some possible uses for a virtual sprite include:
 ***
-*** - As a mobile focusing point for the map camera
-*** - As an impassible map location for ground objects in a specific context only
-*** - To set impassible locations for objects in the sky layer
+*** - A mobile focusing point for the map camera
+*** - An impassible map location for other sprites and objects in a specific context
 ***
-*** \note The VirtualSprite class serves as a base class for all other types of
-*** sprites.
+*** \note The VirtualSprite class serves as a base class for all other types of sprites.
 *** ***************************************************************************/
 class VirtualSprite : public MapObject {
 public:

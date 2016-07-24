@@ -174,8 +174,6 @@ MapMode::MapMode(string script_filename) :
 	_virtual_focus->SetXPosition(0, 0.0f);
 	_virtual_focus->SetYPosition(0, 0.0f);
 	_virtual_focus->SetMovementSpeed(NORMAL_SPEED);
-	_virtual_focus->SetNoCollision(true);
-	_virtual_focus->SetVisible(false);
 	_object_supervisor->AddObject(_virtual_focus, DEFAULT_LAYER_ID);
 
 	_intro_timer.Initialize(7000, 0);

@@ -64,6 +64,8 @@ VirtualSprite::VirtualSprite() :
 	_saved_moving(false)
 {
 	MapObject::_object_type = VIRTUAL_TYPE;
+	visible = false;
+	collidable = false;
 }
 
 
@@ -366,6 +368,8 @@ MapSprite::MapSprite() :
 	_has_unseen_dialogue(false)
 {
 	MapObject::_object_type = SPRITE_TYPE;
+	visible = true;
+	collidable = true;
 }
 
 
@@ -827,6 +831,7 @@ EnemySprite::EnemySprite() :
 	_battle_script_file("")
 {
 	MapObject::_object_type = ENEMY_TYPE;
+	visible = true;
 	Reset();
 }
 
@@ -834,7 +839,7 @@ EnemySprite::EnemySprite() :
 
 void EnemySprite::Reset() {
 	updatable = false;
-	no_collision = true;
+	collidable = false;
 	_state = INACTIVE;
 	_state_timer.Reset();
 	_fade_color.SetAlpha(0.0f);
@@ -890,18 +895,18 @@ void EnemySprite::ChangeState(ENEMY_STATE new_state) {
 			break;
 		case SPAWN:
 			updatable = true;
-			no_collision = false;
+			collidable = true;
 			_state_timer.Initialize(_fade_time);
 			_state_timer.Run();
 			_fade_color.SetAlpha(0.0f);
 			break;
 		case ACTIVE:
 			updatable = true;
-			no_collision = false;
+			collidable = true;
 			break;
 		case HUNT:
 			updatable = true;
-			no_collision = false;
+			collidable = true;
 			_moving = true;
 			_state_timer.Initialize(_directional_change_time);
 			_state_timer.Run();
@@ -914,7 +919,7 @@ void EnemySprite::ChangeState(ENEMY_STATE new_state) {
 		default:
 			PRINT_ERROR << "function received unknown state argument: " << _state << endl;
 			updatable = false;
-			no_collision = true;
+			collidable = false;
 	}
 }
 

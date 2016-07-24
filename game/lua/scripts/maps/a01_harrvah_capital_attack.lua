@@ -101,9 +101,9 @@ function Load(m)
 	-- All character sprites are initially uncollidable, since they will "merge" into one sprite at the end of the opening scene
 	if (DEBUG_LOAD_STATE == 0) then
 		Map:SetCamera(sprites["claudius"]);
-		sprites["claudius"]:SetNoCollision(true);
-		sprites["mark"]:SetNoCollision(true);
-		sprites["lukar"]:SetNoCollision(true);
+		sprites["claudius"].collidable = false;
+		sprites["mark"].collidable = false;
+		sprites["lukar"].collidable = false;
 		EventManager:StartEvent(event_chains["intro_scene"]);
 	else
 		DEBUG_Load();
@@ -119,43 +119,43 @@ function DEBUG_Load()
 	-- Skip introductory scene and dialogue so player has immediate control
 	if (DEBUG_LOAD_STATE == 1) then
 		Map:SetCamera(sprites["claudius"]);
-		sprites["mark"]:SetVisible(false);
-		sprites["lukar"]:SetVisible(false);
+		sprites["mark"].visible = false;
+		sprites["lukar"].visible = false;
 		sprites["claudius"]:SetXPosition(98, 0);
 		sprites["claudius"]:SetYPosition(185, 0);
 	-- Move player to just below the zone that triggers the demon spawn event
 	elseif (DEBUG_LOAD_STATE == 2) then
 		Map:SetCamera(sprites["claudius"]);
-		sprites["mark"]:SetVisible(false);
-		sprites["lukar"]:SetVisible(false);
+		sprites["mark"].visible = false;
+		sprites["lukar"].visible = false;
 		sprites["claudius"]:SetXPosition(5, 0);
 		sprites["claudius"]:SetYPosition(174, 0);
 	-- Just before approaching the market area
 	elseif (DEBUG_LOAD_STATE == 3) then
 		Map:SetCamera(sprites["claudius"]);
-		sprites["mark"]:SetVisible(false);
-		sprites["lukar"]:SetVisible(false);
+		sprites["mark"].visible = false;
+		sprites["lukar"].visible = false;
 		sprites["claudius"]:SetXPosition(62, 0);
 		sprites["claudius"]:SetYPosition(155, 0);
 	-- Before the scene where the party views a citizen being trapped by a demon
 	elseif (DEBUG_LOAD_STATE == 4) then
 		Map:SetCamera(sprites["claudius"]);
-		sprites["mark"]:SetVisible(false);
-		sprites["lukar"]:SetVisible(false);
+		sprites["mark"].visible = false;
+		sprites["lukar"].visible = false;
 		sprites["claudius"]:SetXPosition(162, 0);
 		sprites["claudius"]:SetYPosition(150, 0);
 	-- Below the first set of stairs leading up to the castle
 	elseif (DEBUG_LOAD_STATE == 5) then
 		Map:SetCamera(sprites["claudius"]);
-		sprites["mark"]:SetVisible(false);
-		sprites["lukar"]:SetVisible(false);
+		sprites["mark"].visible = false;
+		sprites["lukar"].visible = false;
 		sprites["claudius"]:SetXPosition(66, 0);
 		sprites["claudius"]:SetYPosition(98, 0);
 	-- Move player to just outside the throne room
 	elseif (DEBUG_LOAD_STATE == 6) then
 		Map:SetCamera(sprites["claudius"]);
-		sprites["mark"]:SetVisible(false);
-		sprites["lukar"]:SetVisible(false);
+		sprites["mark"].visible = false;
+		sprites["lukar"].visible = false;
 		sprites["claudius"]:SetXPosition(98, 0);
 		sprites["claudius"]:SetYPosition(65, 0);
 	else
@@ -862,13 +862,13 @@ functions["EndIntroScene"] = function()
 		return false;
 	end
 
-	sprites["intro_villager"]:SetVisible(false);
-	sprites["intro_villager"]:SetNoCollision(true);
-	sprites["intro_demon"]:SetVisible(false);
-	sprites["intro_demon"]:SetNoCollision(true);
+	sprites["intro_villager"].visible = false;
+	sprites["intro_villager"].collidable = false;
+	sprites["intro_demon"].visible = false;
+	sprites["intro_demon"].collidable = false;
 	sprites["captain"]:SetStationaryMovement(true);
-	sprites["mark"]:SetVisible(false);
-	sprites["lukar"]:SetVisible(false);
+	sprites["mark"].visible = false;
+	sprites["lukar"].visible = false;
 	sprites["claudius"]:SetNoCollision(false);
 	sprites["claudius"]:SetDirection(hoa_map.MapMode.NORTH);
 	Map:SetCamera(sprites["claudius"], 500);
@@ -902,14 +902,14 @@ functions["StartHelpDialogue"] = function()
 	Map:PushState(hoa_map.MapMode.STATE_SCENE);
 	sprites["mark"]:MoveToObject(sprites["claudius"], false);
 	sprites["lukar"]:MoveToObject(sprites["claudius"], false);
-	sprites["mark"]:SetVisible(true);
-	sprites["lukar"]:SetVisible(true);
+	sprites["mark"].visible = true;
+	sprites["lukar"].visible = true;
 end
 
 
 -- Hide the mark and lukar sprites
 functions["FinishHelpDialogue"] = function()
-	sprites["mark"]:SetVisible(false);
-	sprites["lukar"]:SetVisible(false);
+	sprites["mark"].visible = false;
+	sprites["lukar"].visible = false;
 	Map:PopState();
 end

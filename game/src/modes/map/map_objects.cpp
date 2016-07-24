@@ -61,7 +61,7 @@ MapObject::MapObject() :
 	coll_height(0.0f),
 	updatable(true),
 	visible(true),
-	no_collision(false),
+	collidable(true),
 	_object_layer_id(DEFAULT_LAYER_ID)
 {}
 
@@ -696,7 +696,7 @@ MapObject* ObjectSupervisor::FindNearestObject(const VirtualSprite* sprite, floa
 
 bool ObjectSupervisor::CheckMapCollision(const private_map::MapObject* const obj) {
 	// NOTE: We don't check if the argument is NULL here for performance reasons
-	if (obj->no_collision == true) {
+	if (obj->collidable == false) {
 		return false;
 	}
 
@@ -738,8 +738,8 @@ bool ObjectSupervisor::CheckObjectCollision(const MapRectangle& rect, const priv
 bool ObjectSupervisor::DoObjectsCollide(const MapObject* const obj1, const MapObject* const obj2) {
 	// NOTE: We don't check if the arguments are NULL here for performance reasons
 
-	// Check if either of the two objects have the no_collision property enabled
-	if (obj1->no_collision == true || obj2->no_collision == true) {
+	// Check if either of the two objects have the collidable property disabled
+	if (obj1->collidable == false || obj2->collidable == false) {
 		return false;
 	}
 
@@ -760,8 +760,8 @@ bool ObjectSupervisor::DoObjectsCollide(const MapObject* const obj1, const MapOb
 COLLISION_TYPE ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObject** collision_object, bool ignore_sprites) {
 	// NOTE: We don't check if the argument is NULL here for performance reasons
 
-	// If the sprite has this property set it can not collide
-	if (sprite->no_collision == true) {
+	// If the sprite has this property disabled, it can not collide with anything
+	if (sprite->collidable == false) {
 		return NO_COLLISION;
 	}
 
@@ -803,7 +803,7 @@ COLLISION_TYPE ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObjec
 		// Check for conditions where we would not want to do collision detection between the two objects
 		if ((*objects)[i]->object_id == sprite->object_id)
 			continue; // Object and sprite are the same
-		if ((*objects)[i]->no_collision == true)
+		if ((*objects)[i]->collidable == false)
 			continue; // Object has no collision detection property set
 		if (((*objects)[i]->context & sprite->context) == 0)
 			continue; // Sprite and object do not exist in the same context

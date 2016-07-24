@@ -207,6 +207,12 @@ void BindModeCode() {
 			.def("MoveObjectToLayer", &ObjectSupervisor::MoveObjectToLayer),
 
 		class_<MapObject>("MapObject")
+			.def_readwrite("updatable", &MapObject::updatable)
+			.def_readwrite("visible", &MapObject::visible)
+			.def_readwrite("collidable", &MapObject::collidable)
+			// TEMP: because GetXPosition and GetYPostiion seem to give a runtime error in Lua
+			.def_readonly("x_position", &MapObject::x_position)
+			.def_readonly("y_position", &MapObject::y_position)
 			.def("ModifyPosition", &MapObject::ModifyPosition)
 			.def("ModifyXPosition", &MapObject::ModifyXPosition)
 			.def("ModifyYPosition", &MapObject::ModifyYPosition)
@@ -221,9 +227,6 @@ void BindModeCode() {
 			.def("SetImgHeight", &MapObject::SetImgHeight)
 			.def("SetCollHalfWidth", &MapObject::SetCollHalfWidth)
 			.def("SetCollHeight", &MapObject::SetCollHeight)
-			.def("SetUpdatable", &MapObject::SetUpdatable)
-			.def("SetVisible", &MapObject::SetVisible)
-			.def("SetNoCollision", &MapObject::SetNoCollision)
 			.def("GetObjectID", &MapObject::GetObjectID)
 			.def("GetObjectLayerID", &MapObject::GetObjectLayerID)
 			.def("GetContext", &MapObject::GetContext)
@@ -232,13 +235,8 @@ void BindModeCode() {
 			.def("GetImgHalfWidth", &MapObject::GetImgHalfWidth)
 			.def("GetImgHeight", &MapObject::GetImgHeight)
 			.def("GetCollHalfWidth", &MapObject::GetCollHalfWidth)
-			.def("GetCollHeight", &MapObject::GetCollHeight)
-			.def("IsUpdatable", &MapObject::IsUpdatable)
-			.def("IsVisible", &MapObject::IsVisible)
-			.def("IsNoCollision", &MapObject::IsNoCollision)
-			// TEMP: because GetXPosition and GetYPostiion seem to give a runtime error in Lua
-			.def_readonly("x_position", &MapObject::x_position)
-			.def_readonly("y_position", &MapObject::y_position),
+			.def("GetCollHeight", &MapObject::GetCollHeight),
+
 
 		class_<PhysicalObject, MapObject>("PhysicalObject")
 			.def(constructor<>())
@@ -483,7 +481,7 @@ void BindModeCode() {
 			.def("PositionChangeRelative", &ChangePropertySpriteEvent::PositionChangeRelative)
 			.def("Updatable", &ChangePropertySpriteEvent::Updatable)
 			.def("Visible", &ChangePropertySpriteEvent::Visible)
-			.def("NoCollision", &ChangePropertySpriteEvent::NoCollision)
+			.def("Colliable", &ChangePropertySpriteEvent::Collidable)
 			.def("Context", &ChangePropertySpriteEvent::Context)
 			.def("Position", (void(ChangePropertySpriteEvent::*)(int16, int16)) &ChangePropertySpriteEvent::Position)
 			.def("Position", (void(ChangePropertySpriteEvent::*)(int16, float, int16, float)) &ChangePropertySpriteEvent::Position)
