@@ -782,18 +782,22 @@ function CreateEvents()
 	event:SetRelativeDestination(true);
 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["entrance"] + 2, 3, 0, -16);
 	event:SetRelativeDestination(true);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["entrance"] + 3, 3, hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["entrance"] + 3, sprites["lukar"]);
+	event:Direction(hoa_map.MapMode.SOUTH);
 	event = hoa_map.DialogueEvent.Create(event_chains["entrance"] + 4, event_dialogues["entrance1"]);
 	event:AddEventLinkAtEnd(event_chains["entrance"] + 5, 250);
 	event:AddEventLinkAtEnd(event_chains["entrance"] + 6, 500);
 	event:AddEventLinkAtEnd(event_chains["entrance"] + 7, 500);
 	-- Part #2: Mark protests Lukar's decision
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["entrance"] + 5, 2, hoa_map.MapMode.WEST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["entrance"] + 6, 1, hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["entrance"] + 5, sprites["mark"]);
+	event:Direction(hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["entrance"] + 6, sprites["claudius"]);
+	event:Direction(hoa_map.MapMode.EAST);
 	event = hoa_map.DialogueEvent.Create(event_chains["entrance"] + 7, event_dialogues["entrance2"]);
 	event:AddEventLinkAtEnd(18, 200);
 	-- Part #3: Lukar reassures Mark
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["entrance"] + 8, 3, hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["entrance"] + 8, sprites["lukar"]);
+	event:Direction(hoa_map.MapMode.EAST);
 	event:AddEventLinkAtEnd(event_chains["entrance"] + 9, 100);
 	event = hoa_map.DialogueEvent.Create(event_chains["entrance"] + 9, event_dialogues["entrance3"]);
 	event:AddEventLinkAtEnd(event_chains["entrance"] + 10, 300);
@@ -801,9 +805,11 @@ function CreateEvents()
 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["entrance"] + 10, 3, -5, 0);
 	event:SetRelativeDestination(true);
 	event:AddEventLinkAtEnd(event_chains["entrance"] + 11);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["entrance"] + 11, 3, hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["entrance"] + 11, sprites["lukar"]);
+	event:Direction(hoa_map.MapMode.SOUTH);
 	event:AddEventLinkAtEnd(event_chains["entrance"] + 12, 100);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["entrance"] + 12, 1, hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["entrance"] + 12, sprites["claudius"]);
+	event:Direction(hoa_map.MapMode.NORTH);
 	event:AddEventLinkAtEnd(event_chains["entrance"] + 13, 100);
 	event = hoa_map.DialogueEvent.Create(event_chains["entrance"] + 13, event_dialogues["entrance4"]);
 	event:AddEventLinkAtEnd(event_chains["entrance"] + 14, 100);
@@ -814,9 +820,9 @@ function CreateEvents()
 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["entrance"] + 15, 3, 0, 4);
 	event:SetRelativeDestination(true);
 	event = hoa_map.CustomEvent.Create(event_chains["entrance"] + 16, "EndOpeningScene", "");
---	event:AddEventLinkAtEnd(event_chains["entrance"] + 17);
-	-- Part #5: TODO: add a dialogue that explains the controls to the player
---	event = hoa_map.DialogueEvent.Create(event_chains["entrance"] + 17, );
+-- 	event:AddEventLinkAtEnd(event_chains["entrance"] + 17);
+--	-- Part #5: TODO: add a dialogue that explains the controls to the player
+-- 	event = hoa_map.DialogueEvent.Create(event_chains["entrance"] + 17, );
 
 	---------- Event Chain 02: First enemy encounter
 	IfPrintDebug(DEBUG, "Building event chain #02...");

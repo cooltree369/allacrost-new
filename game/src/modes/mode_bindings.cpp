@@ -213,7 +213,8 @@ void BindModeCode() {
 			.def("MoveToObject", &MapObject::MoveToObject)
 			.def("SetObjectID", &MapObject::SetObjectID)
 			.def("SetContext", &MapObject::SetContext)
-			.def("SetPosition", &MapObject::SetPosition)
+			.def("SetPosition", (void(MapObject::*)(uint16, uint16))&MapObject::SetPosition)
+			.def("SetPosition", (void(MapObject::*)(uint16, float, uint16, float))&MapObject::SetPosition)
 			.def("SetXPosition", &MapObject::SetXPosition)
 			.def("SetYPosition", &MapObject::SetYPosition)
 			.def("SetImgHalfWidth", &MapObject::SetImgHalfWidth)
@@ -471,6 +472,26 @@ void BindModeCode() {
 			],
 
 		class_<SpriteEvent, MapEvent>("SpriteEvent"),
+
+		class_<ChangePropertySpriteEvent, SpriteEvent>("ChangePropertySpriteEvent")
+			.scope
+			[
+				def("Create", (ChangePropertySpriteEvent*(*)(uint32, VirtualSprite*))&ChangePropertySpriteEvent::Create),
+				def("Create", (ChangePropertySpriteEvent*(*)(uint32, uint16))&ChangePropertySpriteEvent::Create)
+			]
+			.def("AddSprite", &ChangePropertySpriteEvent::AddSprite)
+			.def("PositionChangeRelative", &ChangePropertySpriteEvent::PositionChangeRelative)
+			.def("Updatable", &ChangePropertySpriteEvent::Updatable)
+			.def("Visible", &ChangePropertySpriteEvent::Visible)
+			.def("NoCollision", &ChangePropertySpriteEvent::NoCollision)
+			.def("Context", &ChangePropertySpriteEvent::Context)
+			.def("Position", (void(ChangePropertySpriteEvent::*)(int16, int16)) &ChangePropertySpriteEvent::Position)
+			.def("Position", (void(ChangePropertySpriteEvent::*)(int16, float, int16, float)) &ChangePropertySpriteEvent::Position)
+			.def("Direction", &ChangePropertySpriteEvent::Direction)
+			.def("MovementSpeed", &ChangePropertySpriteEvent::MovementSpeed)
+			.def("Moving", &ChangePropertySpriteEvent::Moving)
+			.def("Running", &ChangePropertySpriteEvent::Running)
+			.def("StationaryMovement", &ChangePropertySpriteEvent::StationaryMovement),
 
 		class_<ChangeDirectionSpriteEvent, SpriteEvent>("ChangeDirectionSpriteEvent")
 			.scope

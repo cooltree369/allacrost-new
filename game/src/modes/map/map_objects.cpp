@@ -104,22 +104,33 @@ bool MapObject::ShouldDraw() {
 
 void MapObject::CheckPositionOffsets() {
 	while (x_offset < 0.0f) {
-		x_position -= 1;
-		x_offset += 1.0f;
+		if (x_position != 0) {
+			x_position -= 1;
+			x_offset += 1.0f;
+		}
+		else {
+			x_offset = 0.0f;
+		}
 	}
 	while (x_offset > 1.0f) {
 		x_position += 1;
 		x_offset -= 1.0f;
 	}
 	while (y_offset < 0.0f) {
-		y_position -= 1;
-		y_offset += 1.0f;
+		if (y_position != 0) {
+			y_position -= 1;
+			y_offset += 1.0f;
+		}
+		else {
+			y_offset = 0.0f;
+		}
 	}
 	while (y_offset > 1.0f) {
 		y_position += 1;
 		y_offset -= 1.0f;
 	}
 }
+
 
 
 void MapObject::ModifyPosition(int16 x, float x_offset, int16 y, float y_offset) {

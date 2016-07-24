@@ -485,6 +485,144 @@ SpriteEvent::SpriteEvent(uint32 event_id, EVENT_TYPE event_type, VirtualSprite* 
 }
 
 // -----------------------------------------------------------------------------
+// ---------- ChangePropertySpriteEvent Class Methods
+// -----------------------------------------------------------------------------
+
+ChangePropertySpriteEvent::ChangePropertySpriteEvent(uint32 event_id, VirtualSprite* sprite) :
+	SpriteEvent(event_id, CHANGE_PROPERTY_SPRITE_EVENT, sprite),
+	_sprite_list(1, sprite),
+	_properties(),
+	_relative_position_change(false),
+	_updatable(false),
+	_visible(false),
+	_no_collision(false),
+	_context(MAP_CONTEXT_NONE),
+	_x_position(0),
+	_y_position(0),
+	_x_offset(0.0f),
+	_y_offset(0.0f),
+	_direction(NORTH),
+	_movement_speed(NORMAL_SPEED),
+	_moving(false),
+	_running(false),
+	_stationary_movement(false)
+{}
+
+
+
+ChangePropertySpriteEvent* ChangePropertySpriteEvent::Create(uint32 event_id, VirtualSprite* sprite) {
+	if (sprite == NULL) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "function received NULL sprite argument when trying to create an event with id: " << event_id << endl;
+		return NULL;
+	}
+
+	ChangePropertySpriteEvent* event = new ChangePropertySpriteEvent(event_id, sprite);
+	MapMode::CurrentInstance()->GetEventSupervisor()->RegisterEvent(event);
+	return event;
+}
+
+
+
+ChangePropertySpriteEvent* ChangePropertySpriteEvent::Create(uint32 event_id, uint16 sprite_id) {
+	VirtualSprite* sprite = MapMode::CurrentInstance()->GetObjectSupervisor()->GetSprite(sprite_id);
+	if (sprite == NULL) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "no sprite object was registered for the requested sprite_id (" << sprite_id << ") "
+			<< "when trying to create an event with id: " << event_id << endl;
+		return NULL;
+	}
+
+	return Create(event_id, sprite);
+}
+
+
+
+void ChangePropertySpriteEvent::AddSprite(VirtualSprite* sprite) {
+	if (sprite == NULL) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "function received NULL sprite argument when trying to add to event id: " << GetEventID() << endl;
+		return;
+	}
+
+	// Note that we don't bother to check if this sprite is a duplicate of one already in the list. It doesn't matter much since we will
+	// just end up setting the properties for that sprite twice.
+	_sprite_list.push_back(sprite);
+}
+
+
+
+void ChangePropertySpriteEvent::Position(int16 x_position, float x_offset, int16 y_position, float y_offset) {
+	if (_relative_position_change == false) {
+		if (x_position < 0) {
+			IF_PRINT_WARNING(MAP_DEBUG) << "function received negative x_position value when relative positioning was disabled, event id: " << GetEventID() << endl;
+			x_position = -x_position;
+		}
+		if (y_position < 0) {
+			IF_PRINT_WARNING(MAP_DEBUG) << "function received negative y_position value when relative positioning was disabled, event id: " << GetEventID() << endl;
+			y_position = -y_position;
+		}
+	}
+
+	_x_position = x_position;
+	_x_offset = x_offset;
+	_y_position = y_position;
+	_y_offset = y_offset;
+}
+
+
+void ChangePropertySpriteEvent::_Start() {
+	// When no properties were set by the user, this event effectively becomes a no-op
+	if (_properties.none() == true)
+		return;
+
+	for (uint32 i = 0; i < _sprite_list.size(); ++i) {
+		VirtualSprite* sprite = _sprite_list[i];
+		for (uint32 bit = 0; bit < _properties.size(); ++bit) {
+			if (_properties.test(bit) == true) {
+				switch (bit) {
+					case UPDATABLE:
+						sprite->SetUpdatable(_updatable);
+						break;
+					case VISIBLE:
+						sprite->SetVisible(_visible);
+						break;
+					case NOCOLLISION:
+						sprite->SetNoCollision(_no_collision);
+						break;
+					case CONTEXT:
+						sprite->SetContext(_context);
+						break;
+					case POSITION:
+						if (_relative_position_change == false)
+							sprite->SetPosition(static_cast<uint16>(_x_position), _x_offset, static_cast<uint16>(_y_position), _y_offset);
+						else
+							sprite->ModifyPosition(_x_position, _x_offset, _y_position, _y_offset);
+						break;
+					case DIRECTION:
+						sprite->SetDirection(_direction);
+						break;
+					case MOVEMENTSPEED:
+						sprite->SetMovementSpeed(_movement_speed);
+						break;
+					case MOVING:
+						sprite->SetMoving(_moving);
+						break;
+					case RUNNING:
+						sprite->SetRunning(_running);
+						break;
+					case STATIONARYMOVEMENT:
+						if (sprite->GetObjectType() != VIRTUAL_TYPE) {
+							MapSprite* map_sprite = dynamic_cast<MapSprite*>(sprite);
+							map_sprite->SetStationaryMovement(_stationary_movement);
+						}
+						break;
+					default:
+						IF_PRINT_WARNING(MAP_DEBUG) << "unknown property bit set (" << bit << "), event id: " << GetEventID() << endl;
+				}
+			}
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
 // ---------- ChangeDirectionSpriteEvent Class Methods
 // -----------------------------------------------------------------------------
 

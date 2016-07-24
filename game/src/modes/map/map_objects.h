@@ -255,9 +255,11 @@ public:
 	void SetContext(MAP_CONTEXT ctxt)
 		{ context = ctxt; }
 
-	// TODO: add x/y offsets as arguments
 	void SetPosition(uint16 x, uint16 y)
 		{ x_position = x; x_offset = 0.0f; y_position = y; y_offset = 0.0f; }
+
+	void SetPosition(uint16 x, float x_offset, uint16 y, float y_offset)
+		{ x_position = x; x_offset = x_offset; y_position = y; y_offset = y_offset; CheckPositionOffsets(); }
 
 	void SetXPosition(uint16 x, float offset)
 		{ x_position = x; x_offset = offset; }
