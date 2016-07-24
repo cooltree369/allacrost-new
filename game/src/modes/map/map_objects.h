@@ -133,8 +133,8 @@ public:
 	//! \brief When false, the Draw() function will do nothing (default == true).
 	bool visible;
 
-	//! \brief When true, the object will not be examined for collision detection (default == false).
-	bool no_collision;
+	//! \brief When false, the object will not be examined for collision detection (default == true).
+	bool collidable;
 	//@}
 
 	// ---------- Methods
@@ -279,15 +279,6 @@ public:
 	void SetCollHeight(float collision)
 		{ coll_height = collision; }
 
-	void SetUpdatable(bool update)
-		{ updatable = update; }
-
-	void SetVisible(bool vis)
-		{ visible = vis; }
-
-	void SetNoCollision(bool coll)
-		{ no_collision = coll; }
-
 	//! \note Should be called only by ObjectSupervisor class
 	void SetObjectLayerID(uint32 layer)
 		{ _object_layer_id = layer; }
@@ -315,15 +306,6 @@ public:
 
 	float GetCollHeight() const
 		{ return coll_height; }
-
-	bool IsUpdatable() const
-		{ return updatable; }
-
-	bool IsVisible() const
-		{ return visible; }
-
-	bool IsNoCollision() const
-		{ return no_collision; }
 
 	uint32 GetObjectLayerID() const
 		{ return _object_layer_id; }
@@ -700,7 +682,7 @@ public:
 	*** \param obj A pointer to a map object
 	*** \return True if the objects collide with one another
 	*** \note This test is "absolute", and does not factor in things such as map contexts or whether or
-	*** not the no_collision property is enabled on the MapObject.
+	*** not the collidable property is disabled on the MapObject.
 	**/
 	bool CheckObjectCollision(const MapRectangle& rect, const private_map::MapObject* const obj);
 

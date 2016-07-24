@@ -495,7 +495,7 @@ ChangePropertySpriteEvent::ChangePropertySpriteEvent(uint32 event_id, VirtualSpr
 	_relative_position_change(false),
 	_updatable(false),
 	_visible(false),
-	_no_collision(false),
+	_collidable(false),
 	_context(MAP_CONTEXT_NONE),
 	_x_position(0),
 	_y_position(0),
@@ -579,13 +579,13 @@ void ChangePropertySpriteEvent::_Start() {
 			if (_properties.test(bit) == true) {
 				switch (bit) {
 					case UPDATABLE:
-						sprite->SetUpdatable(_updatable);
+						sprite->updatable = _updatable;
 						break;
 					case VISIBLE:
-						sprite->SetVisible(_visible);
+						sprite->visible = _visible;
 						break;
-					case NOCOLLISION:
-						sprite->SetNoCollision(_no_collision);
+					case COLLIDABLE:
+						sprite->collidable = _collidable;
 						break;
 					case CONTEXT:
 						sprite->SetContext(_context);

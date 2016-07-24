@@ -505,10 +505,10 @@ bool EnemyZone::_SpawnEnemy(uint32 enemy_index) {
 	int8 retries = SPAWN_RETRIES; // Number of times to try finding a valid spawning location
 	bool collision; // Holds the result of a collision detection check
 
-	// Select a random position inside the zone to place the spawning enemy. To do this, we need to diable the no_collision
+	// Select a random position inside the zone to place the spawning enemy. To do this, we need to enable the collidable
 	// property of the enemy sprite.
-	bool saved_no_collision = _enemies[enemy_index]->no_collision;
-	_enemies[enemy_index]->no_collision = false; // This must be temporarily
+	bool saved_collidable = _enemies[enemy_index]->collidable;
+	_enemies[enemy_index]->collidable = true; // This must be temporarily
 	MapZone* spawning_zone = NULL;
 	if (HasSeparateSpawnZone() == false) {
 		spawning_zone = this;
@@ -528,7 +528,7 @@ bool EnemyZone::_SpawnEnemy(uint32 enemy_index) {
 	// If we didn't find a suitable spawning location, reset the collision info
 	// on the enemy sprite and we will retry on the next call to this function
 	if (collision) {
-		_enemies[enemy_index]->no_collision = saved_no_collision;
+		_enemies[enemy_index]->collidable = saved_collidable;
 		return false;
 	}
 	// Otherwise, spawn the enemy and reset the spawn timer
