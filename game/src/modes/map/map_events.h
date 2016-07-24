@@ -610,6 +610,151 @@ protected:
 
 
 /** ****************************************************************************
+*** \brief A simple event used to modify various properties of one or more sprites
+***
+*** During event sequences, it is frequently the case that we desire a change in the
+*** properties of a sprite. For example, changing their direction to face a sound,
+*** or to stop movement. This class serves as a means to make those instant changes
+*** to a sprite's properties.
+***
+*** One unique aspect of this class is that it allows you to add more than one sprite,
+*** and all sprites will be affected by the same property changes at the same time. This
+*** means that you don't need to create a single event for each sprite, although if you want
+*** the same properties to change but at different times, you'll need to create several to
+***
+***
+***
+*** ***************************************************************************/
+class ChangePropertySpriteEvent : public SpriteEvent {
+protected:
+	//! \brief Represent indexes into a bit vector of properties that are set to change
+	enum PROPERTY_NAME {
+		UPDATABLE           = 0,
+		VISIBLE             = 1,
+		NOCOLLISION         = 2,
+		CONTEXT             = 3,
+		POSITION            = 4,
+		DIRECTION           = 5,
+		MOVEMENTSPEED       = 6,
+		MOVING              = 7,
+		RUNNING             = 8,
+		STATIONARYMOVEMENT  = 9
+	};
+
+public:
+	/** \brief Creates an instance of the class and registers it with the event supervisor
+	*** \param event_id The ID of this event
+	*** \param sprite A pointer to the sprite to enact the event on
+	*** \return A pointer to the instance of the event created
+	**/
+	static ChangePropertySpriteEvent* Create(uint32 event_id, VirtualSprite* sprite);
+
+	/** \brief Creates an instance of the class and registers it with the event supervisor
+	*** \param event_id The ID of this event
+	*** \param sprite_id The ID of the sprite to enact the event on
+	*** \return A pointer to the instance of the event created
+	**/
+	static ChangePropertySpriteEvent* Create(uint32 event_id, uint16 sprite_id);
+
+	/** \brief Adds another sprite to have its properties modified by this event
+	*** \param sprite A pointer to the sprite to update
+	**/
+	void AddSprite(VirtualSprite* sprite);
+
+	/** \brief Indicates that position changes are relative to the sprite's current position
+	*** By default, all position changes are in absolute coordinates on the map. Calling this function indicates that position changes
+	*** are instead relative to the sprite's current position. You should call this function before calling Position(), otherwise
+	***
+	**/
+	void PositionChangeRelative()
+		{ _relative_position_change = true;}
+
+	/** \brief Functions that set the property of the same name as the function.
+	*** Once you call these functions, there's no way to "cancel" the change from occuring to that property.
+	**/
+	//@{
+	void Updatable(bool updatable)
+		{ _properties.set(UPDATABLE); _updatable = updatable; }
+
+	void Visible(bool visible)
+		{ _properties.set(VISIBLE); _visible = visible; }
+
+	void NoCollision(bool no_collision)
+		{ _properties.set(NOCOLLISION); _no_collision = no_collision; }
+
+	void Context(MAP_CONTEXT context)
+		{ _properties.set(CONTEXT); _context = context; }
+
+	/** \note If you pass in a negative value to this function before PositionChangeRelative() is called, a warning will be printed
+	*** and the negative values will be converted to be positive. This function also sets the x/y offsets to 0.0f.
+	**/
+	void Position(int16 x_position, int16 y_position)
+		{ Position(x_position, 0.0f, y_position, 0.0f); }
+
+	/** \note If you pass in a negative value to this function before PositionChangeRelative() is called, a warning will be printed
+	*** and the negative values will be converted to be positive.
+	**/
+	void Position(int16 x_position, float x_offset, int16 y_position, float y_offset);
+
+	void Direction(uint16 direction)
+		{ _properties.set(DIRECTION); _direction = direction; }
+
+	void MovementSpeed(float movement_speed)
+		{ _properties.set(MOVEMENTSPEED); _movement_speed = movement_speed; }
+
+	void Moving(bool moving)
+		{ _properties.set(MOVING); _moving = moving; }
+
+	void Running(bool running)
+		{ _properties.set(RUNNING); _running = running; }
+
+	//! \note This function will only apply to sprites that are not VirtualSprite types
+	void StationaryMovement(bool stationary_movement)
+		{ _properties.set(STATIONARYMOVEMENT); _stationary_movement = stationary_movement; }
+	//@}
+
+
+protected:
+	ChangePropertySpriteEvent(uint32 event_id, VirtualSprite* sprite);
+
+	~ChangePropertySpriteEvent()
+		{}
+
+	//! \brief The list of sprites that will be modified. Guaranteed to contain at least one sprite.
+	std::vector<VirtualSprite*> _sprite_list;
+
+	//! \brief A bit-mask used to identify which properties of a sprite should be updated
+	std::bitset<16> _properties;
+
+	//! \brief When true, positional changes will be relative to the sprite's current position
+	bool _relative_position_change;
+
+	//! \brief Idenitcally named to the properties found in the following classes: MapObject, VirtualSprite, MapSprite
+	//@{
+	bool _updatable;
+	bool _visible;
+	bool _no_collision;
+	MAP_CONTEXT _context;
+	//! \note X/Y position are stored as signed integers here because they can be used for relative movement.
+	int16 _x_position, _y_position;
+	float _x_offset, _y_offset;
+	uint16 _direction;
+	float _movement_speed;
+	bool _moving;
+	bool _running;
+	bool _stationary_movement;
+	//@}
+
+	//! \brief Sets the desired properties for all sprites
+	void _Start();
+
+	//! \brief Always returns true, immediately terminating the event
+	bool _Update()
+		{ return true; }
+}; // class ChangePropertySpriteEvent : public SpriteEvent
+
+
+/** ****************************************************************************
 *** \brief A simple event used to set the direction of a sprite
 ***
 *** This event finishes immediately after it starts, as all that it performs is
@@ -622,6 +767,9 @@ protected:
 *** SOUTH, EAST, and WEST. This event is used when a sprite is stationary, so
 *** the other types of directions (which also infer movement) are unnecessary.
 *** Using a direction other than these four will result in a warning being printed.
+***
+*** \deprecated This class has been deprecated in favor of ChangePropertySpriteEvent.
+*** Use that class instead of this one.a
 *** ***************************************************************************/
 class ChangeDirectionSpriteEvent : public SpriteEvent {
 public:

@@ -58,6 +58,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <bitset>
 #include <vector>
 #include <list>
 #include <map>
@@ -108,9 +109,9 @@
 *** that is needed is to add `<< "print message" << std::endl;` after the macro name.
 **/
 //@{
-#define PRINT_DEBUG std::cout << "DEBUG:" << __FILE__ << ":" << __FUNCTION__ << ":" << __LINE__ << ": "
-#define PRINT_WARNING std::cerr << "WARNING:" << __FILE__ << ":" << __FUNCTION__ << ":" << __LINE__ << ": "
-#define PRINT_ERROR std::cerr << "ERROR:" << __FILE__ << ":" << __FUNCTION__ << ":" << __LINE__ << ": "
+#define PRINT_DEBUG std::cout << "\tDEBUG:" << __FILE__ << ":" << __FUNCTION__ << ":" << __LINE__ << "\n"
+#define PRINT_WARNING std::cerr << "\tWARNING:" << __FILE__ << ":" << __FUNCTION__ << ":" << __LINE__ << "\n"
+#define PRINT_ERROR std::cerr << "\tERROR:" << __FILE__ << ":" << __FUNCTION__ << ":" << __LINE__ << "\n"
 //@}
 
 /** \name Print Message Helper Macros With Conditional
@@ -122,8 +123,8 @@
 *** \note There is no error conditional macro because detected errors should always be printed when they are discovered
 **/
 //@{
-#define IF_PRINT_DEBUG(var) if (var) std::cout << "DEBUG:" << __FILE__ << ":" << __FUNCTION__ << ":" << __LINE__ << ": "
-#define IF_PRINT_WARNING(var) if (var) std::cerr << "WARNING:" << __FILE__ << ":" << __FUNCTION__ << ":" << __LINE__ << ": "
+#define IF_PRINT_DEBUG(var) if (var) std::cout << "\tDEBUG:" << __FILE__ << ":" << __FUNCTION__ << ":" << __LINE__ << "\n"
+#define IF_PRINT_WARNING(var) if (var) std::cerr << "\tWARNING:" << __FILE__ << ":" << __FUNCTION__ << ":" << __LINE__ << "\n"
 //@}
 
 /** \name Allacrost Integer Types
