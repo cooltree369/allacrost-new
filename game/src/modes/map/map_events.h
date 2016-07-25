@@ -622,23 +622,25 @@ protected:
 *** means that you don't need to create a single event for each sprite, although if you want
 *** the same properties to change but at different times, you'll need to create several to
 ***
-***
-***
+*** \note Some of the properties you can change with this event only affect MapSprite objects,
+*** or those that derive from MapSprite. Check the methods for a note to see if the property
+*** applies to all sprites, or only MapSprite and MapSprite-derived objects.
 *** ***************************************************************************/
 class ChangePropertySpriteEvent : public SpriteEvent {
 protected:
 	//! \brief Represent indexes into a bit vector of properties that are set to change
 	enum PROPERTY_NAME {
-		UPDATABLE           = 0,
-		VISIBLE             = 1,
-		COLLIDABLE          = 2,
-		CONTEXT             = 3,
-		POSITION            = 4,
-		DIRECTION           = 5,
-		MOVEMENTSPEED       = 6,
-		MOVING              = 7,
-		RUNNING             = 8,
-		STATIONARYMOVEMENT  = 9
+		UPDATABLE           =  0,
+		VISIBLE             =  1,
+		COLLIDABLE          =  2,
+		CONTEXT             =  3,
+		POSITION            =  4,
+		DIRECTION           =  5,
+		MOVEMENTSPEED       =  6,
+		MOVING              =  7,
+		RUNNING             =  8,
+		STATIONARYMOVEMENT  =  9,
+		REVERSEMOVEMENT     = 10,
 	};
 
 public:
@@ -711,6 +713,10 @@ public:
 	//! \note This function will only apply to sprites that are not VirtualSprite types
 	void StationaryMovement(bool stationary_movement)
 		{ _properties.set(STATIONARYMOVEMENT); _stationary_movement = stationary_movement; }
+
+	//! \note This function will only apply to sprites that are not VirtualSprite types
+	void ReverseMovement(bool reverse_movement)
+		{ _properties.set(REVERSEMOVEMENT); _reverse_movement = reverse_movement; }
 	//@}
 
 
@@ -743,6 +749,7 @@ protected:
 	bool _moving;
 	bool _running;
 	bool _stationary_movement;
+	bool _reverse_movement;
 	//@}
 
 	//! \brief Sets the desired properties for all sprites
