@@ -575,6 +575,9 @@ void ChangePropertySpriteEvent::_Start() {
 
 	for (uint32 i = 0; i < _sprite_list.size(); ++i) {
 		VirtualSprite* sprite = _sprite_list[i];
+		MapSprite* map_sprite = NULL;
+		if (sprite->GetObjectType() != VIRTUAL_TYPE)
+			map_sprite = dynamic_cast<MapSprite*>(sprite);
 		for (uint32 bit = 0; bit < _properties.size(); ++bit) {
 			if (_properties.test(bit) == true) {
 				switch (bit) {
@@ -609,10 +612,12 @@ void ChangePropertySpriteEvent::_Start() {
 						sprite->SetRunning(_running);
 						break;
 					case STATIONARYMOVEMENT:
-						if (sprite->GetObjectType() != VIRTUAL_TYPE) {
-							MapSprite* map_sprite = dynamic_cast<MapSprite*>(sprite);
+						if (map_sprite != NULL)
 							map_sprite->SetStationaryMovement(_stationary_movement);
-						}
+						break;
+					case REVERSEMOVEMENT:
+						if (map_sprite != NULL)
+							map_sprite->SetReverseMovement(_reverse_movement);
 						break;
 					default:
 						IF_PRINT_WARNING(MAP_DEBUG) << "unknown property bit set (" << bit << "), event id: " << GetEventID() << endl;

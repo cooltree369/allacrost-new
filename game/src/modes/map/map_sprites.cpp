@@ -361,6 +361,7 @@ MapSprite::MapSprite() :
 	_current_animation(ANIM_STANDING_SOUTH),
 	_has_running_animations(false),
 	_stationary_movement(false),
+	_reverse_movement(false),
 	_custom_animation_on(false),
 	_saved_current_animation(0),
 	_next_dialogue(-1),
@@ -757,6 +758,7 @@ void MapSprite::_ChangeCurrentAnimation() {
 	uint8 last_animation = _current_animation;
 	bool stationary_animation = (_moving == false && _stationary_movement == false);
 
+	// TODO: It would be nice to replace all this conditional logic with a lookup table to find the current animation
 	if (stationary_animation == true) {
 		if (_direction & FACING_NORTH) {
 			_current_animation = ANIM_STANDING_NORTH;
@@ -800,6 +802,47 @@ void MapSprite::_ChangeCurrentAnimation() {
 			_current_animation = ANIM_WALKING_EAST;
 		}
 	}
+	// If movement animation is reversed, swap the current animation with it's directional opposite
+	if (_reverse_movement == true) {
+		switch (_current_animation) {
+			case ANIM_STANDING_SOUTH:
+				_current_animation = ANIM_STANDING_NORTH;
+				break;
+			case ANIM_STANDING_NORTH:
+				_current_animation = ANIM_STANDING_SOUTH;
+				break;
+			case ANIM_STANDING_WEST:
+				_current_animation = ANIM_STANDING_EAST;
+				break;
+			case ANIM_STANDING_EAST:
+				_current_animation = ANIM_STANDING_WEST;
+				break;
+			case ANIM_WALKING_SOUTH:
+				_current_animation = ANIM_WALKING_NORTH;
+				break;
+			case ANIM_WALKING_NORTH:
+				_current_animation = ANIM_WALKING_SOUTH;
+				break;
+			case ANIM_WALKING_WEST:
+				_current_animation = ANIM_WALKING_EAST;
+				break;
+			case ANIM_WALKING_EAST:
+				_current_animation = ANIM_WALKING_WEST;
+				break;
+			case ANIM_RUNNING_SOUTH:
+				_current_animation = ANIM_RUNNING_NORTH;
+				break;
+			case ANIM_RUNNING_NORTH:
+				_current_animation = ANIM_RUNNING_SOUTH;
+				break;
+			case ANIM_RUNNING_WEST:
+				_current_animation = ANIM_RUNNING_EAST;
+				break;
+			case ANIM_RUNNING_EAST:
+				_current_animation = ANIM_RUNNING_WEST;
+				break;
+		}
+	}
 
 	// If the direction changed while _moving, update the animation timer on the new animated image to match the old one.
 	// This is so that movement animations do not appear to "restart" when a sprite changes directions.
@@ -812,7 +855,7 @@ void MapSprite::_ChangeCurrentAnimation() {
 	if (_current_animation != last_animation) {
 		_animations[last_animation].ResetAnimation();
 	}
-}
+} // void MapSprite::_ChangeCurrentAnimation()
 
 // *****************************************************************************
 // ********** EnemySprite class methods

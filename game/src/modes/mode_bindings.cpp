@@ -266,6 +266,7 @@ void BindModeCode() {
 			.def("SetDirection", &MapSprite::SetDirection)
 			.def("SetRandomDirection", &MapSprite::SetRandomDirection)
 			.def("SetStationaryMovement", &MapSprite::SetStationaryMovement)
+			.def("SetReverseMovement", &MapSprite::SetReverseMovement)
 			.def("SetCurrentAnimation", &MapSprite::SetCurrentAnimation)
 			.def("GetCurrentAnimation", (uint8(MapSprite::*)()const)&MapSprite::GetCurrentAnimation)
 			.def("GetCurrentAnimation", (hoa_video::AnimatedImage&(MapSprite::*)())&MapSprite::GetCurrentAnimation)
@@ -489,7 +490,8 @@ void BindModeCode() {
 			.def("MovementSpeed", &ChangePropertySpriteEvent::MovementSpeed)
 			.def("Moving", &ChangePropertySpriteEvent::Moving)
 			.def("Running", &ChangePropertySpriteEvent::Running)
-			.def("StationaryMovement", &ChangePropertySpriteEvent::StationaryMovement),
+			.def("StationaryMovement", &ChangePropertySpriteEvent::StationaryMovement)
+			.def("ReverseMovement", &ChangePropertySpriteEvent::ReverseMovement),
 
 		class_<ChangeDirectionSpriteEvent, SpriteEvent>("ChangeDirectionSpriteEvent")
 			.scope

@@ -241,8 +241,18 @@ public:
 	bool IsStationaryMovement() const
 		{ return _stationary_movement; }
 
-	void SetStationaryMovement(bool movement)
-		{ if (_stationary_movement != movement) { _stationary_movement = movement; _ChangeCurrentAnimation(); } }
+	void SetStationaryMovement(bool stationary)
+		{ if (_stationary_movement != stationary) { _stationary_movement = stationary; _ChangeCurrentAnimation(); } }
+
+	bool IsReverseMovement() const
+		{ return _reverse_movement; }
+
+	/** \note Enabling reverse movment will instantly flip the direction the sprite appears to be facing, even if they are
+	*** stationary. If you want to reverse the movement but not have the sprite suddenly change their facing direction, you'll
+	*** need to also call SetDirection() with the opposite direction that you want the sprite to be facing.
+	**/
+	void SetReverseMovement(bool reverse)
+		{ if (_reverse_movement != reverse) { _reverse_movement = reverse; _ChangeCurrentAnimation();} }
 
 	/** \brief Adds a new reference to a dialogue that the sprite uses
 	*** \param dialogue_id The ID number of the dialogue
@@ -372,6 +382,9 @@ protected:
 
 	//! \brief When true, the sprite will always be drawn with a movement animation, even if they are not physically moving
 	bool _stationary_movement;
+
+	//! \brief When true, the sprite standing and movement animations will be opposite of the direction the sprite is facing
+	bool _reverse_movement;
 
 	//! \brief True if a custom animation is currently in use
 	bool _custom_animation_on;
