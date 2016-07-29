@@ -174,6 +174,7 @@ namespace hoa_system {
 // Common declarations, see src/common
 namespace hoa_common {
 	extern bool COMMON_DEBUG;
+	class CommonRecordGroup;
 	class CommonDialogue;
 	class CommonDialogueOptions;
 	class CommonDialogueWindow;
@@ -184,7 +185,6 @@ namespace hoa_common {
 namespace hoa_global {
 	extern bool GLOBAL_DEBUG;
 	class GameGlobal;
-	class GlobalEventGroup;
 
 	class GlobalObject;
 	class GlobalItem;

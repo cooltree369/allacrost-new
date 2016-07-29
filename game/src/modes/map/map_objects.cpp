@@ -352,9 +352,9 @@ void TreasureObject::LoadState() {
 	string event_name = GetEventName();
 
 	// Check if the event corresponding to this treasure has already occurred
-	if (MapMode::CurrentInstance()->GetMapEventGroup()->DoesEventExist(event_name) == true) {
+	if (MapMode::CurrentInstance()->GetGlobalRecordGroup()->DoesRecordExist(event_name) == true) {
 		// If the event is non-zero, the treasure has already been opened
-		if (MapMode::CurrentInstance()->GetMapEventGroup()->GetEvent(event_name) != 0) {
+		if (MapMode::CurrentInstance()->GetGlobalRecordGroup()->GetRecord(event_name) != 0) {
 			SetCurrentAnimation(TREASURE_OPEN_ANIM);
 			_treasure.SetTaken(true);
 		}
@@ -373,11 +373,11 @@ void TreasureObject::Open() {
 	string event_name = GetEventName();
 
 	// Add an event to the map group indicating that the treasure has now been opened
-	if (MapMode::CurrentInstance()->GetMapEventGroup()->DoesEventExist(event_name) == true) {
-		MapMode::CurrentInstance()->GetMapEventGroup()->SetEvent(event_name, 1);
+	if (MapMode::CurrentInstance()->GetGlobalRecordGroup()->DoesRecordExist(event_name) == true) {
+		MapMode::CurrentInstance()->GetGlobalRecordGroup()->SetRecord(event_name, 1);
 	}
 	else {
-		MapMode::CurrentInstance()->GetMapEventGroup()->AddNewEvent(event_name, 1);
+		MapMode::CurrentInstance()->GetGlobalRecordGroup()->AddNewRecord(event_name, 1);
 	}
 }
 

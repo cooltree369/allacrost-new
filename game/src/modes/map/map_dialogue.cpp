@@ -417,11 +417,11 @@ void DialogueSupervisor::EndDialogue() {
 	}
 
 	_current_dialogue->IncrementTimesSeen();
-	if (MapMode::CurrentInstance()->GetMapEventGroup()->DoesEventExist(_current_dialogue->GetDialogueName()) == false) {
-		MapMode::CurrentInstance()->GetMapEventGroup()->AddNewEvent(_current_dialogue->GetDialogueName(), _current_dialogue->GetTimesSeen());
+	if (MapMode::CurrentInstance()->GetGlobalRecordGroup()->DoesRecordExist(_current_dialogue->GetDialogueName()) == false) {
+		MapMode::CurrentInstance()->GetGlobalRecordGroup()->AddNewRecord(_current_dialogue->GetDialogueName(), _current_dialogue->GetTimesSeen());
 	}
 	else {
-		MapMode::CurrentInstance()->GetMapEventGroup()->SetEvent(_current_dialogue->GetDialogueName(), _current_dialogue->GetTimesSeen());
+		MapMode::CurrentInstance()->GetGlobalRecordGroup()->SetRecord(_current_dialogue->GetDialogueName(), _current_dialogue->GetTimesSeen());
 	}
 
 	// We only want to call the RestoreState function *once* for each speaker, so first we have to construct a list of pointers
@@ -494,14 +494,18 @@ void DialogueSupervisor::_UpdateLine() {
 		return;
 	}
 
+	if (_dialogue_window.GetDisplayTextBox().IsFinished() == true && _current_options != NULL) {
+		_state = DIALOGUE_STATE_OPTION;
+	}
+
 	if (InputManager->ConfirmPress()) {
 		// If the line is not yet finished displaying, display the rest of the text
 		if (_dialogue_window.GetDisplayTextBox().IsFinished() == false) {
 			_dialogue_window.GetDisplayTextBox().ForceFinish();
-		}
-		// Proceed to option selection if the line has options
-		else if (_current_options != NULL) {
-			_state = DIALOGUE_STATE_OPTION;
+			// Proceed to option selection if the line has options
+			if (_current_options != NULL) {
+				_state = DIALOGUE_STATE_OPTION;
+			}
 		}
 		else {
 			_EndLine();
@@ -512,16 +516,18 @@ void DialogueSupervisor::_UpdateLine() {
 
 
 void DialogueSupervisor::_UpdateOptions() {
+	_dialogue_window.GetDisplayOptionBox().Update();
+
 	if (InputManager->ConfirmPress()) {
 		_dialogue_window.GetDisplayOptionBox().InputConfirm();
 		_EndLine();
 	}
 
-	else if (InputManager->UpPress()) {
+	if (InputManager->UpPress()) {
 		_dialogue_window.GetDisplayOptionBox().InputUp();
 	}
 
-	else if (InputManager->DownPress()) {
+	if (InputManager->DownPress()) {
 		_dialogue_window.GetDisplayOptionBox().InputDown();
 	}
 }
@@ -625,8 +631,9 @@ void DialogueSupervisor::_EndLine() {
 	// --- Case 2: Request to incrementing the current line. If we're incrementing past the last line, end the dialogue
 	else if (next_line == COMMON_DIALOGUE_NEXT_LINE) {
 		next_line = _line_counter + 1;
-		if (static_cast<uint32>(next_line) >= _current_dialogue->GetLineCount())
+		if (static_cast<uint32>(next_line) >= _current_dialogue->GetLineCount()) {
 			next_line = COMMON_DIALOGUE_END;
+		}
 	}
 	// --- Case 3: Request to end the current dialogue
 	else if (next_line == COMMON_DIALOGUE_END) {

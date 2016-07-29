@@ -15,6 +15,7 @@
 
 // Local map mode headers
 #include "map_utils.h"
+#include "map.h"
 
 using namespace std;
 
@@ -54,6 +55,17 @@ bool MapRectangle::CheckIntersection(const MapRectangle& first, const MapRectang
 		return false;
 	else
 		return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// MapRecordData Class Functions
+///////////////////////////////////////////////////////////////////////////////
+
+void MapRecordData::UpdateRecords() {
+	if (global_record_name.empty() == false)
+		MapMode::CurrentInstance()->GetGlobalRecordGroup()->SetRecord(global_record_name, global_record_value);
+	if (local_record_name.empty() == false)
+		MapMode::CurrentInstance()->GetLocalRecordGroup()->SetRecord(local_record_name, local_record_value);
 }
 
 } // namespace private_map

@@ -118,7 +118,8 @@ MapMode::MapMode(string script_filename) :
 	_data_filename(""),
 	_script_filename(script_filename),
 	_script_tablespace(""),
-	_map_event_group(NULL),
+	_global_record_group(NULL),
+	_local_record_group("local_map"), // The group name doesn't really matter since this record group is volatile
 	_tile_supervisor(NULL),
 	_object_supervisor(NULL),
 	_event_supervisor(NULL),
@@ -154,12 +155,12 @@ MapMode::MapMode(string script_filename) :
 	ResetState();
 	PushState(STATE_EXPLORE);
 
-	// Creates a unique event group identifier string by using the script's tablespace name prefixed with "map_"
-	string event_group_name = "map_" + DetermineLuaFileTablespaceName(_script_filename);
-	if (GlobalManager->DoesEventGroupExist(event_group_name) == false) {
-		GlobalManager->AddNewEventGroup(event_group_name);
+	// Creates a unique record group identifier string by using the script's tablespace name prefixed with "map_"
+	string group_name = "map_" + DetermineLuaFileTablespaceName(_script_filename);
+	if (GlobalManager->DoesRecordGroupExist(group_name) == false) {
+		GlobalManager->AddNewRecordGroup(group_name);
 	}
-	_map_event_group = GlobalManager->GetEventGroup(event_group_name);
+	_global_record_group = GlobalManager->GetRecordGroup(group_name);
 
 	_tile_supervisor = new TileSupervisor();
 	_object_supervisor = new ObjectSupervisor();
@@ -292,7 +293,7 @@ void MapMode::Update() {
             _UpdateModeTransition();
             break;
 		default:
-			IF_PRINT_WARNING(MAP_DEBUG) << "map was set in an unknown state: " << CurrentState() << endl;
+			IF_PRINT_WARNING(MAP_DEBUG) << "map was in an unknown state: " << CurrentState() << endl;
 			ResetState();
 			break;
 	}
@@ -306,15 +307,15 @@ void MapMode::Update() {
 		_map_script.ExecuteFunction(_update_function);
 	}
 
+	// ---------- (5) Update all active map events
+	_event_supervisor->Update();
+
 	// TODO: the code only supports color context transitions right now, not blended. Support for blended transitions needs to be added
 	// later
 	if (_context_transition_timer.IsRunning() && _context_transition_timer.PercentComplete() >= 0.50f) {
 		_transition_color.SetAlpha(0.0f); // Set the alpha to zero so we can fade out the color
 		VideoManager->FadeScreen(_transition_color, _context_transition_timer.GetDuration() - _context_transition_timer.GetTimeExpired());
 	}
-
-	// ---------- (5) Update all active map events
-	_event_supervisor->Update();
 } // void MapMode::Update()
 
 

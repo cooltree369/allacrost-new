@@ -1258,45 +1258,6 @@ public:
 	**/
 	MapEvent* GetEvent(uint32 event_id) const;
 
-	/** \brief Examines the data log and returns the value referenced by a string key
-	*** \param key The name of the data to retrieve
-	*** \return The value stored for the key. Zero is returned if no data exists with the key
-	*** \note If the key value is zero, it will be indistinguishable from the key not existing at all
-	**/
-	int32 GetDataKeyValue(const std::string& key) const;
-
-	/** \brief Returns the value corresponding to the key, or if the key does not exist then it gets created and set to a value of 1
-	*** \param key The name of the data to retrieve or possibly set
-	*** \return The value stored for the key. Zero is returned if no data exists with the key
-	*** \note If the key does not exist, zero is returned even though the key is created with a non-zero value by this call. If the key value
-	*** is zero, it will be indistinguishable from the key not existing at all.
-	**/
-	int32 CheckSetDataKeyValue(const std::string& key);
-
-	/** \brief Sets the data value corresponding to a key
-	*** \param key The name of the data to retrieve
-	*** \param value The value to set for the key
-	***
-	*** If the key already exists, the value currently stored will be overwritten. If the key does not exist, it will be created.
-	**/
-	void SetDataKeyValue(const std::string& key, int32 value)
-		{ _data_log[key] = value; }
-
-	/** \brief Modifies the stored value of a data key by
-	*** \param key The name of the data to retrieve
-	*** \param value The value to set for the key
-	***
-	*** If the key already exists, the value currently stored will be overwritten. If the key does not exist, no change will take place.
-	**/
-	void ModifyDataKeyValue(const std::string& key, int32 modify_amount);
-
-	/** \brief Removes a stored key value pair completely from the data log
-	*** \param key The name of the data to retrieve
-	***
-	*** If the key does not exist, no change will take place..
-	**/
-	void DeleteDataKeyValue(const std::string& key);
-
 private:
 	//! \brief A container for all map events, where the event's ID serves as the key to the std::map
 	std::map<uint32, MapEvent*> _all_events;
@@ -1317,18 +1278,6 @@ private:
 	*** It does not track how many times the event has completed or been terminated.
 	**/
 	std::map<uint32, uint32> _event_history;
-
-	/** \brief Maintains a log of string/integer pairs for tracking important data
-	*** This container is completely separate from all of the event functionality. Essentially, the data log works identical
-	*** to global events, with the notable difference being that global events are saved across the game while data is this
-	*** log expires permanently once the MapMode object is destroyed. As an example, this could be used to maintain a count
-	*** of how many times something has occurred, such as a player stepping on a switch.
-	***
-	*** \note It is not recommended to use zero for the integer component, because the functions that retrieve data from the
-	*** log return 0 if the data is not found. Therefore, a user is unable to distinguish between data not existing, and
-	*** data existing with a zero value.
-	**/
-	std::map<std::string, uint32> _data_log;
 
 	/** \brief A function that is called whenever an event starts or finishes to examine that event's links
 	*** \param parent_event The event that has just started or finished
