@@ -451,34 +451,88 @@ public:
 
 
 /** ****************************************************************************
-*** \brief A simple class used for holding data to be entered into either the global or local map records
+*** \brief A simple class used for holding data to be set into either the global or local map records
 ***
-*** \note The CommonRecordGroups that are modified are members of the current MapMode instance, named
-*** _global_record_group and _local_record_group.
+*** This class is used by code that wants to set records only after a certain action occurs. For example,
+*** when the player chooses a particular option in a dialogue, or a map event is started.
+*** \note The CommonRecordGroups that are modified by this data are members of the current MapMode instance,
+*** named _global_record_group and _local_record_group.
 *** ***************************************************************************/
 class MapRecordData {
 public:
 	MapRecordData() :
-		global_record_name(""), global_record_value(0), local_record_name(""), local_record_value(0) {}
+		_global_records(), _local_records() {}
 
-	//! \brief The name of the global record to update
-	std::string global_record_name;
-
-	//! \brief The value to set for the global record
-	int32 global_record_value;
-
-	//! \brief The name of the local record to update (on the EventSupervisor instance)
-	std::string local_record_name;
-
-	//! \brief The value to set for the local record
-	int32 local_record_value;
-
-	/** \brief Updates the global record and/or local record
-	*** The records are only updated if their names are not empty strings. So calling this function when
-	*** both global_record_name and local_record_name are empty strings results in no change taking place.
+	/** \brief Adds a new record to set for the global map record group
+	*** \param record_name The name of the record to set
+	*** \param record_value The value to set for the record
 	**/
-	void UpdateRecords();
+	void AddGlobalRecord(const std::string& record_name, int32 record_value)
+		{ _global_records.push_back(std::make_pair(record_name, record_value)); }
+
+	/** \brief Adds a new record to set for the local map record group
+	*** \param record_name The name of the record to set
+	*** \param record_value The value to set for the record
+	**/
+	void AddLocalRecord(const std::string& record_name, int32 record_value)
+		{ _local_records.push_back(std::make_pair(record_name, record_value)); }
+
+	//! \brief Sets the global and/or local records into their corresponding map record groups
+	void CommitRecords();
+
+private:
+	//! \brief A list of string/integer pairs to set for the map's global record
+	std::vector<std::pair<std::string, int32> > _global_records;
+
+	//! \brief A list of string/integer pairs to set for the map's local record
+	std::vector<std::pair<std::string, int32> > _local_records;
 }; // class MapRecordData
+
+
+/** ****************************************************************************
+*** \brief A simple class used for holding data related to launching map events
+***
+*** This class stores a list of events to start and any time delay to wait before actually starting
+*** the event. Additionally, a boolean is provided to mimic the fact that events started by other
+*** events can be started at the same time as the parent event, or after the parent event completes.
+*** So if there is a code construct with a beginning and an end point (say, displaying a line of dialogue),
+*** then this boolean can be used to start the event at the same time as the dialogue, or when the dialogue
+*** ends.
+*** ***************************************************************************/
+class MapEventData {
+public:
+	MapEventData()
+		{}
+
+	/** \brief Adds a new set of event data to the class
+	*** \param event_id The ID of the event to add (must be non-zero)
+	*** \param start_timing The number of milliseconds to wait before starting the event. Default value is zero.
+	*** \param launch_at_start Sets the launch boolean for determining under which conditions the event should be started. Default value is true.
+	**/
+	void AddEvent(uint32 event_id, uint32 start_timing = 0, bool launch_at_start = true);
+
+	/** \brief Instructs the event supervisor to start the events referenced by the data
+	*** \param launch_start Only events with the _launch_start property matching this value will be started
+	**/
+	void StartEvents(bool launch_start) const;
+
+	/** \brief Examines all event ids to check that a corresponding event has already been constructed and registered with the event manager
+	*** \return True if no invalid events were found
+	**/
+	bool ValidateEvents() const;
+
+private:
+	//! \brief The ids for each MapEvent referenced by the data
+	std::vector<uint32> _event_ids;
+
+	/** \brief The number of milliseconds to delay before the event actually starts (handled by the EventSupervisor call).
+	*** A zero value will start the event immediately.
+	**/
+	std::vector<uint32> _start_timings;
+
+	//! \brief Used in conjunction with the StartEvents() method to only start events that matching a boolean value
+	std::vector<bool> _launch_start;
+}; // class MapEventData
 
 } // namespace private_map
 

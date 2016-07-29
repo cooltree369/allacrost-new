@@ -13,11 +13,15 @@
 *** \brief   Source file for map mode utility code
 *** *****************************************************************************/
 
-// Local map mode headers
 #include "map_utils.h"
+
+// Local map mode headers
 #include "map.h"
+#include "map_events.h"
 
 using namespace std;
+
+using namespace hoa_common;
 
 namespace hoa_map {
 
@@ -61,11 +65,60 @@ bool MapRectangle::CheckIntersection(const MapRectangle& first, const MapRectang
 // MapRecordData Class Functions
 ///////////////////////////////////////////////////////////////////////////////
 
-void MapRecordData::UpdateRecords() {
-	if (global_record_name.empty() == false)
-		MapMode::CurrentInstance()->GetGlobalRecordGroup()->SetRecord(global_record_name, global_record_value);
-	if (local_record_name.empty() == false)
-		MapMode::CurrentInstance()->GetLocalRecordGroup()->SetRecord(local_record_name, local_record_value);
+void MapRecordData::CommitRecords() {
+	CommonRecordGroup* global_group = MapMode::CurrentInstance()->GetGlobalRecordGroup();
+	CommonRecordGroup* local_group = MapMode::CurrentInstance()->GetLocalRecordGroup();
+
+	for (uint32 i = 0; i < _global_records.size(); ++i) {
+		global_group->SetRecord(_global_records[i].first, _global_records[i].second);
+	}
+	for (uint32 i = 0; i < _local_records.size(); ++i) {
+		local_group->SetRecord(_local_records[i].first, _local_records[i].second);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// MapEventData Class Functions
+///////////////////////////////////////////////////////////////////////////////
+
+void MapEventData::AddEvent(uint32 event_id, uint32 start_timing, bool launch_at_start) {
+	if (event_id == 0) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "attempted to add an event with an invalid ID (0). The event was not added" << endl;
+		return;
+	}
+
+	_event_ids.push_back(event_id);
+	_start_timings.push_back(start_timing);
+	_launch_start.push_back(launch_at_start);
+}
+
+
+void MapEventData::StartEvents(bool launch_start) const {
+	for (uint32 i = 0; i < _event_ids.size(); ++i) {
+		if (_launch_start[i] == launch_start) {
+			if (_start_timings[i] == 0) {
+				MapMode::CurrentInstance()->GetEventSupervisor()->StartEvent(_event_ids[i]);
+			}
+			else {
+				MapMode::CurrentInstance()->GetEventSupervisor()->StartEvent(_event_ids[i], _start_timings[i]);
+			}
+		}
+	}
+}
+
+
+
+bool MapEventData::ValidateEvents() const {
+	bool return_value = true;
+
+	for (uint32 i = 0; i < _event_ids.size(); ++i) {
+		if (MapMode::CurrentInstance()->GetEventSupervisor()->GetEvent(_event_ids[i]) == NULL) {
+			return_value = false;
+			IF_PRINT_WARNING(MAP_DEBUG) << "no event was registered for the event ID: " << _event_ids[i] << endl;
+		}
+	}
+
+	return return_value;
 }
 
 } // namespace private_map
