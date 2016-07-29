@@ -94,6 +94,10 @@ public:
 *** functions. _Start() is called only one when the event begins. _Update() is called
 *** once for every iteration of the main game loop until this function returns a true
 *** value, indicating that the event is finished.
+***
+*** Events can also store any number of changes to make to either the global or local record
+*** groups for the map. These changes are applied every time the event's _Start() function is
+*** called.
 *** ***************************************************************************/
 class MapEvent {
 	friend class EventSupervisor;
@@ -130,13 +134,27 @@ public:
 	void AddEventLinkAtEnd(uint32 child_event_id, uint32 launch_time)
 		{ _AddEventLink(child_event_id, false, launch_time); }
 
+	/** \brief Adds a record to be set on the global record group once the event starts
+	*** \param record_name The name of the record to set
+	*** \param record_value The value of the record to set
+	**/
+	void AddGlobalRecord(const std::string& record_name, int32 record_value)
+		{ _AddRecord(record_name, record_value, true); }
+
+	/** \brief Adds a record to be set on the local record group once the event starts
+	*** \param record_name The name of the record to set
+	*** \param record_value The value of the record to set
+	**/
+	void AddLocalRecord(const std::string& record_name, int32 record_value)
+		{ _AddRecord(record_name, record_value, true); }
+
 protected:
 	//! \param id The ID for the map event (a zero value is invalid)
 	MapEvent(uint32 id, EVENT_TYPE type) :
-		_event_id(id), _event_type(type) {}
+		_event_id(id), _event_type(type), _event_records(NULL) {}
 
 	virtual ~MapEvent()
-		{}
+		{ if (_event_records != NULL) delete _event_records; }
 
 	/** \brief Starts the event
 	*** This function is only called once per event execution
@@ -151,14 +169,6 @@ protected:
 	**/
 	virtual bool _Update() = 0;
 
-	/** \brief Declares a child event to be linked to this event
-	*** \param child_event_id The event id of the child event
-	*** \param launch_at_start The child starts relative to the start of the event if true, its finish if false
-	*** \param launch_time The number of milliseconds to wait before launching the child event
-	**/
-	void _AddEventLink(uint32 child_event_id, bool launch_at_start, uint32 launch_time)
-		{ _event_links.push_back(EventLink(child_event_id, launch_at_start, launch_time)); }
-
 private:
 	//! \brief A unique ID number for the event. A value of zero is invalid
 	uint32 _event_id;
@@ -168,6 +178,29 @@ private:
 
 	//! \brief All child events of this class, represented by EventLink objects
 	std::vector<EventLink> _event_links;
+
+	//! \brief Holds changes to the local or global map records that may take place when the event is started
+	MapRecordData* _event_records;
+
+	/** \brief Declares a child event to be linked to this event
+	*** \param child_event_id The event id of the child event
+	*** \param launch_at_start The child starts relative to the start of the event if true, its finish if false
+	*** \param launch_time The number of milliseconds to wait before launching the child event
+	**/
+	void _AddEventLink(uint32 child_event_id, bool launch_at_start, uint32 launch_time)
+		{ _event_links.push_back(EventLink(child_event_id, launch_at_start, launch_time)); }
+
+	/** \brief Adds a record to set when the event starts
+	*** \param record_name The name of the record to set
+	*** \param record_value The value of the record to set
+	*** \param is_global If true, the record will be set to the global record group. Otherwise the local record group will be used.
+	**/
+	void _AddRecord(const std::string& record_name, int32 record_value, bool is_global);
+
+	//! \brief Commits any stored records to the correct record group. Should only be called when _Start() is invoked
+	void _CommitRecords()
+		{ if (_event_records != NULL) _event_records->CommitRecords(); }
+
 }; // class MapEvent
 
 

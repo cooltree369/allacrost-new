@@ -415,7 +415,9 @@ void BindModeCode() {
 			.def("AddEventLinkAtStart", (void(MapEvent::*)(uint32))&MapEvent::AddEventLinkAtStart)
 			.def("AddEventLinkAtStart", (void(MapEvent::*)(uint32, uint32))&MapEvent::AddEventLinkAtStart)
 			.def("AddEventLinkAtEnd", (void(MapEvent::*)(uint32))&MapEvent::AddEventLinkAtEnd)
-			.def("AddEventLinkAtEnd", (void(MapEvent::*)(uint32, uint32))&MapEvent::AddEventLinkAtEnd),
+			.def("AddEventLinkAtEnd", (void(MapEvent::*)(uint32, uint32))&MapEvent::AddEventLinkAtEnd)
+			.def("AddGlobalRecord", &MapEvent::AddGlobalRecord)
+			.def("AddLocalRecord", &MapEvent::AddLocalRecord),
 
 		class_<PushMapStateEvent, MapEvent>("PushMapStateEvent")
 			.scope
