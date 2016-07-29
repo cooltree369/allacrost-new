@@ -27,7 +27,7 @@ ObjectManager = {};
 DialogueManager = {};
 EventManager = {};
 TreasureManager = {};
-GlobalEvents = {};
+GlobalRecords = {};
 
 enemy_ids = { 1, 2, 3, 4, 5, 6 }
 
@@ -57,7 +57,7 @@ function Load(m)
 	DialogueManager = Map.dialogue_supervisor;
 	EventManager = Map.event_supervisor;
 	TreasureManager = Map.treasure_supervisor;
-	GlobalEvents = Map.map_event_group;
+	GlobalRecords = Map.global_record_group;
 
 	-- Setup the order in which we wish to draw the tile and object layers
 	Map:ClearLayerOrder();
@@ -106,37 +106,37 @@ function Update()
 	-- TODO: setup a scripted battle for the first enemy encounter
 	--[[
 	if ((zones["first_enemy_encounter"]:IsCameraEntering() == true)) then
-		if (GlobalEvents:DoesEventExist("first_enemy_encounter") == false) then
-			GlobalEvents:AddNewEvent("first_enemy_encounter", 1);
+		if (GlobalRecords:DoesRecordExist("first_enemy_encounter") == false) then
+			GlobalRecords:AddRecordEvent("first_enemy_encounter", 1);
 			Map.camera:SetMoving(false);
 			EventManager:StartEvent(event_chains["first_enemy"]);
 		end
 	end
 	--]]
 
-	if (GlobalEvents:DoesEventExist("corpse_seen") == false) then
+	if (GlobalRecords:DoesRecordExist("corpse_seen") == false) then
 		if (zones["corpse_discovery"]:IsPlayerSpriteEntering() == true) then
-			GlobalEvents:AddNewEvent("corpse_seen", 1);
+			GlobalRecords:AddNewRecord("corpse_seen", 1);
 			EventManager:StartEvent(event_chains["find_corpse"]);
 		end
 	end
 
-	if (GlobalEvents:DoesEventExist("passage_collapsed") == false) then
+	if (GlobalRecords:DoesRecordExist("passage_collapsed") == false) then
 		if (zones["prevent_long_route"]:IsPlayerSpriteEntering() == true and Map:CurrentState() == hoa_map.MapMode.STATE_EXPLORE) then
 			EventManager:StartEvent(event_chains["follow_short_route"]);
 		end
 	end
 
 --	if (zones["short_route"]:IsCameraEntering() == true) then
---		if (GlobalEvents:DoesEventExist("knight_moved") == false) then
---			GlobalEvents:AddNewEvent("knight_moved", 1);
+--		if (GlobalRecords:DoesRecordExist("knight_moved") == false) then
+--			GlobalRecords:AddNewRecord("knight_moved", 1);
 --			EventManager:StartEvent(event_chains["observe_passing"]);
 --		end
 --	end
 
-	if (GlobalEvents:DoesEventExist("passage_collapsed") == false) then
+	if (GlobalRecords:DoesRecordExist("passage_collapsed") == false) then
 		if (zones["collapse"]:IsPlayerSpriteEntering() == true) then
-			GlobalEvents:AddNewEvent("passage_collapsed", 1);
+			GlobalRecords:AddNewRecord("passage_collapsed", 1);
 			EventManager:StartEvent(event_chains["passage_collapse"]);
 		end
 	end
@@ -149,17 +149,17 @@ function Update()
 		EventManager:StartEvent(event_chains["pass_wall_backward"]);
 	end
 
-	if (GlobalEvents:DoesEventExist("spring_discovered") == false) then
+	if (GlobalRecords:DoesRecordExist("spring_discovered") == false) then
 		if ((zones["spring_discovery"]:IsPlayerSpriteEntering() == true)) then
-			GlobalEvents:AddNewEvent("spring_discovered", 1);
+			GlobalRecords:AddNewRecord("spring_discovered", 1);
 			Map.camera:SetMoving(false);
 			EventManager:StartEvent(event_chains["spring_arrival"]);
 		end
 	end
 
-	if (GlobalEvents:DoesEventExist("riverbed_arrival") == false) then
+	if (GlobalRecords:DoesRecordExist("riverbed_arrival") == false) then
 		if ((zones["riverbed_arrival"]:IsPlayerSpriteEntering() == true)) then
-			GlobalEvents:AddNewEvent("riverbed_arrival", 1);
+			GlobalRecords:AddNewRecord("riverbed_arrival", 1);
 			EventManager:StartEvent(event_chains["riverbed_arrival"]);
 		end
 	end
@@ -1318,8 +1318,8 @@ end
 
 -- Wraps the start of the observ_passing event chain so that it is only ever executed one time
 functions["IfStartObservePassingEvent"] = function()
-	if (GlobalEvents:DoesEventExist("observed_passing") == false) then
-		GlobalEvents:AddNewEvent("observed_passing", 1);
+	if (GlobalRecords:DoesRecordExist("observed_passing") == false) then
+		GlobalRecords:AddNewRecord("observed_passing", 1);
 		EventManager:StartEvent(event_chains["observe_passing"]);
 	end
 end

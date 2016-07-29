@@ -1450,49 +1450,6 @@ MapEvent* EventSupervisor::GetEvent(uint32 event_id) const {
 
 
 
-int32 EventSupervisor::GetDataKeyValue(const std::string& key) const {
-	map<std::string, uint32>::const_iterator element = _data_log.find(key);
-	if (element != _data_log.end())
-		return element->second;
-	else
-		return 0;
-}
-
-
-
-int32 EventSupervisor::CheckSetDataKeyValue(const std::string& key) {
-	map<std::string, uint32>::const_iterator element = _data_log.find(key);
-	if (element != _data_log.end()) {
-		return element->second;
-	}
-	else {
-		_data_log.insert(make_pair(key, 1));
-		return 0;
-	}
-}
-
-
-
-void EventSupervisor::ModifyDataKeyValue(const std::string& key, int32 modify_amount) {
-	map<std::string, uint32>::iterator element = _data_log.find(key);
-	if (element != _data_log.end()) {
-		element->second += modify_amount;
-	}
-	else {
-		IF_PRINT_WARNING(MAP_DEBUG) << "no data existed for key: " << key << endl;
-	}
-}
-
-
-
-void EventSupervisor::DeleteDataKeyValue(const std::string& key) {
-	map<std::string, uint32>::const_iterator element = _data_log.find(key);
-	if (element != _data_log.end())
-		_data_log.erase(element);
-}
-
-
-
 void EventSupervisor::_ExamineEventLinks(MapEvent* parent_event, bool event_start) {
 	for (uint32 i = 0; i < parent_event->_event_links.size(); i++) {
 		EventLink& link = parent_event->_event_links[i];

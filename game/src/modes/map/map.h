@@ -39,6 +39,9 @@
 #include "video.h"
 #include "system.h"
 
+// Common files
+#include "common.h"
+
 // Local map mode headers
 #include "map_utils.h"
 
@@ -244,8 +247,11 @@ public:
 	const hoa_utils::ustring& GetMapName() const
 		{ return _map_name; }
 
-	hoa_global::GlobalEventGroup* GetMapEventGroup() const
-		{ return _map_event_group; }
+	hoa_common::CommonRecordGroup* GetGlobalRecordGroup() const
+		{ return _global_record_group; }
+
+	hoa_common::CommonRecordGroup* GetLocalRecordGroup()
+		{ return &_local_record_group; }
 
 	hoa_script::ReadScriptDescriptor& GetMapScript()
 		{ return _map_script; }
@@ -382,8 +388,13 @@ private:
 	//! \brief The name of the map, as it will be read by the player in the game.
 	hoa_utils::ustring _map_name;
 
-	//! \brief A pointer to the object containing all of the event information for the map
-	hoa_global::GlobalEventGroup* _map_event_group;
+	//! \brief A pointer to the object containing all of the global record information for the map
+	hoa_common::CommonRecordGroup* _global_record_group;
+
+	/** \brief Another record group that is local to the map mode instance
+	*** \note Data entered to the local record is permanently destroyed when the MapMode instance destructor is called
+	**/
+	hoa_common::CommonRecordGroup _local_record_group;
 
 	/** \brief The interface to the file which contains all the map's stored data and subroutines.
 	*** This class generally performs a large amount of communication with this script continuously.

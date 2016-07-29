@@ -28,7 +28,7 @@ ObjectManager = {};
 DialogueManager = {};
 EventManager = {};
 TreasureManager = {};
-GlobalEvents = {};
+GlobalRecords = {};
 
 -- All custom map functions are contained within the following table.
 -- String keys in this table serves as the names of these functions.
@@ -40,7 +40,7 @@ function Load(m)
 	DialogueManager = Map.dialogue_supervisor;
 	EventManager = Map.event_supervisor;
 	TreasureManager = Map.treasure_supervisor;
-	GlobalEvents = Map.map_event_group;
+	GlobalRecords = Map.global_record_group;
 
 	-- Setup the order in which we wish to draw the tile and object layers
 	Map:ClearLayerOrder();

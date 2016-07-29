@@ -26,6 +26,7 @@
 #include "defs.h"
 #include "utils.h"
 #include "script.h"
+#include "common.h"
 
 #include "global_actors.h"
 #include "global_effects.h"
@@ -43,97 +44,11 @@ extern GameGlobal* GlobalManager;
 extern bool GLOBAL_DEBUG;
 
 /** ****************************************************************************
-*** \brief A container that manages the occurences of several related game events
-***
-*** Events in Allacrost are nothing more than a string-integer pair. The string
-*** represents the name of the event while the integer takes on various meanings
-*** about the event. One example of an event could be if the player has already
-*** seen a certain piece of dialogue, and the integer would be set to zero or
-*** non-zero to emulate a boolean value. Another example could be whether the
-*** player previous chose option A, B, C, or D when presented with a list of
-*** possible actions to take, in which the integer value would represent the
-*** option taken.
-***
-*** Because we want to continually look-up whether or not an event has occured,
-*** it is not efficient to store all game events in a single container (the
-*** larger the number of events, the longer the event search time). Instead,
-*** this class collectively represents a group of related events. A typical
-*** event group could represent all of the events that occured on a particular
-*** map, for instance.
-***
-*** \note Other parts of the code should not have a need to construct objects of
-*** this class. The GameGlobal class maintains a container of GlobalEventGroup
-*** objects and provides methods to allow the creation, modification, and
-*** retrieval of these objects.
-*** ***************************************************************************/
-class GlobalEventGroup {
-public:
-	//! \param group_name The name of the group to create (this can not be changed)
-	GlobalEventGroup(const std::string& group_name) :
-		_group_name(group_name) {}
-
-	~GlobalEventGroup() {}
-
-	/** \brief Queries whether or not an event of a given name exists in the group
-	*** \param event_name The name of the event to check for
-	*** \return True if the event name was found in the group, false if it was not
-	**/
-	bool DoesEventExist(const std::string& event_name)
-		{ if (_events.find(event_name) != _events.end()) return true; else return false; }
-
-	/** \brief Adds a new event to the group
-	*** \param event_name The name of the event to add
-	*** \param event_value The value of the event to add (default value is zero)
-	*** \note If an event by the given name already exists, a warning will be printed and no addition
-	*** or modification of any kind will take place
-	**/
-	void AddNewEvent(const std::string& event_name, int32 event_value = 0);
-
-	/** \brief Retrieves the value of a specific event in the group
-	*** \param event_name The name of the event to retrieve
-	*** \return The value of the event, or GLOBAL_BAD_EVENT if there is no event corresponding to
-	*** the requested event named
-	**/
-	int32 GetEvent(const std::string& event_name);
-
-	/** \brief Sets the value for an existing event
-	*** \param event_name The name of the event whose value should be changed
-	*** \param event_value The value to set for the event
-	*** \note If the event by the given name is not found, a warning will be printed and no change will be made
-	**/
-	void SetEvent(const std::string& event_name, int32 event_value);
-
-	//! \brief Returns the number of events currently stored within the group
-	uint32 GetNumberEvents() const
-		{ return _events.size(); }
-
-	//! \brief Returns a copy of the name of this group
-	std::string GetGroupName() const
-		{ return _group_name; }
-
-	//! \brief Returns an immutable reference to the private _events container
-	const std::map<std::string, int32>& GetEvents() const
-		{ return _events; }
-
-private:
-	//! \brief The name given to this group of events
-	std::string _group_name;
-
-	/** \brief The map container for all the events in the group
-	*** The string is the name of the event, which is unique within the group. The integer value
-	*** represents the event's state and can take on multiple meanings depending on the context
-	*** of this specific event.
-	**/
-	std::map<std::string, int32> _events;
-}; // class GlobalEventGroup
-
-
-/** ****************************************************************************
 *** \brief Retains all the state information about the active game
 ***
 *** This class is a resource manager for the current state of the game that is
 *** being played. It retains all of the characters in the player's party, the
-*** party's inventory, game events, etc. Nearly every game mode will need to
+*** party's inventory, game records, etc. Nearly every game mode will need to
 *** interact with this class in some form or another, whether it is to retrieve a
 *** specific set of data or t
 ***
@@ -301,68 +216,69 @@ public:
 		{ if (_inventory.find(id) != _inventory.end()) return true; else return false; }
 	//@}
 
-	//! \name Event Group Methods
+	//! \name Record Group Methods
 	//@{
-	/** \brief Queries whether or not an event group of a given name exists
-	*** \param group_name The name of the event group to check for
-	*** \return True if the event group name was found, false if it was not
+	/** \brief Queries whether or not a record group of a given name exists
+	*** \param group_name The name of the record group to check for
+	*** \return True if the record group name was found, false if it was not
 	**/
-	bool DoesEventGroupExist(const std::string& group_name) const
-		{ if (_event_groups.find(group_name) != _event_groups.end()) return true; else return false; }
+	bool DoesRecordGroupExist(const std::string& group_name) const
+		{ if (_record_groups.find(group_name) != _record_groups.end()) return true; else return false; }
 
-	/** \brief Determines if an event of a given name exists within a given group
-	*** \param group_name The name of the event group where the event to check is contained
-	*** \param event_name The name of the event to check for
-	*** \return True if the event was found, or false if the event name or group name was not found
+	/** \brief Determines if an record of a given name exists within a given group
+	*** \param group_name The name of the record group where the record to check is contained
+	*** \param record_name The name of the record to check for
+	*** \return True if the record was found, or false if the record name or group name was not found
 	**/
-	bool DoesEventExist(const std::string& group_name, const std::string& event_name) const;
+	bool DoesRecordExist(const std::string& group_name, const std::string& record_name) const;
 
-	/** \brief Adds a new event group for the class to manage
-	*** \param group_name The name of the new event group to add
-	*** \note If an event group  by the given name already exists, the function will abort
-	*** and not add the new event group. Otherwise, this class will automatically construct
-	*** a new event group of the given name and place it in its map of event groups.
+	/** \brief Adds a new record group for the class to manage
+	*** \param group_name The name of the new record group to add
+	*** \note If an record group  by the given name already exists, the function will abort
+	*** and not add the new record group. Otherwise, this class will automatically construct
+	*** a new record group of the given name and place it in its map of record groups.
 	**/
-	void AddNewEventGroup(const std::string& group_name);
+	void AddNewRecordGroup(const std::string& group_name);
 
-	/** \brief Returns a pointer to an event group of the specified name
-	*** \param group_name The name of the event group to retreive
-	*** \return A pointer to the GlobalEventGroup that represents the event group, or NULL if no event group
+	/** \brief Returns a pointer to an record group of the specified name
+	*** \param group_name The name of the record group to retreive
+	*** \return A pointer to the CommonRecordGroup that represents the record group, or NULL if no record group
 	*** of the specifed name was found
 	***
-	*** You can use this method to invoke the public methods of the GlobalEventGroup class. For example, if
-	*** we wanted to add a new event "cave_collapse" with a value of 1 to the group event "cave_map", we
-	*** would do the following: GlobalManager->GetEventGroup("cave_map")->AddNewEvent("cave_collapse", 1);
-	*** Be careful, however, because since this function returns NULL if the event group was not found, the
-	*** example code above would produce a segmentation fault if no event group by the name "cave_map" existed.
+	*** You can use this method to invoke the public methods of the CommonRecordGroup class. For example, if
+	*** we wanted to add a new record "cave_collapse" with a value of 1 to the group record "cave_map", we
+	*** would do the following: GlobalManager->GetRecordGroup("cave_map")->AddNewRecord("cave_collapse", 1);
+	*** Be careful, however, because since this function returns NULL if the record group was not found, the
+	*** example code above would produce a segmentation fault if no record group by the name "cave_map" existed.
 	**/
-	GlobalEventGroup* GetEventGroup(const std::string& group_name) const;
+	hoa_common::CommonRecordGroup* GetRecordGroup(const std::string& group_name) const;
 
-	/** \brief Returns the value of an event inside of a specified group
-	*** \param group_name The name of the event group where the event is contained
-	*** \param event_name The name of the event whose value should be retrieved
-	*** \return The value of the requested event, or GLOBAL_BAD_EVENT if the event was not found
+	/** \brief Returns the value of an record inside of a specified group
+	*** \param group_name The name of the record group where the record is contained
+	*** \param record_name The name of the record whose value should be retrieved
+	*** \return The value of the requested record, or GLOBAL_BAD_RECORD if the record was not found
 	**/
-	int32 GetEventValue(const std::string& group_name, const std::string& event_name) const;
+	int32 GetRecordValue(const std::string& group_name, const std::string& record_name) const;
 
-	/** \brief Set the value of an event inside of a specified group
-	*** \param group_name The name of the event group where the event is contained
-	*** \param event_name The name of the event whose value should be set
+	/** \brief Set the value of a record inside of a specified group
+	*** \param group_name The name of the record group where the record is contained
+	*** \param record_name The name of the record whose value should be set
+	*** \param record_value The value to set for the record
 	***
-	*** \note If the specified event grounp or event name do not exist, a warning will be printed and no
+	*** \note If the specified record group name does not exist, a warning will be printed and no
 	*** change will take place.
 	**/
-	void SetEventValue(const std::string& group_name, const std::string& event_name, int32 event_value);
+	void SetRecordValue(const std::string& group_name, const std::string& record_name, int32 record_value = 0);
 
-	//! \brief Returns the number of event groups stored in the class
-	uint32 GetNumberEventGroups() const
-		{ return _event_groups.size(); }
+	//! \brief Returns the number of record groups stored in the class
+	uint32 GetNumberRecordGroups() const
+		{ return _record_groups.size(); }
 
-	/** \brief Returns the number of events for a specified group name
-	*** \param group_name The name of the event group to retrieve the number of events for
-	*** \return The number of events in the group, or zero if no such group name existed
+	/** \brief Returns the number of records for a specified group name
+	*** \param group_name The name of the record group to retrieve the number of records for
+	*** \return The number of records in the group, or zero if no such group name existed
 	**/
-	uint32 GetNumberEvents(const std::string& group_name) const;
+	uint32 GetNumberRecords(const std::string& group_name) const;
 	//@}
 
 	//! \note The overflow condition is not checked here: we just assume it will never occur
@@ -635,9 +551,9 @@ private:
 	//@}
 
 	/** \brief The container which stores all of the groups of events that have occured in the game
-	*** The name of each GlobalEventGroup object serves as its key in this map data structure.
+	*** The name of each CommonRecordGroup object serves as its key in this map data structure.
 	**/
-	std::map<std::string, GlobalEventGroup*> _event_groups;
+	std::map<std::string, hoa_common::CommonRecordGroup*> _record_groups;
 
 	// ----- Private methods
 
@@ -672,12 +588,12 @@ private:
 	**/
 	void _SaveCharacter(hoa_script::WriteScriptDescriptor& file, GlobalCharacter* character, bool last);
 
-	/** \brief A helper function to GameGlobal::SaveGame() that writes a group of event data to the saved game file
-	*** \param file A reference to the open and valid file where to write the event data
-	*** \param event_group A pointer to the group of events to store
-	*** This method will need to be called once for each GlobalEventGroup contained by this class.
+	/** \brief A helper function to GameGlobal::SaveGame() that writes a group of record data to the saved game file
+	*** \param file A reference to the open and valid file where to write the record data
+	*** \param record_group A pointer to the group of records to store
+	*** This method will need to be called once for each CommonRecordGroup contained by this class.
 	**/
-	void _SaveEvents(hoa_script::WriteScriptDescriptor& file, GlobalEventGroup* event_group);
+	void _SaveRecords(hoa_script::WriteScriptDescriptor& file, hoa_common::CommonRecordGroup* record_group);
 
 	/** \brief A helper function to GameGlobal::LoadGame() that restores the contents of the inventory from a saved game file
 	*** \param file A reference to the open and valid file from where to read the inventory list
@@ -691,11 +607,11 @@ private:
 	**/
 	void _LoadCharacter(hoa_script::ReadScriptDescriptor& file, uint32 id);
 
-	/** \brief A helper function to GameGlobal::LoadGame() that loads a group of game events from a saved game file
-	*** \param file A reference to the open and valid file from where to read the event data from
-	*** \param group_name The name of the event group to load
+	/** \brief A helper function to GameGlobal::LoadGame() that loads a group of game records from a saved game file
+	*** \param file A reference to the open and valid file from where to read the record data from
+	*** \param group_name The name of the record group to load
 	**/
-	void _LoadEvents(hoa_script::ReadScriptDescriptor& file, const std::string& group_name);
+	void _LoadRecords(hoa_script::ReadScriptDescriptor& file, const std::string& group_name);
 }; // class GameGlobal : public hoa_utils::Singleton<GameGlobal>
 
 //-----------------------------------------------------------------------------

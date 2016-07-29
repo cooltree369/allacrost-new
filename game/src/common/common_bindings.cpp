@@ -59,6 +59,21 @@ void BindCommonCode() {
 
 	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_common")
 	[
+		class_<CommonRecordGroup>("CommonRecordGroup")
+			.def("DoesRecordExist", &CommonRecordGroup::DoesRecordExist)
+			.def("AddNewRecord", &CommonRecordGroup::AddNewRecord)
+			.def("GetRecord", &CommonRecordGroup::GetRecord)
+			.def("SetRecord", &CommonRecordGroup::SetRecord)
+			.def("ModifyRecord", &CommonRecordGroup::ModifyRecord)
+			.def("DeleteRecord", &CommonRecordGroup::DeleteRecord)
+			.def("GetNumberRecords", &CommonRecordGroup::GetNumberRecords)
+			.def("GetGroupName", &CommonRecordGroup::GetGroupName)
+
+			// Constants
+			.enum_("constants") [
+				value("BAD_RECORD", CommonRecordGroup::BAD_RECORD)
+			],
+
 		class_<CommonDialogue>("CommonDialogue")
 			// TODO: add commented lines back in later. There is a build issue with the editor when these lines are included
 // 			.def("AddLine", (void(CommonDialogue::*)(std::string))&CommonDialogue::AddLine)
@@ -107,14 +122,14 @@ void BindCommonCode() {
 			.def("RemoveFromInventory", (void (GameGlobal::*)(uint32)) &GameGlobal::RemoveFromInventory)
 			.def("IncrementObjectCount", &GameGlobal::IncrementObjectCount)
 			.def("DecrementObjectCount", &GameGlobal::DecrementObjectCount)
-			.def("DoesEventGroupExist", &GameGlobal::DoesEventGroupExist)
-			.def("DoesEventExist", &GameGlobal::DoesEventExist)
-			.def("AddNewEventGroup", &GameGlobal::AddNewEventGroup)
-			.def("GetEventGroup", &GameGlobal::GetEventGroup)
-			.def("GetEventValue", &GameGlobal::GetEventValue)
-			.def("SetEventValue", &GameGlobal::SetEventValue)
-			.def("GetNumberEventGroups", &GameGlobal::GetNumberEventGroups)
-			.def("GetNumberEvents", &GameGlobal::GetNumberEvents)
+			.def("DoesRecordGroupExist", &GameGlobal::DoesRecordGroupExist)
+			.def("DoesRecordExist", &GameGlobal::DoesRecordExist)
+			.def("AddNewRecordGroup", &GameGlobal::AddNewRecordGroup)
+			.def("GetRecordGroup", &GameGlobal::GetRecordGroup)
+			.def("GetRecordValue", &GameGlobal::GetRecordValue)
+			.def("SetRecordValue", &GameGlobal::SetRecordValue)
+			.def("GetNumberRecordGroups", &GameGlobal::GetNumberRecordGroups)
+			.def("GetNumberRecords", &GameGlobal::GetNumberRecords)
 			.def("SetLocation", (void(GameGlobal::*)(const std::string&)) &GameGlobal::SetLocation)
 			.def("GetBattleSetting", &GameGlobal::GetBattleSetting)
 			.def("SetBattleSetting", &GameGlobal::SetBattleSetting)
@@ -204,17 +219,6 @@ void BindCommonCode() {
 				value("GLOBAL_TARGET_ALL_ALLIES", GLOBAL_TARGET_ALL_ALLIES),
 				value("GLOBAL_TARGET_ALL_FOES", GLOBAL_TARGET_ALL_FOES)
 			]
-	];
-
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_global")
-	[
-		class_<GlobalEventGroup>("GlobalEventGroup")
-			.def("DoesEventExist", &GlobalEventGroup::DoesEventExist)
-			.def("AddNewEvent", &GlobalEventGroup::AddNewEvent)
-			.def("GetEvent", &GlobalEventGroup::GetEvent)
-			.def("SetEvent", &GlobalEventGroup::SetEvent)
-			.def("GetNumberEvents", &GlobalEventGroup::GetNumberEvents)
-			.def("GetGroupName", &GlobalEventGroup::GetGroupName)
 	];
 
 	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_global")

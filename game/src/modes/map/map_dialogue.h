@@ -185,6 +185,11 @@ public:
 	**/
 	void AddOptionEvent(uint32 event_id, uint32 delay_ms);
 
+	void AddOptionGlobalEvent(std::string event_name, int32 event_value);
+
+	void AddOptionDataKeyValue(std::string key, int32 value);
+
+
 	/** \brief Checks all the data stored by the dialogue class to ensure that it is acceptable and ready for use
 	*** \return True if the validation was successful, false if any problems were discovered
 	***
@@ -195,7 +200,7 @@ public:
 	bool Validate();
 
 	/** \brief Returns the object ID of the speaker for the line specified (or zero if the line index was invalid or if no speaker)
-	***	\todo Need to determine a way to differentitate an invalid index or no speaker (possibly print warning message for invalid index) 
+	***	\todo Need to determine a way to differentitate an invalid index or no speaker (possibly print warning message for invalid index)
 	**/
 	uint32 GetLineSpeaker(uint32 line) const
 		{ if (line >= _line_count) return 0; else return _speakers[line]; }

@@ -449,6 +449,37 @@ public:
 		{ return this->f_score > that.f_score; }
 }; // class PathNode
 
+
+/** ****************************************************************************
+*** \brief A simple class used for holding data to be entered into either the global or local map records
+***
+*** \note The CommonRecordGroups that are modified are members of the current MapMode instance, named
+*** _global_record_group and _local_record_group.
+*** ***************************************************************************/
+class MapRecordData {
+public:
+	MapRecordData() :
+		global_record_name(""), global_record_value(0), local_record_name(""), local_record_value(0) {}
+
+	//! \brief The name of the global record to update
+	std::string global_record_name;
+
+	//! \brief The value to set for the global record
+	int32 global_record_value;
+
+	//! \brief The name of the local record to update (on the EventSupervisor instance)
+	std::string local_record_name;
+
+	//! \brief The value to set for the local record
+	int32 local_record_value;
+
+	/** \brief Updates the global record and/or local record
+	*** The records are only updated if their names are not empty strings. So calling this function when
+	*** both global_record_name and local_record_name are empty strings results in no change taking place.
+	**/
+	void UpdateRecords();
+}; // class MapRecordData
+
 } // namespace private_map
 
 } // namespace hoa_map

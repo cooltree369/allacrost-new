@@ -67,7 +67,8 @@ void BindModeCode() {
 			.def_readonly("event_supervisor", &MapMode::_event_supervisor)
 			.def_readonly("dialogue_supervisor", &MapMode::_dialogue_supervisor)
 			.def_readonly("treasure_supervisor", &MapMode::_treasure_supervisor)
-			.def_readonly("map_event_group", &MapMode::_map_event_group)
+			.def_readonly("global_record_group", &MapMode::_global_record_group)
+			.def_readonly("local_record_group", &MapMode::_local_record_group)
 
 			.def_readonly("camera", &MapMode::_camera)
 			.def_readonly("player_sprite", &MapMode::_player_sprite)
@@ -102,7 +103,7 @@ void BindModeCode() {
 			.def("CurrentState", &MapMode::CurrentState)
 			.def("PushState", &MapMode::PushState)
 			.def("PopState", &MapMode::PopState)
-			.def("GetMapEventGroup", &MapMode::GetMapEventGroup)
+			.def("GetMapRecordGroup", &MapMode::GetGlobalRecordGroup)
 			.def("DrawMapLayers", &MapMode::_DrawMapLayers)
 
 			// Namespace constants
@@ -403,12 +404,7 @@ void BindModeCode() {
 			.def("TimesEventStarted", &EventSupervisor::TimesEventStarted)
 			.def("HasActiveEvent", &EventSupervisor::HasActiveEvent)
 			.def("HasLaunchEvent", &EventSupervisor::HasLaunchEvent)
-			.def("GetEvent", &EventSupervisor::GetEvent)
-			.def("GetDataKeyValue", &EventSupervisor::GetDataKeyValue)
-			.def("CheckSetDataKeyValue", &EventSupervisor::CheckSetDataKeyValue)
-			.def("SetDataKeyValue", &EventSupervisor::SetDataKeyValue)
-			.def("ModifyDataKeyValue", &EventSupervisor::ModifyDataKeyValue)
-			.def("DeleteDataKeyValue", &EventSupervisor::DeleteDataKeyValue),
+			.def("GetEvent", &EventSupervisor::GetEvent),
 
 		class_<MapEvent>("MapEvent")
 			.def("GetEventID", &MapEvent::GetEventID)

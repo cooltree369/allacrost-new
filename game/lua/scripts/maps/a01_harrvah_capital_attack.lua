@@ -30,7 +30,8 @@ ObjectManager = {};
 DialogueManager = {};
 EventManager = {};
 TreasureManager = {};
-GlobalEvents = {};
+GlobalRecords = {};
+LocalRecords = {};
 
 enemy_ids = { }
 
@@ -65,7 +66,8 @@ function Load(m)
 	DialogueManager = Map.dialogue_supervisor;
 	EventManager = Map.event_supervisor;
 	TreasureManager = Map.treasure_supervisor;
-	GlobalEvents = Map.map_event_group;
+	GlobalRecords = Map.global_event_group;
+	LocalRecords = Map.local_event_group;
 
 	-- Setup the order in which we wish to draw the tile and object layers
 	Map:ClearLayerOrder();
@@ -104,7 +106,7 @@ function Load(m)
 		sprites["claudius"].collidable = false;
 		sprites["mark"].collidable = false;
 		sprites["lukar"].collidable = false;
-		EventManager:StartEvent(event_chains["intro_scene"]);
+		EventManager:StartEvent(event_sequences["intro_scene"]);
 	else
 		DEBUG_Load();
 	end
@@ -143,7 +145,8 @@ function DEBUG_Load()
 		sprites["mark"].visible = false;
 		sprites["lukar"].visible = false;
 		sprites["claudius"]:SetXPosition(162, 0);
-		sprites["claudius"]:SetYPosition(150, 0);
+-- 		sprites["claudius"]:SetYPosition(150, 0);
+		sprites["claudius"]:SetYPosition(136, 0);
 	-- Below the first set of stairs leading up to the castle
 	elseif (DEBUG_LOAD_STATE == 5) then
 		Map:SetCamera(sprites["claudius"]);
@@ -457,9 +460,9 @@ function CreateDialogues()
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 		text = hoa_system.Translate("...");
 		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
-		dialogue:AddOption(help_text["orders_option"], 3);
-		dialogue:AddOption(help_text["help_option"], 4);
-		dialogue:AddLine(help_text["claudius_response_orders"], sprites["claudius"]:GetObjectID());
+		dialogue:AddOption(help_text["orders_option"], 4);
+		dialogue:AddOption(help_text["help_option"], 5);
+		dialogue:AddLine(help_text["claudius_response_orders"], sprites["claudius"]:GetObjectID(), -2);
 		dialogue:AddLine(help_text["claudius_response_help"], sprites["claudius"]:GetObjectID());
 		dialogue:AddLine(help_text["mark_response_help"], sprites["mark"]:GetObjectID());
 		dialogue:AddLine(help_text["lukar_response_help"], sprites["lukar"]:GetObjectID());
@@ -494,148 +497,153 @@ end -- function CreateDialogues()
 function CreateEvents()
 	IfPrintDebug(DEBUG_PRINT, "Creating events...");
 
-	event_chains = {}; -- Holds IDs of the starting event for each event chain
+	event_sequences = {}; -- Holds IDs of the starting event for each event chain
 	local event = {};
+	local counter = 0; -- Used to set sequential event IDs
 
 	-- Initial map scene -- camera pans across a stretch of the city under attack before focusing on the captain
-	event_chains["intro_scene"] = 1;
-	event = hoa_map.CustomEvent.Create(event_chains["intro_scene"], "StartIntroScene", "");
-	event:AddEventLinkAtStart(event_chains["intro_scene"] + 1);
-	event:AddEventLinkAtStart(event_chains["intro_scene"] + 2);
-	event:AddEventLinkAtEnd(event_chains["intro_scene"] + 3, 2000);
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["intro_scene"] + 1, sprites["intro_villager"], 34, 99);
- 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["intro_scene"] + 2, sprites["intro_demon"], 38, 98);
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["intro_scene"] + 3, Map.virtual_focus, 98, 130);
-	event:AddEventLinkAtEnd(event_chains["intro_scene"] + 4);
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["intro_scene"] + 4, Map.virtual_focus, sprites["captain"].x_position, sprites["captain"].y_position);
-	event:AddEventLinkAtEnd(event_chains["intro_scene"] + 5);
-	event:AddEventLinkAtEnd(event_chains["intro_scene"] + 6);
-	event:AddEventLinkAtEnd(event_chains["intro_scene"] + 7);
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["intro_scene"] + 5, sprites["claudius"], 0, -22);
+	event_sequences["intro_scene"] = 1;
+	event = hoa_map.CustomEvent.Create(event_sequences["intro_scene"], "StartIntroScene", "");
+	event:AddEventLinkAtStart(event_sequences["intro_scene"] + 1);
+	event:AddEventLinkAtStart(event_sequences["intro_scene"] + 2);
+	event:AddEventLinkAtEnd(event_sequences["intro_scene"] + 3, 2000);
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["intro_scene"] + 1, sprites["intro_villager"], 34, 99);
+ 	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["intro_scene"] + 2, sprites["intro_demon"], 38, 98);
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["intro_scene"] + 3, Map.virtual_focus, 98, 130);
+	event:AddEventLinkAtEnd(event_sequences["intro_scene"] + 4);
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["intro_scene"] + 4, Map.virtual_focus, sprites["captain"].x_position, sprites["captain"].y_position);
+	event:AddEventLinkAtEnd(event_sequences["intro_scene"] + 5);
+	event:AddEventLinkAtEnd(event_sequences["intro_scene"] + 6);
+	event:AddEventLinkAtEnd(event_sequences["intro_scene"] + 7);
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["intro_scene"] + 5, sprites["claudius"], 0, -22);
 	event:SetRelativeDestination(true);
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["intro_scene"] + 6, sprites["mark"], 0, -22);
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["intro_scene"] + 6, sprites["mark"], 0, -22);
 	event:SetRelativeDestination(true);
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["intro_scene"] + 7, sprites["lukar"], 0, -22);
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["intro_scene"] + 7, sprites["lukar"], 0, -22);
 	event:SetRelativeDestination(true);
-	event:AddEventLinkAtEnd(event_chains["intro_scene"] + 8);
-	event = hoa_map.DialogueEvent.Create(event_chains["intro_scene"] + 8, event_dialogues["opening"]);
-	event:AddEventLinkAtEnd(event_chains["intro_scene"] + 9);
-	event:AddEventLinkAtEnd(event_chains["intro_scene"] + 10);
-	event:AddEventLinkAtEnd(event_chains["intro_scene"] + 11);
+	event:AddEventLinkAtEnd(event_sequences["intro_scene"] + 8);
+	event = hoa_map.DialogueEvent.Create(event_sequences["intro_scene"] + 8, event_dialogues["opening"]);
+	event:AddEventLinkAtEnd(event_sequences["intro_scene"] + 9);
+	event:AddEventLinkAtEnd(event_sequences["intro_scene"] + 10);
+	event:AddEventLinkAtEnd(event_sequences["intro_scene"] + 11);
 	-- Move Claudius, Lukar and Mark to the same position
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["intro_scene"] + 9, sprites["claudius"], 98, 185);
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["intro_scene"] + 10, sprites["mark"], 98, 185);
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["intro_scene"] + 11, sprites["lukar"], 98, 185);
-	event:AddEventLinkAtEnd(event_chains["intro_scene"] + 12);
-	event = hoa_map.CustomEvent.Create(event_chains["intro_scene"] + 12, "", "EndIntroScene");
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["intro_scene"] + 9, sprites["claudius"], 98, 185);
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["intro_scene"] + 10, sprites["mark"], 98, 185);
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["intro_scene"] + 11, sprites["lukar"], 98, 185);
+	event:AddEventLinkAtEnd(event_sequences["intro_scene"] + 12);
+	event = hoa_map.CustomEvent.Create(event_sequences["intro_scene"] + 12, "", "EndIntroScene");
 
 	-- Party watches as enemy demon emerges from the shadows and attacks
-	event_chains["demon_spawns"] = 20;
-	event = hoa_map.PushMapStateEvent.Create(event_chains["demon_spawns"], hoa_map.MapMode.STATE_SCENE);
- 	event:AddEventLinkAtStart(event_chains["demon_spawns"] + 1);
-	event = hoa_map.DialogueEvent.Create(event_chains["demon_spawns"] + 1, event_dialogues["demon_spawn1"]);
+	event_sequences["demon_spawns"] = 20;
+	event = hoa_map.PushMapStateEvent.Create(event_sequences["demon_spawns"], hoa_map.MapMode.STATE_SCENE);
+ 	event:AddEventLinkAtStart(event_sequences["demon_spawns"] + 1);
+	event = hoa_map.DialogueEvent.Create(event_sequences["demon_spawns"] + 1, event_dialogues["demon_spawn1"]);
 	event:SetStopCameraMovement(true);
-	event:AddEventLinkAtEnd(event_chains["demon_spawns"] + 2);
-	event = hoa_map.CustomEvent.Create(event_chains["demon_spawns"] + 2, "SpawnSceneDemon", "IsSceneDemonActive");
-	event:AddEventLinkAtEnd(event_chains["demon_spawns"] + 3, 1000);
-	event = hoa_map.DialogueEvent.Create(event_chains["demon_spawns"] + 3, event_dialogues["demon_spawn2"]);
-	event:AddEventLinkAtEnd(event_chains["demon_spawns"] + 4);
-	event:AddEventLinkAtEnd(event_chains["demon_spawns"] + 5);
-	event = hoa_map.PopMapStateEvent.Create(event_chains["demon_spawns"] + 4);
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["demon_spawns"] + 5, sprites["enemy_spawn"], 0, 8);
+	event:AddEventLinkAtEnd(event_sequences["demon_spawns"] + 2);
+	event = hoa_map.CustomEvent.Create(event_sequences["demon_spawns"] + 2, "SpawnSceneDemon", "IsSceneDemonActive");
+	event:AddEventLinkAtEnd(event_sequences["demon_spawns"] + 3, 1000);
+	event = hoa_map.DialogueEvent.Create(event_sequences["demon_spawns"] + 3, event_dialogues["demon_spawn2"]);
+	event:AddEventLinkAtEnd(event_sequences["demon_spawns"] + 4);
+	event:AddEventLinkAtEnd(event_sequences["demon_spawns"] + 5);
+	event = hoa_map.PopMapStateEvent.Create(event_sequences["demon_spawns"] + 4);
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["demon_spawns"] + 5, sprites["enemy_spawn"], 0, 8);
 	event:SetRelativeDestination(true);
 	-- TODO: tell enemy sprite to roam and hunt
 
 	-- NPCs running from the market to their homes
-	event_chains["fleeing_market"] = 40;
+	event_sequences["fleeing_market"] = 40;
 
 	-- Party observes a citizen trying to escape from demons and decides whether or not to help
-	event_chains["citizen_trapped"] = 60;
-	event = hoa_map.PushMapStateEvent.Create(event_chains["citizen_trapped"], hoa_map.MapMode.STATE_SCENE);
-	event:AddEventLinkAtStart(event_chains["citizen_trapped"] + 1);
-	event:AddEventLinkAtStart(event_chains["citizen_trapped"] + 2);
-	event:AddEventLinkAtStart(event_chains["citizen_trapped"] + 3);
-	event:AddEventLinkAtStart(event_chains["citizen_trapped"] + 4);
-	event = hoa_map.CameraMoveEvent.Create(event_chains["citizen_trapped"] + 1, sprites["trap_citizen"], 1000);
-	event = hoa_map.DialogueEvent.Create(event_chains["citizen_trapped"] + 2, event_dialogues["citizen_chased"]);
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["citizen_trapped"] + 3, sprites["trap_citizen"], 190, 130);
-	event:AddEventLinkAtEnd(event_chains["citizen_trapped"] + 5);
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["citizen_trapped"] + 4, sprites["trap_demon"], 190, 130);
-	event:AddEventLinkAtEnd(event_chains["citizen_trapped"] + 6);
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["citizen_trapped"] + 5, sprites["trap_citizen"], 192, 145);
+	event_sequences["citizen_trapped"] = 60;
+	event = hoa_map.PushMapStateEvent.Create(event_sequences["citizen_trapped"], hoa_map.MapMode.STATE_SCENE);
+	event:AddEventLinkAtStart(event_sequences["citizen_trapped"] + 1);
+	event:AddEventLinkAtStart(event_sequences["citizen_trapped"] + 2);
+	event:AddEventLinkAtStart(event_sequences["citizen_trapped"] + 3);
+	event:AddEventLinkAtStart(event_sequences["citizen_trapped"] + 4);
+	event = hoa_map.CameraMoveEvent.Create(event_sequences["citizen_trapped"] + 1, sprites["trap_citizen"], 1000);
+	event = hoa_map.DialogueEvent.Create(event_sequences["citizen_trapped"] + 2, event_dialogues["citizen_chased"]);
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["citizen_trapped"] + 3, sprites["trap_citizen"], 190, 130);
+	event:AddEventLinkAtEnd(event_sequences["citizen_trapped"] + 5);
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["citizen_trapped"] + 4, sprites["trap_demon"], 190, 130);
+	event:AddEventLinkAtEnd(event_sequences["citizen_trapped"] + 6);
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["citizen_trapped"] + 5, sprites["trap_citizen"], 192, 145);
  	event:SetFinalDirection(hoa_map.MapMode.NORTH);
-	event:AddEventLinkAtEnd(event_chains["citizen_trapped"] + 7)
-	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["citizen_trapped"] + 6, sprites["trap_demon"], 192, 142);
- 	event = hoa_map.CameraMoveEvent.Create(event_chains["citizen_trapped"] + 7, sprites["claudius"], 1000);
-	event:AddEventLinkAtEnd(event_chains["citizen_trapped"] + 8)
-	event = hoa_map.PopMapStateEvent.Create(event_chains["citizen_trapped"] + 8);
+	event:AddEventLinkAtEnd(event_sequences["citizen_trapped"] + 7)
+	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["citizen_trapped"] + 6, sprites["trap_demon"], 192, 142);
+ 	event = hoa_map.CameraMoveEvent.Create(event_sequences["citizen_trapped"] + 7, sprites["claudius"], 1000);
+	event:AddEventLinkAtEnd(event_sequences["citizen_trapped"] + 8)
+	event = hoa_map.PopMapStateEvent.Create(event_sequences["citizen_trapped"] + 8);
 
 --event_dialogues["help_citizen"] event_dialogues["help_citizen_short"] event_dialogues["help_citizen_not_saved"]
 	-- Dialogue where player must choose to help or ignore the citizen
--- 	event_chains["help_citizen"] = 100;
--- 	event = hoa_map.CustomEvent.Create(event_chains["help_citizen"], "StartHelpDialogue", "");
--- 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["help_citizen"] + ?, sprites["lukar"], 165, 128);
+	event_sequences["help_citizen"], counter = 100, 100;
+	event = hoa_map.CustomEvent.Create(counter, "StartHelpDialogue", "");
+	event:AddEventLinkAtStart(counter + 1);
+-- 	event:AddEventLinkAtStart(counter + 2);
+-- 	event:AddEventLinkAtStart(counter + 3);
+-- 	counter = counter + 1; event = hoa_map.PathMoveSpriteEvent.Create(counter, sprites["lukar"], 164, 128);
 -- 	event:SetFinalDirection(hoa_map.MapMode.EAST);
--- 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["help_citizen"] + ?, sprites["mark"], 165, 130);
+-- 	counter = counter + 1; event = hoa_map.PathMoveSpriteEvent.Create(counter, sprites["mark"], 164, 130);
 -- 	event:SetFinalDirection(hoa_map.MapMode.EAST);
--- 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["help_citizen"] + ?, sprites["claudius"], 3, 0);
+-- 	counter = counter + 1; event = hoa_map.PathMoveSpriteEvent.Create(counter, sprites["claudius"], 3, 0);
 -- 	event:SetRelativeDestination(true);
 -- 	event:SetFinalDirection(hoa_map.MapMode.WEST);
--- 	event = hoa_map.DialogueEvent.Create(event_chains["help_citizen"] + ?, event_dialogues["help_citizen"]);
---
--- 	event = hoa_map.CustomEvent.Create(event_chains["help_citizen"], "FinishHelpDialogue", "");
+-- 	event:AddEventLinkAtEnd(counter + 1);
+	counter = counter + 1; event = hoa_map.DialogueEvent.Create(counter, event_dialogues["help_citizen"]);
+
+-- 	event = hoa_map.CustomEvent.Create(event_sequences["help_citizen"], "FinishHelpDialogue", "");
 --
 -- 	-- Nearly identical to the last event chain, but plays a shortened version of the dialogue
--- 	event_chains["help_citizen_short"] = 120;
--- 	event = hoa_map.CustomEvent.Create(event_chains["help_citizen_short"], "StartHelpDialogue", "");
--- 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["help_citizen_short"] + ?, sprites["lukar"], 165, 128);
+-- 	event_sequences["help_citizen_short"] = 120;
+-- 	event = hoa_map.CustomEvent.Create(event_sequences["help_citizen_short"], "StartHelpDialogue", "");
+-- 	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["help_citizen_short"] + ?, sprites["lukar"], 165, 128);
 -- 	event:SetFinalDirection(hoa_map.MapMode.EAST);
--- 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["help_citizen_short"] + ?, sprites["mark"], 165, 130);
+-- 	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["help_citizen_short"] + ?, sprites["mark"], 165, 130);
 -- 	event:SetFinalDirection(hoa_map.MapMode.EAST);
--- 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["help_citizen_short"] + ?, sprites["claudius"], 3, 0);
+-- 	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["help_citizen_short"] + ?, sprites["claudius"], 3, 0);
 -- 	event:SetRelativeDestination(true);
 -- 	event:SetFinalDirection(hoa_map.MapMode.WEST);
--- 	event = hoa_map.DialogueEvent.Create(event_chains["help_citizen_short"] + ?, event_dialogues["help_citizen_short"]);
--- 	event = hoa_map.CustomEvent.Create(event_chains["help_citizen_short"], "FinishHelpDialogue", "");
+-- 	event = hoa_map.DialogueEvent.Create(event_sequences["help_citizen_short"] + ?, event_dialogues["help_citizen_short"]);
+-- 	event = hoa_map.CustomEvent.Create(event_sequences["help_citizen_short"], "FinishHelpDialogue", "");
 --
 -- 	-- Player chose to help the citizen. Mark and Lukar leave Claudius and exit the screen to the left as dialogue ends
--- 	event_chains["help_citizen_option"] = 140;
+-- 	event_sequences["help_citizen_option"] = 140;
 --
 -- 	-- Player chose to ignore the citizen. Move Claudius, Mark, and Lukar to the left of the zone and re-hide them as the dialoug ends
--- 	event_chains["ignore_citizen_option"] = 160;
+-- 	event_sequences["ignore_citizen_option"] = 160;
 --
 -- 	-- Player trying to leave the area before saving the citizen. Play a monologue and move player right of the zone
--- 	event_chains["help_citizen_not_saved"] = 180;
--- 	event = hoa_map.DialogueEvent.Create(event_chains["help_citizen_not_saved"] + ?, event_dialogues["help_citizen_not_saved"]);
+-- 	event_sequences["help_citizen_not_saved"] = 180;
+-- 	event = hoa_map.DialogueEvent.Create(event_sequences["help_citizen_not_saved"] + ?, event_dialogues["help_citizen_not_saved"]);
 -- 	event:SetStopCameraMovement(true);
--- 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["help_citizen_not_saved"] + ?, sprites["claudius"], 1, 0);
+-- 	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["help_citizen_not_saved"] + ?, sprites["claudius"], 1, 0);
 -- 	event:SetRelativeDestination(true);
 --
 -- 	-- Player has defeated the enemy threatening the citizen. Short dialogue while sprite runs off to safety
--- 	event_chains["help_citizen_saved"] = 200;
--- 	event = hoa_map.DialogueEvent.Create(event_chains["help_citizen_saved"] + ?, event_dialogues["saved_citizen"]);
--- 	event = hoa_map.ChangePropertySpriteEvent(event_chains["help_citizen_not_saved"] + ?, sprites["trap_citizen"]);
--- 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["help_citizen_not_saved"] + ?, sprites["trap_citizen"], 192, 130);
--- 	event = hoa_map.PathMoveSpriteEvent.Create(event_chains["help_citizen_not_saved"] + ?, sprites["trap_citizen"], 152, 126);
--- 	event = hoa_map.ChangePropertySpriteEvent(event_chains["help_citizen_not_saved"] + ?, sprites["trap_citizen"]);
+-- 	event_sequences["help_citizen_saved"] = 200;
+-- 	event = hoa_map.DialogueEvent.Create(event_sequences["help_citizen_saved"] + ?, event_dialogues["saved_citizen"]);
+-- 	event = hoa_map.ChangePropertySpriteEvent(event_sequences["help_citizen_not_saved"] + ?, sprites["trap_citizen"]);
+-- 	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["help_citizen_not_saved"] + ?, sprites["trap_citizen"], 192, 130);
+-- 	event = hoa_map.PathMoveSpriteEvent.Create(event_sequences["help_citizen_not_saved"] + ?, sprites["trap_citizen"], 152, 126);
+-- 	event = hoa_map.ChangePropertySpriteEvent(event_sequences["help_citizen_not_saved"] + ?, sprites["trap_citizen"]);
 
 	-- Enemies drop down between Claudius and his allies. Claudius continues on alone
-	event_chains["claudius_separated"] = 300;
+	event_sequences["claudius_separated"] = 300;
 
 	-- Claudius enters the throne room
-	event_chains["throne_entered"] = 320;
+	event_sequences["throne_entered"] = 320;
 
 	-- Closing scene of map
-	event_chains["closing_scene"] = 400;
+	event_sequences["closing_scene"] = 400;
 
 	----------------------------------------------------------------------------
 	---------- Miscellaneous Events
 	---------------------------------------------------------------------------
-	event_chains["locked_door"] = 1000;
-	event = hoa_map.DialogueEvent.Create(event_chains["locked_door"], event_dialogues["locked_door"]);
+	event_sequences["locked_door"] = 1000;
+	event = hoa_map.DialogueEvent.Create(event_sequences["locked_door"], event_dialogues["locked_door"]);
 
-	event_chains["pop_state"] = 1010;
-	event = hoa_map.PopMapStateEvent.Create(event_chains["pop_state"])
+	event_sequences["pop_state"] = 1010;
+	event = hoa_map.PopMapStateEvent.Create(event_sequences["pop_state"])
 end -- function CreateEvents()
 
 ----------------------------------------------------------------------------
@@ -659,15 +667,15 @@ function Update()
 
 	-- Check map zones for necessary actions
 	if (zones["witness_spawn"]:IsPlayerSpriteEntering() == true) then
-		if (EventManager:TimesEventStarted(event_chains["demon_spawns"]) == 0) then
-			EventManager:StartEvent(event_chains["demon_spawns"]);
+		if (EventManager:TimesEventStarted(event_sequences["demon_spawns"]) == 0) then
+			EventManager:StartEvent(event_sequences["demon_spawns"]);
 		end
 	end
 
 	if (zones["witness_chase"]:IsPlayerSpriteEntering() == true) then
-		if (EventManager:TimesEventStarted(event_chains["citizen_trapped"]) == 0) then
+		if (EventManager:TimesEventStarted(event_sequences["citizen_trapped"]) == 0) then
 			Map:GetPlayerSprite():SetMoving(false);
-			EventManager:StartEvent(event_chains["citizen_trapped"]);
+			EventManager:StartEvent(event_sequences["citizen_trapped"]);
 		end
 	end
 
@@ -676,13 +684,14 @@ function Update()
 	-- change their mind. If they select to help the citizen and then re-enter the zone before helping them, a third dialogue appears informing the
 	-- player that they must now help the citizen before they can continue.
 	if (zones["help_decision"]:IsPlayerSpriteEntering() == true) then
-		if (EventManager:TimesEventStarted(event_chains["citizen_trapped"]) == 0) then
-			EventManager:StartEvent(event_chains["citizen_trapped"]);
+		if (EventManager:TimesEventStarted(event_sequences["help_citizen"]) == 0) then
+			EventManager:StartEvent(event_sequences["help_citizen"]);
+			-- NOTE: a dialogue in this sequence will set the "help_citizen" local record
 		-- Player chose not to help citizen, play a different dialogue presenting options again
-		elseif (EventManager:GetDataKeyValue("help_citizen") == 0) then
+		elseif (LocalRecords:GetRecord("help_citizen") == 0) then
 			print "don't help citizen";
 		-- Player chose to help citizen but has not yet done so. Play a monologue until they do so
-		elseif (EventManager:GetDataKeyValue("help_citizen") == 1 and EventManager:GetDataKeyValue("citizen_saved") == 0) then
+		elseif (LocalRecords:GetRecord("help_citizen") == 1 and LocalRecords:GetRecord("citizen_saved") ~= 1) then
 			print "help citizen";
 		end
 	end
@@ -781,8 +790,9 @@ function HandleCollisionNotification(notification)
 		if (sounds["door_locked"]:IsPlaying() == false) then
 			sounds["door_locked"]:Play();
 		end
-		if (EventManager:CheckSetDataKeyValue("locked_door") == 0) then
-			EventManager:StartEvent(event_chains["locked_door"], 500);
+		if (LocalRecords:GetRecord("locked_door") ~= 0) then
+			LocalRecords:AddNewRecord("locked_door", 1);
+			EventManager:StartEvent(event_sequences["locked_door"], 500);
 		end
 	end
 end
@@ -829,7 +839,7 @@ function SpriteContextTransition(transition_key, sprite)
 	Map:SetCamera(sprite, transition_time);
 	-- Prevent player from controlling sprite until transition completes
 	Map:PushState(hoa_map.MapMode.STATE_SCENE);
-	EventManager:StartEvent(event_chains["pop_state"], transition_time);
+	EventManager:StartEvent(event_sequences["pop_state"], transition_time);
 end
 
 ----------------------------------------------------------------------------

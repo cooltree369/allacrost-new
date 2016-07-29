@@ -28,7 +28,7 @@ ObjectManager = {};
 DialogueManager = {};
 EventManager = {};
 TreasureManager = {};
-GlobalEvents = {};
+GlobalRecords = {};
 
 enemy_ids = { }
 
@@ -60,7 +60,7 @@ function Load(m)
 	DialogueManager = Map.dialogue_supervisor;
 	EventManager = Map.event_supervisor;
 	TreasureManager = Map.treasure_supervisor;
-	GlobalEvents = Map.map_event_group;
+	GlobalRecords = Map.global_record_group;
 
 	-- Setup the order in which we wish to draw the tile and object layers
 	Map:ClearLayerOrder();
