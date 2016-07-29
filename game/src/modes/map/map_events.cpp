@@ -46,6 +46,21 @@ namespace hoa_map {
 namespace private_map {
 
 // -----------------------------------------------------------------------------
+// ---------- MapEvent Class Methods
+// -----------------------------------------------------------------------------
+
+void MapEvent::_AddRecord(const std::string& record_name, int32 record_value, bool is_global) {
+	if (_event_records == NULL) {
+		_event_records = new MapRecordData();
+	}
+
+	if (is_global == true)
+		_event_records->AddGlobalRecord(record_name, record_value);
+	else
+		_event_records->AddLocalRecord(record_name, record_value);
+}
+
+// -----------------------------------------------------------------------------
 // ---------- PushMapStateEvent Class Methods
 // -----------------------------------------------------------------------------
 
@@ -1299,6 +1314,7 @@ void EventSupervisor::StartEvent(MapEvent* event) {
 
 	_active_events.push_back(event);
 	event->_Start();
+	event->_CommitRecords(); // Commit any records for the event now that it has been started
 	_event_history.emplace(event->GetEventID(), 0);
 	_event_history[event->GetEventID()] += 1;
 	_ExamineEventLinks(event, true);
