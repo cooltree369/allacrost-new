@@ -103,7 +103,8 @@ void BindModeCode() {
 			.def("CurrentState", &MapMode::CurrentState)
 			.def("PushState", &MapMode::PushState)
 			.def("PopState", &MapMode::PopState)
-			.def("GetMapRecordGroup", &MapMode::GetGlobalRecordGroup)
+			.def("GetGlobalRecordGroup", &MapMode::GetGlobalRecordGroup)
+			.def("GetLocalRecordGroup", &MapMode::GetLocalRecordGroup)
 			.def("DrawMapLayers", &MapMode::_DrawMapLayers)
 
 			// Namespace constants
@@ -253,6 +254,7 @@ void BindModeCode() {
 		class_<VirtualSprite, MapObject>("VirtualSprite")
 			.def(constructor<>())
 			.def("SetMoving", &VirtualSprite::SetMoving)
+			.def("SetRunning", &VirtualSprite::SetRunning)
 			.def("SetDirection", &VirtualSprite::SetDirection)
 			.def("SetRandomDirection", &VirtualSprite::SetRandomDirection)
 			.def("SetMovementSpeed", &VirtualSprite::SetMovementSpeed)
@@ -484,7 +486,7 @@ void BindModeCode() {
 			.def("PositionChangeRelative", &ChangePropertySpriteEvent::PositionChangeRelative)
 			.def("Updatable", &ChangePropertySpriteEvent::Updatable)
 			.def("Visible", &ChangePropertySpriteEvent::Visible)
-			.def("Colliable", &ChangePropertySpriteEvent::Collidable)
+			.def("Collidable", &ChangePropertySpriteEvent::Collidable)
 			.def("Context", &ChangePropertySpriteEvent::Context)
 			.def("Position", (void(ChangePropertySpriteEvent::*)(int16, int16)) &ChangePropertySpriteEvent::Position)
 			.def("Position", (void(ChangePropertySpriteEvent::*)(int16, float, int16, float)) &ChangePropertySpriteEvent::Position)

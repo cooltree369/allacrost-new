@@ -54,7 +54,7 @@ string DetermineLuaFileTablespaceName(const string& filename) {
 // CommonRecordGroup class
 ////////////////////////////////////////////////////////////////////////////////
 
-const int32 CommonRecordGroup::BAD_RECORD = 0xFFFFFFFF;
+const int32 CommonRecordGroup::BAD_RECORD = 0x7FFFFFFF;
 
 
 

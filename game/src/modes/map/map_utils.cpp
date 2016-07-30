@@ -93,6 +93,7 @@ void MapEventData::AddEvent(uint32 event_id, uint32 start_timing, bool launch_at
 }
 
 
+
 void MapEventData::StartEvents(bool launch_start) const {
 	for (uint32 i = 0; i < _event_ids.size(); ++i) {
 		if (_launch_start[i] == launch_start) {

@@ -85,6 +85,12 @@ void BindCommonCode() {
 			.def("HasAlreadySeen", &CommonDialogue::HasAlreadySeen)
 			.def("SetTimesSeen", &CommonDialogue::SetTimesSeen)
 			.def("SetMaxViews", &CommonDialogue::SetMaxViews)
+
+			// Constants
+			.enum_("constants") [
+				value("NEXT_LINE", COMMON_DIALOGUE_NEXT_LINE),
+				value("END_DIALOGUE", COMMON_DIALOGUE_END)
+			]
 	];
 
 	} // End using common namespace
