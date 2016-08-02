@@ -1062,7 +1062,7 @@ void EnemySprite::Update() {
 			_state_timer.Update();
 			if (_state_timer.IsFinished() == true) {
 				_fade_color.SetAlpha(0.0f);
-				_state = INACTIVE;
+				ChangeState(INACTIVE);
 			}
 			else {
 				_fade_color.SetAlpha(1.0f - _state_timer.PercentComplete());
