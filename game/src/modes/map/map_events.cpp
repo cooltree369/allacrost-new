@@ -976,11 +976,6 @@ void PathMoveSpriteEvent::_Start() {
 	}
 
 	// TODO: If we already have a path from this source to this destination, re-use it and do not compute a new path
-// 	if ((_path.empty() == false) && (_source_col == _sprite->x_position) && (_source_row == _sprite->y_position)) {
-// 		_sprite->moving = true;
-// 		_SetDirection();
-// 		return;
-// 	}
 
 	if (MapMode::CurrentInstance()->GetObjectSupervisor()->FindPath(_sprite, _path, _destination_node) == true) {
 		_sprite->SetMoving(true);
@@ -1006,6 +1001,7 @@ bool PathMoveSpriteEvent::_Update() {
 
 		// When the current node index is at the end of the path, the event is finished
 		if (_current_node >= _path.size() - 1) {
+			// TODO: don't finish here: instead move the sprite to the specified offset within the grid element then finish
 			_sprite->SetMoving(false);
 			_sprite->ReleaseControl(this);
 			if (_final_direction != 0)
@@ -1045,21 +1041,33 @@ void PathMoveSpriteEvent::_SetSpriteDirection() {
 		direction |= EAST;
 	}
 
-	// Determine if the sprite should move diagonally to the next node
+	// Determine if the sprite is movving diagonally to the next node. If so, we have to determine which direction
+	// the sprite should face during this movement as well
 	if ((direction & (NORTH | SOUTH)) && (direction & (WEST | EAST))) {
-		switch (direction) {
-			case (NORTH | WEST):
-				direction = MOVING_NORTHWEST;
-				break;
-			case (NORTH | EAST):
-				direction = MOVING_NORTHEAST;
-				break;
-			case (SOUTH | WEST):
-				direction = MOVING_SOUTHWEST;
-				break;
-			case (SOUTH | EAST):
-				direction = MOVING_SOUTHEAST;
-				break;
+		uint16 sprite_direction = _sprite->GetDirection();
+		if (direction == (NORTH | WEST)) {
+			if (sprite_direction & FACING_NORTH || sprite_direction & FACING_EAST)
+				direction = NW_NORTH;
+			else
+				direction = NW_WEST;
+		}
+		else if (direction == (NORTH | EAST)) {
+			if (sprite_direction & FACING_NORTH || sprite_direction & FACING_WEST)
+				direction = NE_NORTH;
+			else
+				direction = NE_EAST;
+		}
+		else if (direction == (SOUTH | WEST)) {
+			if (sprite_direction & FACING_SOUTH || sprite_direction & FACING_EAST)
+				direction = SW_SOUTH;
+			else
+				direction = SW_WEST;
+		}
+		else if (direction == (SOUTH | EAST)) {
+			if (sprite_direction & FACING_SOUTH || sprite_direction & FACING_WEST)
+				direction = SE_SOUTH;
+			else
+				direction = SE_EAST;
 		}
 	}
 
