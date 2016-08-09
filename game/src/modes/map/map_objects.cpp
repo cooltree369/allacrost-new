@@ -769,8 +769,8 @@ COLLISION_TYPE ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObjec
 	sprite->GetCollisionRectangle(coll_rect);
 
 	// ---------- (1) Check if any part of the object's collision rectangle is outside of the map boundary
-	if (coll_rect.left < 0.0f || coll_rect.right >= static_cast<float>(_num_grid_cols) ||
-		coll_rect.top < 0.0f || coll_rect.bottom >= static_cast<float>(_num_grid_rows)) {
+	if (coll_rect.left < 0.0f || coll_rect.right > static_cast<float>(_num_grid_cols) ||
+		coll_rect.top < 0.0f || coll_rect.bottom > static_cast<float>(_num_grid_rows)) {
 		NotificationManager->Notify(new MapCollisionNotificationEvent(BOUNDARY_COLLISION, sprite));
 		return BOUNDARY_COLLISION;
 	}
@@ -779,8 +779,28 @@ COLLISION_TYPE ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObjec
 	// Determine if the object's collision rectangle overlaps any unwalkable tiles
 	// Note that because the sprite's collision rectangle was previously determined to be within the map bounds,
 	// the map grid tile indeces referenced in this loop are all valid entries and do not need to be checked for out-of-bounds conditions
-	for (uint32 r = static_cast<uint32>(coll_rect.top); r <= static_cast<uint32>(coll_rect.bottom); r++) {
-		for (uint32 c = static_cast<uint32>(coll_rect.left); c <= static_cast<uint32>(coll_rect.right); c++) {
+	uint32 left, right, top, bottom;
+	float integer, fraction;
+
+	// We need to figure out what range of collision grid coordinates need to be examined. Separate the sprite's collision rectangle coordinates
+	// into integer and fractional components. Normally just casting the integer component will give us the correct value. But if the collision rectangle
+	// is perfectly aligned with the collision grid elements on the right or bottom, we have to subtract one from these coordinates because otherwise we
+	// will be checking areas of the grid that don't truly overlap with the collision rectangle.
+	fraction = modf(coll_rect.left, &integer);
+	left = static_cast<uint32>(integer);
+	fraction = modf(coll_rect.right, &integer);
+	right = static_cast<uint32>(integer);
+	if (IsFloatEqual(fraction, 0.0f, 0.01f) == true)
+		right -= 1;
+	fraction = modf(coll_rect.top, &integer);
+	top = static_cast<uint32>(integer);
+	fraction = modf(coll_rect.bottom, &integer);
+	bottom = static_cast<uint32>(integer);
+	if (IsFloatEqual(fraction, 0.0f, 0.01f) == true)
+		bottom -= 1;
+
+	for (uint32 r = top; r <= bottom; r++) {
+		for (uint32 c = left; c <= right; c++) {
 			// Checks the collision grid at the row-column at the object's current context
 			if ((_collision_grid[r][c] & sprite->context) != 0) {
 				NotificationManager->Notify(new MapCollisionNotificationEvent(GRID_COLLISION, sprite));
@@ -946,16 +966,15 @@ bool ObjectSupervisor::FindPath(VirtualSprite* sprite, vector<PathNode>& path, c
 		return false;
 	}
 
-	// Check that the destination is valid for the sprite to move to
+	// TODO: need to determine what to set the offsets to during path calculation
 	x_offset = sprite->x_offset;
 	y_offset = sprite->y_offset;
+// 	sprite->x_offset = 0.0f;
+// 	sprite->y_offset = 0.0f;
 
+	// Check that the destination is valid for the sprite to move to before beginning
 	sprite->x_position = dest.col;
 	sprite->y_position = dest.row;
-	// Don't use 0.0f here for both since errors at the border between two positions may occure, especially when running
-	sprite->x_offset = 0.5f;
-	sprite->y_offset = 0.5f;
-
 	if (DetectCollision(sprite, NULL, true) != NO_COLLISION) {
 		sprite->x_position = source_node.col;
 		sprite->y_position = source_node.row;
