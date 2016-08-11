@@ -109,7 +109,6 @@ function CreateSprites()
 	claudius.collidable = false;
 	animation = claudius:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(claudius);
 
 	mark = ConstructSprite("Knight01", 2, group_start_x - 10.5, group_start_y + 2.5);
 	mark:SetDirection(hoa_map.MapMode.EAST);
@@ -118,7 +117,6 @@ function CreateSprites()
 	mark.collidable = false;
 	animation = mark:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(mark);
 
 	lukar = ConstructSprite("Knight01", 3, group_start_x - 9.5, group_start_y - 1);
 	lukar:SetDirection(hoa_map.MapMode.EAST);
@@ -127,7 +125,6 @@ function CreateSprites()
 	lukar.collidable = false;
 	animation = lukar:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(lukar);
 
 	-- Create the captain, his sergeant, and one senior knight leading the troop heading due East
 	sprite = ConstructSprite("Knight06", 10, group_start_x + 12, group_start_y + 1);
@@ -137,7 +134,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Knight05", 11, group_start_x + 10.5, group_start_y + 0.25);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -146,7 +142,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Knight04", 12, group_start_x + 10, group_start_y + 2.5);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -154,7 +149,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	-- Create the hounds and their knight pairs in the middle of the pack (sorted by top to bottom)
 	sprite = ConstructSprite("Mak Hound", 20, group_start_x - 1, group_start_y - 1);
@@ -163,7 +157,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Knight01", 21, group_start_x + 3, group_start_y - 1);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -171,7 +164,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Knight02", 22, group_start_x - 1, group_start_y - 4);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -179,7 +171,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Mak Hound", 30, group_start_x - 3, group_start_y + 7);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -187,7 +178,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Knight03", 31, group_start_x + 1, group_start_y + 7);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -195,7 +185,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Knight02", 32, group_start_x - 5, group_start_y + 9);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -203,7 +192,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	-- Create the rest of the knight squads
 	-- Squad 1: Upper right of formation
@@ -213,7 +201,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Knight02", 41, group_start_x + 7.5, group_start_y - 1);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -221,7 +208,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Knight03", 42, group_start_x + 5, group_start_y + 0.5);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -229,7 +215,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	-- Squad 2: Lower right of formation
 	sprite = ConstructSprite("Knight02", 50, group_start_x + 7.25, group_start_y + 4);
@@ -238,7 +223,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Knight01", 51, group_start_x + 5.5, group_start_y + 5.75);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -246,7 +230,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Knight02", 52, group_start_x + 4, group_start_y + 8);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -254,7 +237,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	-- Squad 3: Middle horizontal of formation
 	sprite = ConstructSprite("Knight03", 60, group_start_x + 2.5, group_start_y + 4);
@@ -263,7 +245,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Knight02", 61, group_start_x, group_start_y + 2);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -271,7 +252,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Knight01", 62, group_start_x - 3.5, group_start_y + 3.5);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -279,7 +259,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	-- Squad 4: Rear vertical of formation
 	sprite = ConstructSprite("Knight02", 70, group_start_x - 6, group_start_y - 2.5);
@@ -288,7 +267,7 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
+
 
 	sprite = ConstructSprite("Knight03", 71, group_start_x - 7.25, group_start_y + 0.5);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -296,7 +275,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	sprite = ConstructSprite("Knight02", 72, group_start_x - 8, group_start_y + 4.5);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
@@ -304,7 +282,6 @@ function CreateSprites()
 	sprite.collidable = false;
 	animation = sprite:GetAnimation(hoa_map.MapMode.ANIM_WALKING_EAST);
 	animation:RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprite);
 
 	-- TODO: replace this by just using the default virtual focus sprite object for the map
 	-- TEMP: an invisible sprite used as a narrator and camera focus point
@@ -312,7 +289,7 @@ function CreateSprites()
 	sprite:SetMovementSpeed(hoa_map.MapMode.SLOW_SPEED);
 	sprite:SetName("");
 	sprite.visible = false;
-	ObjectManager:AddObject(sprite);
+
 	Map:SetCamera(sprite);
 end -- function CreateSprites()
 

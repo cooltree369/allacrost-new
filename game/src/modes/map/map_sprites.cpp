@@ -384,6 +384,15 @@ MapSprite::~MapSprite() {
 
 
 
+MapSprite* MapSprite::Create(int16 object_id) {
+	MapSprite* sprite = new MapSprite();
+	sprite->SetObjectID(object_id);
+	MapMode::CurrentInstance()->GetObjectSupervisor()->AddObject(sprite);
+	return sprite;
+}
+
+
+
 bool MapSprite::LoadStandardAnimations(std::string filename) {
 	// Prepare the four standing and four walking _animations
 	for (uint8 i = 0; i < 8; i++)
@@ -876,6 +885,15 @@ EnemySprite::EnemySprite() :
 	MapObject::_object_type = ENEMY_TYPE;
 	visible = true;
 	Reset();
+}
+
+
+
+EnemySprite* EnemySprite::Create(int16 object_id) {
+	EnemySprite* sprite = new EnemySprite();
+	sprite->SetObjectID(object_id);
+	MapMode::CurrentInstance()->GetObjectSupervisor()->AddObject(sprite);
+	return sprite;
 }
 
 

@@ -43,11 +43,10 @@ function ConstructSprite(name, id, x, y)
 
 	local direction = (2 ^ math.random(0, 3));
 
-	local sprite = hoa_map.MapSprite();
+	local sprite = hoa_map.MapSprite.Create(id);
 	if (sprites[name].name) then
 		sprite:SetName(sprites[name].name);
 	end
-	sprite:SetObjectID(id);
 	sprite:SetContext(hoa_map.MapMode.CONTEXT_01);
 	if (x and y) then
 		sprite:SetXPosition(x_int, x_off);
@@ -96,8 +95,7 @@ function ConstructEnemySprite(name, id, x, y)
 
 	local direction = (2 ^ math.random(0, 3));
 
-	local enemy = hoa_map.EnemySprite();
-	enemy:SetObjectID(id);
+	local enemy = hoa_map.EnemySprite.Create(id);
 	enemy:SetContext(hoa_map.MapMode.CONTEXT_01);
 	if (x and y) then
 		enemy:SetXPosition(x_int, x_off);

@@ -264,6 +264,10 @@ void BindModeCode() {
 			.def("GetMovementSpeed", &VirtualSprite::GetMovementSpeed),
 
 		class_<MapSprite, VirtualSprite>("MapSprite")
+			.scope
+			[
+				def("Create", &MapSprite::Create)
+			]
 			.def(constructor<>())
 			.def("SetName", &MapSprite::SetName)
 			.def("SetDirection", &MapSprite::SetDirection)
@@ -283,6 +287,10 @@ void BindModeCode() {
 			.def("RemoveDialogueReference", &MapSprite::RemoveDialogueReference),
 
 		class_<EnemySprite, MapSprite>("EnemySprite")
+			.scope
+			[
+				def("Create", &EnemySprite::Create)
+			]
 			.def(constructor<>())
 			.def("Reset", &EnemySprite::Reset)
 			.def("NewEnemyParty", &EnemySprite::NewEnemyParty)
@@ -355,7 +363,7 @@ void BindModeCode() {
 		class_<EnemyZone, MapZone>("EnemyZone")
 			.def(constructor<>())
 			.def(constructor<uint16, uint16, uint16, uint16>())
-			.def("AddEnemy", &EnemyZone::AddEnemy, adopt(_2))
+			.def("AddEnemy", &EnemyZone::AddEnemy)
 			.def("AddSpawnSection", &EnemyZone::AddSpawnSection)
 			.def("ForceSpawnAllEnemies", &EnemyZone::ForceSpawnAllEnemies)
 			.def("IsRoamingRestrained", &EnemyZone::IsRoamingRestrained)

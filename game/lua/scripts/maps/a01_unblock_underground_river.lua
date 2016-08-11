@@ -262,19 +262,16 @@ function CreateSprites()
 	sprites["claudius"] = ConstructSprite("Claudius", 1, 11, 227);
 	sprites["claudius"]:SetDirection(hoa_map.MapMode.NORTH);
 	sprites["claudius"].collidable = false;
-	ObjectManager:AddObject(sprites["claudius"]);
 
 	sprites["mark"] = ConstructSprite("Knight01", 2, 17, 227);
 	sprites["mark"]:SetDirection(hoa_map.MapMode.NORTH);
 	sprites["mark"].collidable = false;
 	sprites["mark"]:SetName(hoa_system.Translate("Mark"));
-	ObjectManager:AddObject(sprites["mark"]);
 
 	sprites["lukar"] = ConstructSprite("Knight01", 3, 14, 225);
 	sprites["lukar"]:SetDirection(hoa_map.MapMode.NORTH);
 	sprites["lukar"].collidable = false;
 	sprites["lukar"]:SetName(hoa_system.Translate("Lukar"));
-	ObjectManager:AddObject(sprites["lukar"]);
 
 	----------------------------------------------------------------------------
 	---------- Create NPCs in roughly the order encountered by the player
@@ -282,83 +279,67 @@ function CreateSprites()
 	-- Knight near cave entrance serving as a guide
 	sprites["entrance_knight"] = ConstructSprite("Knight01", 10, 14, 148);
 	sprites["entrance_knight"]:SetDirection(hoa_map.MapMode.SOUTH);
-	ObjectManager:AddObject(sprites["entrance_knight"]);
 
 	-- Knight guiding others through the short passage
 	sprites["passage_knight1"] = ConstructSprite("Knight03", 20, 156, 62.5);
 	sprites["passage_knight1"]:SetDirection(hoa_map.MapMode.EAST);
-	ObjectManager:AddObject(sprites["passage_knight1"]);
 
 	-- Knight seen walking ahead through the short passage
 	sprites["passage_knight2"] = ConstructSprite("Knight02", 21, 158, 62.5);
 	sprites["passage_knight2"]:SetDirection(hoa_map.MapMode.WEST);
-	ObjectManager:AddObject(sprites["passage_knight2"]);
 
 	-- Knight with injured ankle near the end of the long passage
 	sprites["injury_knight1"] = ConstructSprite("Knight03", 30, 164, 19);
 	sprites["injury_knight1"]:SetDirection(hoa_map.MapMode.EAST);
-	ObjectManager:AddObject(sprites["injury_knight1"]);
 
 	-- Knight assisting the injured knight
 	sprites["injury_knight2"] = ConstructSprite("Knight01", 31, 166, 20);
 	sprites["injury_knight2"]:SetDirection(hoa_map.MapMode.WEST);
-	ObjectManager:AddObject(sprites["injury_knight2"]);
 
 	-- All of the following NPCs are encountered at the end of the cave in the riverbed
 	sprites["captain"] = ConstructSprite("Knight06", 2500, 248, 16);
 	sprites["captain"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["captain"].collidable = false;
-	ObjectManager:AddObject(sprites["captain"]);
 
 	sprites["sergeant"] = ConstructSprite("Knight05", 2501, 249, 19);
 	sprites["sergeant"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["sergeant"].collidable = false;
-	ObjectManager:AddObject(sprites["sergeant"]);
 
 	sprites["river_knight1"] = ConstructSprite("Knight04", 2502, 245, 11);
 	sprites["river_knight1"]:SetDirection(hoa_map.MapMode.SOUTH);
 	sprites["river_knight1"].collidable = false;
-	ObjectManager:AddObject(sprites["river_knight1"]);
 
 	sprites["river_knight2"] = ConstructSprite("Knight03", 2503, 242, 8);
 	sprites["river_knight2"]:SetDirection(hoa_map.MapMode.SOUTH);
 	sprites["river_knight2"].collidable = false;
-	ObjectManager:AddObject(sprites["river_knight2"]);
 
 	sprites["river_knight3"] = ConstructSprite("Knight02", 2504, 239, 9);
 	sprites["river_knight3"]:SetDirection(hoa_map.MapMode.SOUTH);
 	sprites["river_knight3"].collidable = false;
-	ObjectManager:AddObject(sprites["river_knight3"]);
 
 	sprites["river_knight4"] = ConstructSprite("Knight01", 2505, 240, 22);
 	sprites["river_knight4"]:SetDirection(hoa_map.MapMode.NORTH);
 	sprites["river_knight4"].collidable = false;
-	ObjectManager:AddObject(sprites["river_knight4"]);
 
 	sprites["river_knight5"] = ConstructSprite("Knight02", 2506, 243, 23);
 	sprites["river_knight5"]:SetDirection(hoa_map.MapMode.NORTH);
 	sprites["river_knight5"].collidable = false;
-	ObjectManager:AddObject(sprites["river_knight5"]);
 
 	sprites["river_knight6"] = ConstructSprite("Knight03", 2507, 245, 21);
 	sprites["river_knight6"]:SetDirection(hoa_map.MapMode.NORTH);
 	sprites["river_knight6"].collidable = false;
-	ObjectManager:AddObject(sprites["river_knight6"]);
 
 	sprites["river_knight7"] = ConstructSprite("Knight01", 2508, 234, 20);
 	sprites["river_knight7"]:SetDirection(hoa_map.MapMode.EAST);
 	sprites["river_knight7"].collidable = false;
-	ObjectManager:AddObject(sprites["river_knight7"]);
 
 	sprites["river_knight8"] = ConstructSprite("Knight01", 2509, 233, 17);
 	sprites["river_knight8"]:SetDirection(hoa_map.MapMode.EAST);
 	sprites["river_knight8"].collidable = false;
-	ObjectManager:AddObject(sprites["river_knight8"]);
 
 	sprites["river_knight9"] = ConstructSprite("Knight02", 2510, 235, 14);
 	sprites["river_knight9"]:SetDirection(hoa_map.MapMode.EAST);
 	sprites["river_knight9"].collidable = false;
-	ObjectManager:AddObject(sprites["river_knight9"]);
 
 	-- This sprite represents the boss encountered at the end of the map
 	-- TODO: build the sprite properly using the large scoprion sprite
@@ -369,7 +350,6 @@ function CreateSprites()
 	sprites["scorpion_boss"].collidable = false;
 	sprites["scorpion_boss"]:SetMovementSpeed(hoa_map.MapMode.SLOW_SPEED);
 	sprites["scorpion_boss"]:SetFadeTime(1000);
-	ObjectManager:AddObject(sprites["scorpion_boss"]);
 end -- function CreateSprites()
 
 
