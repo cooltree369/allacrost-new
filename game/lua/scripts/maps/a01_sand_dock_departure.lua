@@ -95,40 +95,31 @@ function CreateSprites()
 
 	sprites["claudius"] = ConstructSprite("Claudius", 1, 98, 110);
 	sprites["claudius"]:SetDirection(hoa_map.MapMode.NORTH);
-	ObjectManager:AddObject(sprites["claudius"]);
 
 	sprites["dock_guard"] = ConstructSprite("Knight01", 10, 91, 98);
 	sprites["dock_guard"]:SetDirection(hoa_map.MapMode.SOUTH);
-	ObjectManager:AddObject(sprites["dock_guard"]);
 
 	sprites["glider_handler"] = ConstructSprite("Knight02", 11, 103, 68);
 	sprites["glider_handler"]:SetDirection(hoa_map.MapMode.NORTH);
-	ObjectManager:AddObject(sprites["glider_handler"]);
 
 	sprites["west_worker"] = ConstructSprite("Knight03", 12, 69, 82);
 	sprites["west_worker"]:SetDirection(hoa_map.MapMode.WEST);
-	ObjectManager:AddObject(sprites["west_worker"]);
 
 	sprites["east_worker"] = ConstructSprite("Knight04", 13, 129, 80);
 	sprites["east_worker"]:SetDirection(hoa_map.MapMode.EAST);
-	ObjectManager:AddObject(sprites["east_worker"]);
 
 	sprites["north_worker"] = ConstructSprite("Knight01", 14, 92, 44);
 	sprites["north_worker"]:SetDirection(hoa_map.MapMode.NORTH);
-	ObjectManager:AddObject(sprites["north_worker"]);
 
 	-- Initially invisible, Claudius' family walks in from off the screen during the final event
 	sprites["marcus"] = ConstructSprite("Marcus", 501, 98, 52);
 	sprites["marcus"]:SetDirection(hoa_map.MapMode.EAST);
-	ObjectManager:AddObject(sprites["marcus"]);
 
 	sprites["vanica"] = ConstructSprite("Vanica", 502, 98, 55);
 	sprites["vanica"]:SetDirection(hoa_map.MapMode.EAST);
-	ObjectManager:AddObject(sprites["vanica"]);
 
 	sprites["laila"] = ConstructSprite("Laila", 500, 98, 60);
 	sprites["laila"]:SetDirection(hoa_map.MapMode.EAST);
-	ObjectManager:AddObject(sprites["laila"]);
 end -- function CreateSprites()
 
 

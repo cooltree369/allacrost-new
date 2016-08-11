@@ -110,21 +110,18 @@ function CreateSprites()
 	sprites["claudius"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["claudius"].collidable = false;
 	sprites["claudius"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["claudius"]);
 
 	sprites["mark"] = ConstructSprite("Knight01", 11, start_x + 1.5, start_y + 3);
 	sprites["mark"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["mark"]:SetName(hoa_system.Translate("Mark"));
 	sprites["mark"].collidable = false;
 	sprites["mark"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["mark"]);
 
 	sprites["lukar"] = ConstructSprite("Knight01", 12, start_x + 2, start_y - 2);
 	sprites["lukar"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["lukar"]:SetName(hoa_system.Translate("Lukar"));
 	sprites["lukar"].collidable = false;
 	sprites["lukar"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["lukar"]);
 
 	-- Knight leaders are in the front and center part of the formation
 	sprites["captain"] = ConstructSprite("Knight06", 20, start_x - 3.5, start_y - 1);
@@ -132,94 +129,79 @@ function CreateSprites()
 	sprites["captain"]:SetName(hoa_system.Translate("Captain Bravis"));
 	sprites["captain"].collidable = false;
 	sprites["captain"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["captain"]);
 
 	sprites["sergeant"] = ConstructSprite("Knight05", 21, start_x - 4, start_y + 2);
 	sprites["sergeant"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["sergeant"]:SetName(hoa_system.Translate("Sergeant Methus"));
 	sprites["sergeant"].collidable = false;
 	sprites["sergeant"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["sergeant"]);
 
 	sprites["knight01"] = ConstructSprite("Knight04", 22, start_x - 3, start_y + 4);
 	sprites["knight01"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["knight01"].collidable = false;
 	sprites["knight01"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["knight01"]);
 
 	-- Other sprites are scattered around the center and front sprites
 	sprites["knight02"] = ConstructSprite("Knight01", 30, start_x - 1.5, start_y - 3);
 	sprites["knight02"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["knight02"].collidable = false;
 	sprites["knight02"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["knight02"]);
 
 	sprites["knight03"] = ConstructSprite("Knight01", 31, start_x - 3.5, start_y - 5.5);
 	sprites["knight03"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["knight03"].collidable = false;
 	sprites["knight03"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["knight03"]);
 
 	sprites["knight04"] = ConstructSprite("Knight03", 32, start_x - 5, start_y - 4);
 	sprites["knight04"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["knight04"].collidable = false;
 	sprites["knight04"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["knight04"]);
 
 	sprites["knight05"] = ConstructSprite("Knight03", 33, start_x - 0.5, start_y + 6);
 	sprites["knight05"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["knight05"].collidable = false;
 	sprites["knight05"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["knight05"]);
 
 	sprites["knight06"] = ConstructSprite("Knight02", 34, start_x + 4, start_y);
 	sprites["knight06"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["knight06"].collidable = false;
 	sprites["knight06"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["knight06"]);
 
 	sprites["knight07"] = ConstructSprite("Knight02", 35, start_x + 6.5, start_y + 1.5);
 	sprites["knight07"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["knight07"].collidable = false;
 	sprites["knight07"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["knight07"]);
 
 	sprites["knight08"] = ConstructSprite("Knight03", 36, start_x + 8, start_y - 1);
 	sprites["knight08"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["knight08"].collidable = false;
 	sprites["knight08"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["knight08"]);
 
 	-- Mak sprites and their handlers are in the rear edges of the formation
 	sprites["knight09"] = ConstructSprite("Knight02", 40, start_x + 4, start_y - 4.5);
 	sprites["knight09"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["knight09"].collidable = false;
 	sprites["knight09"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["knight09"]);
 
 	sprites["mak1"] = ConstructSprite("Mak Hound", 41, start_x + 8, start_y - 4);
 	sprites["mak1"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["mak1"].collidable = false;
 	sprites["mak1"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["mak1"]);
 
 	sprites["knight10"] = ConstructSprite("Knight02", 42, start_x + 3, start_y + 5.5);
 	sprites["knight10"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["knight10"].collidable = false;
 	sprites["knight10"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["knight10"]);
 
 	sprites["mak2"] = ConstructSprite("Mak Hound", 43, start_x + 7, start_y + 4.5);
 	sprites["mak2"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["mak2"].collidable = false;
 	sprites["mak2"]:GetAnimation(hoa_map.MapMode.ANIM_WALKING_WEST):RandomizeCurrentLoopProgress();
-	ObjectManager:AddObject(sprites["mak2"]);
 
 	-- This sprite is the scout that runs in from the left side of the screen
 	sprites["knight_scout"] = ConstructSprite("Knight01", 50, 20, start_y);
 	sprites["knight_scout"]:SetMovementSpeed(hoa_map.MapMode.VERY_FAST_SPEED);
 	sprites["knight_scout"].collidable = false;
-	ObjectManager:AddObject(sprites["knight_scout"]);
 end
 
 

@@ -200,6 +200,13 @@ public:
 
 	~MapSprite();
 
+	/** \brief Creates an instance of the class and registers it with the object supervisor
+	*** \param object_id The object ID of this sprite
+	*** \return A pointer to the instance of the sprite created
+	**/
+	static MapSprite* Create(int16 object_id);
+// 		{ return MapObject::_Create<MapSprite>(object_id); }
+
 	// ---------- Public methods
 
 	/** \brief Loads the image containing the standard animations for the sprite
@@ -469,6 +476,12 @@ public:
 	};
 
 	EnemySprite();
+
+	/** \brief Creates an instance of the class and registers it with the object supervisor
+	*** \param object_id The object ID of this sprite
+	*** \return A pointer to the instance of the sprite created
+	**/
+	static EnemySprite* Create(int16 object_id);
 
 	//! \brief Resets various members of the class so that the enemy is inactive, invisible, and does not produce a collision
 	void Reset();
