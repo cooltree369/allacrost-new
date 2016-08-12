@@ -84,7 +84,7 @@ function Load(m)
 	CreateObjects();
 	CreateSprites();
 	CreateEnemies();
-	-- These sequences are used both within CreateDialogues and CreateEvents, so must be defined here
+	-- These sequences are used both within CreateDialogues and CreateEvents, so they must be defined here
 	event_sequences["help_citizen_option"] = 1000;
 	event_sequences["ignore_citizen_option"] = 1050;
 	CreateDialogues();
@@ -93,10 +93,10 @@ function Load(m)
 	-- Audio: load sounds
 	sounds["door_locked"] = hoa_audio.SoundDescriptor();
 	sounds["door_locked"]:LoadAudio("snd/door_locked.ogg");
+	Map:SetCurrentTrack(0);
 
 	-- Visuals: night lightning
 	VideoManager:EnableLightOverlay(hoa_video.Color(0.0, 0.0, 0.3, 0.6));
-	Map:SetCurrentTrack(0);
 
 	-- TODO: figure out if visuals should be disabled normally, or wait for control to be given to the player before they are displayed
 	-- Map:DisableIntroductionVisuals();
@@ -121,7 +121,7 @@ function Load(m)
 end -- Load(m)
 
 
-
+-- Makes appropriate adjustments to the map state to reflect different debug
 function DEBUG_Load()
 	sprites["mark"].collidable = false;
 	sprites["lukar"].collidable = false;
@@ -137,7 +137,7 @@ function DEBUG_Load()
 	elseif (DEBUG_LOAD_STATE == 2) then
 		sprites["claudius"]:SetXPosition(5, 0);
 		sprites["claudius"]:SetYPosition(174, 0);
-	-- Just before approaching the market area
+	-- Just before approaching the market area, where NPCs are fleeing the battle ahead
 	elseif (DEBUG_LOAD_STATE == 3) then
 		sprites["claudius"]:SetXPosition(62, 0);
 		sprites["claudius"]:SetYPosition(155, 0);
@@ -147,13 +147,13 @@ function DEBUG_Load()
 		sprites["claudius"]:SetYPosition(150, 0);
 	-- Before the park, when the player chooses to help the trapped citizen
 	elseif (DEBUG_LOAD_STATE == 5) then
-		LocalRecords:SetRecord("helped_citizen", 1);
+		GlobalRecords:SetRecord("helped_citizen", 1);
 		functions["SetupReuniteEvent"]();
 		sprites["claudius"]:SetXPosition(128, 0);
 		sprites["claudius"]:SetYPosition(129, 0);
 	-- Before the park, when the player chooses not to help the trapped citizen
 	elseif (DEBUG_LOAD_STATE == 6) then
-		LocalRecords:SetRecord("helped_citizen", 0);
+		GlobalRecords:SetRecord("helped_citizen", 0);
 		sprites["claudius"]:SetXPosition(128, 0);
 		sprites["claudius"]:SetYPosition(129, 0);
 	-- Below the first set of stairs leading up to the castle where Claudius gets separated
@@ -177,6 +177,9 @@ function CreateZones()
 	-- Bottom-left of map: triggers the scene where the characters observe a demon spawning in from the shadows
 	zones["witness_spawn"] = hoa_map.CameraZone(2, 12, 162, 164, contexts["exterior"]);
 	Map:AddZone(zones["witness_spawn"]);
+
+	zones["fleeing_market"] = hoa_map.CameraZone(76, 78, 152, 160, contexts["exterior"]);
+	Map:AddZone(zones["fleeing_market"]);
 
 	-- Mid-right of map: triggers the scene where the player watches a citizen being chased by a demon
 	zones["witness_chase"] = hoa_map.CameraZone(160, 164, 138, 140, contexts["exterior"]);
@@ -349,6 +352,23 @@ function CreateSprites()
 	sprite:SetContext(contexts["exterior"]);
 	sprite:SetDirection(hoa_map.MapMode.SOUTH);
 	sprites["enemy_spawn"] = sprite;
+
+	-- These NPC sprites are seen fleeing the market area as the player approaches
+	sprite = ConstructSprite("Livia", ObjectManager:GenerateObjectID(), 98, 156);
+	sprite:SetContext(contexts["exterior"]);
+	sprite:SetDirection(hoa_map.MapMode.EAST);
+	sprite:SetMovementSpeed(hoa_map.MapMode.FAST_SPEED);
+	sprite.visible = false;
+	sprite.collidable = false;
+	sprites["fleeing_woman"] = sprite;
+
+	sprite = ConstructSprite("MaleChild01", ObjectManager:GenerateObjectID(), 99, 157);
+	sprite:SetContext(contexts["exterior"]);
+	sprite:SetDirection(hoa_map.MapMode.EAST);
+	sprite:SetMovementSpeed(hoa_map.MapMode.FAST_SPEED);
+	sprite.visible = false;
+	sprite.collidable = false;
+	sprites["fleeing_child"] = sprite;
 
 	-- Create knight and demon sprites battling in the market area of the town
 	sprite = ConstructSprite("Knight01", ObjectManager:GenerateObjectID(), 95, 142);
@@ -656,6 +676,23 @@ function CreateEvents()
 
 	-- NPCs running from the market to their homes
 	event_sequences["fleeing_market"], event_id = 100, 100;
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_id, sprites["fleeing_woman"]);
+	event:AddSprite(sprites["fleeing_child"]);
+	event:Visible(true);
+	event:AddEventLinkAtStart(event_id + 1);
+	event:AddEventLinkAtStart(event_id + 4);
+	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["fleeing_woman"], 49, 156);
+	event:AddEventLinkAtEnd(event_id + 1);
+	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["fleeing_woman"], 49, 148);
+	event:AddEventLinkAtEnd(event_id + 1);
+	event_id = event_id + 1; event = hoa_map.ChangePropertySpriteEvent.Create(event_id, sprites["fleeing_woman"]);
+	event:Visible(false);
+	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["fleeing_child"], 49, 157);
+	event:AddEventLinkAtEnd(event_id + 1);
+	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["fleeing_child"], 49, 148);
+	event:AddEventLinkAtEnd(event_id + 1);
+	event_id = event_id + 1; event = hoa_map.ChangePropertySpriteEvent.Create(event_id, sprites["fleeing_child"]);
+	event:Visible(false);
 
 	-- Party observes a citizen trying to escape from demons and decides whether or not to help
 	event_sequences["citizen_trapped"], event_id = 150, 150;
@@ -716,7 +753,7 @@ function CreateEvents()
 	event_id = event_id + 1; event = hoa_map.ChangePropertySpriteEvent.Create(event_id, sprites["trap_demon"]);
 	event:Direction(hoa_map.MapMode.NORTH);
 	event:AddEventLinkAtEnd(event_id + 1);
-	-- TODO: add a battle transition event here
+	-- TODO: add a battle event here
 	event_id = event_id + 1; event = hoa_map.ChangePropertySpriteEvent.Create(event_id, sprites["trap_demon"]);
 	event:StationaryMovement(false);
 	event:AddEventLinkAtEnd(event_id + 1, 500);
@@ -727,7 +764,9 @@ function CreateEvents()
 	event:AddEventLinkAtStart(event_id + 2, 250);
 	event_id = event_id + 1; event = hoa_map.ChangePropertySpriteEvent.Create(event_id, sprites["claudius"]);
 	event:Collidable(false); -- Temporarily disable collision for Claudius so the citizen can run through him
-	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["trap_citizen"], 174, 129);
+	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["trap_citizen"], 191, 129);
+	event:AddEventLinkAtEnd(event_id + 1);
+	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["trap_citizen"], 161, 129);
 	event:AddEventLinkAtEnd(event_id + 1);
 	event:AddEventLinkAtEnd(event_id + 2);
 	event:AddEventLinkAtEnd(event_id + 3);
@@ -737,6 +776,7 @@ function CreateEvents()
 	event:Visible(false);
 	event:Collidable(false);
 	event_id = event_id + 1; event = hoa_map.PopMapStateEvent.Create(event_id);
+	event:AddGlobalRecord("helped_citizen", 1);
 
 	-- Player chose to ignore the citizen. Move Claudius back to the left of the zone and hide mark and lukar sprites
 	event_id = event_sequences["ignore_citizen_option"];
@@ -785,6 +825,18 @@ function CreateEvents()
 	event:AddEventLinkAtEnd(event_id + 1);
 	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["claudius"], 118, 130);
 	event:AddEventLinkAtEnd(event_id + 1);
+	event_id = event_id + 1; event = hoa_map.CustomEvent.Create(event_id, "SpawnMarketDemons", "AreMarketDemonsActive");
+	event:AddEventLinkAtEnd(event_id + 1);
+	event:AddEventLinkAtEnd(event_id + 2);
+	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["market_demon1"], 116, 130);
+	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["market_demon2"], 118, 132);
+	event:SetFinalDirection(hoa_map.MapMode.NORTH);
+	event:AddEventLinkAtEnd(event_id + 1);
+	-- TODO: add a battle event here
+	event_id = event_id + 1; event = hoa_map.CustomEvent.Create(event_id, "KillMarketDemons", "AreMarketDemonsInactive");
+	event:AddEventLinkAtEnd(event_id + 1);
+	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, event_dialogues["near_castle"]);
+	event:AddEventLinkAtEnd(event_id + 1);
 	event_id = event_id + 1; event = hoa_map.PopMapStateEvent.Create(event_id);
 
 	-- Enemies drop down between Claudius and his allies. Claudius continues on alone
@@ -796,9 +848,7 @@ function CreateEvents()
 	-- Closing scene of map
 	event_sequences["closing_scene"], event_id = 500, 500;
 
-	----------------------------------------------------------------------------
 	---------- Miscellaneous Events
-	---------------------------------------------------------------------------
 	event_sequences["locked_door"] = 10000;
 	event = hoa_map.DialogueEvent.Create(event_sequences["locked_door"], event_dialogues["locked_door"]);
 
@@ -831,6 +881,10 @@ function Update()
 		if (EventManager:TimesEventStarted(event_sequences["demon_spawns"]) == 0) then
 			EventManager:StartEvent(event_sequences["demon_spawns"]);
 		end
+	elseif (zones["fleeing_market"]:IsPlayerSpriteEntering() == true) then
+		if (EventManager:TimesEventStarted(event_sequences["fleeing_market"]) == 0) then
+			EventManager:StartEvent(event_sequences["fleeing_market"]);
+		end
 	elseif (zones["witness_chase"]:IsPlayerSpriteEntering() == true) then
 		if (EventManager:TimesEventStarted(event_sequences["citizen_trapped"]) == 0) then
 			Map:GetPlayerSprite():SetMoving(false);
@@ -838,17 +892,22 @@ function Update()
 		end
 	-- This zone is a little complicated. On the first time the zone is entered, a dialogue occurs where the player selects to either help or ignore
 	-- a citizen in trouble. If they choose to ignore and then re-enter the zone, then a second dialogue happens where the player has a chance to
-	-- change their mind. If they select to help the citizen and then re-enter the zone before helping them, a third dialogue appears informing the
-	-- player that they must now help the citizen before they can continue.
+	-- change their mind.
 	elseif (zones["help_decision"]:IsPlayerSpriteEntering() == true and Map:CurrentState() == hoa_map.MapMode.STATE_EXPLORE) then
 		if (EventManager:TimesEventStarted(event_sequences["help_citizen"]) == 0) then
 			EventManager:StartEvent(event_sequences["help_citizen"]); -- A dialogue in this event sequence will set the "helped_citizen" global record
-		-- Player chose not to help citizen, play a different dialogue presenting options again
-		elseif (GlobalRecords:GetRecord("helped_citizen") == 0) then
+		-- Play out the shortened dialogue for all subsequent entries into this zone, unless the player has finished helping the citizen or has finished
+		-- the next event sequence (where the citizen sprite vanishes)
+		elseif (GlobalRecords:GetRecord("helped_citizen") ~= 1 and sprites["trap_citizen"].visible == true) then
 			EventManager:StartEvent(event_sequences["help_citizen_short"]);
 		end
 	-- Different event sequences play out here depending on whether the player earlier chose to help or ignore the citizen
 	elseif (zones["market_demon_fight"]:IsPlayerSpriteEntering() == true) then
+		-- Hide the trap citizen and demon from the previous event sequence, as the player no longer has the opportunity to save them
+		sprites["trap_citizen"].visible = false;
+		sprites["trap_citizen"].collidable = false;
+		sprites["trap_demon"].visible = false;
+		sprites["trap_demon"].collidable = false;
 		if (GlobalRecords:GetRecord("helped_citizen") == 0 and EventManager:TimesEventStarted(event_sequences["market_demon_spawns"]) == 0) then
 			EventManager:StartEvent(event_sequences["market_demon_spawns"]);
 		elseif (EventManager:TimesEventStarted(event_sequences["rejoin_allies"]) == 0) then
@@ -1084,7 +1143,30 @@ functions["IsTrapDemonInactive"] = function()
 end
 
 
--- Dissipates the two market spawn demons for one second to simulate their defat
+-- Spawn the two market spawn demons for one second
+functions["SpawnMarketDemons"] = function()
+	sprites["market_demon1"]:SetFadeTime(1000);
+	sprites["market_demon1"]:ChangeState(hoa_map.EnemySprite.SPAWN);
+	sprites["market_demon1"]:SetSpawnedState(hoa_map.EnemySprite.ACTIVE);
+	sprites["market_demon2"]:SetFadeTime(1000);
+	sprites["market_demon2"]:ChangeState(hoa_map.EnemySprite.SPAWN);
+	sprites["market_demon2"]:SetSpawnedState(hoa_map.EnemySprite.ACTIVE);
+end
+
+
+-- Returns true once both market demons are in the active state
+functions["AreMarketDemonsActive"] = function()
+	if (sprites["market_demon1"]:GetState() == hoa_map.EnemySprite.ACTIVE and sprites["market_demon2"]:GetState() == hoa_map.EnemySprite.ACTIVE) then
+		sprites["market_demon1"]:SetStationaryMovement(true);
+		sprites["market_demon2"]:SetStationaryMovement(true);
+		return true;
+	else
+		return false;
+	end
+end
+
+
+-- Dissipates the two market spawn demons for one second to simulate their defeat
 functions["KillMarketDemons"] = function()
 	sprites["market_demon1"]:SetFadeTime(1000);
 	sprites["market_demon1"]:ChangeState(hoa_map.EnemySprite.DISSIPATE);
