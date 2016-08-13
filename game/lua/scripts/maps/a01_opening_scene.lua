@@ -443,8 +443,8 @@ function CreateEvents()
 	-- Event Group #3: Various sprites begin turning toward each other as if they were talking
 	-- This first event doesn't do anything since the sprite is already facing east. It is used as
 	-- a base to set the timings of the other events in this group
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(100, 1, hoa_map.MapMode.EAST);
-
+	event = hoa_map.ChangePropertySpriteEvent.Create(100, 1);
+	event:Direction(hoa_map.MapMode.EAST);
 	event:AddEventLinkAtStart(101, 2400);
 	event:AddEventLinkAtStart(102, 2600);
 	event:AddEventLinkAtStart(103, 1720);
@@ -469,44 +469,71 @@ function CreateEvents()
 	event:AddEventLinkAtStart(122, 3600);
 	event:AddEventLinkAtStart(123, 3750);
 	event:AddEventLinkAtStart(124, 5000);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(101, 2, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(102, 3, hoa_map.MapMode.SOUTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(103, 70, hoa_map.MapMode.WEST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(104, 71, hoa_map.MapMode.SOUTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(105, 72, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(106, 22, hoa_map.MapMode.SOUTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(107, 21, hoa_map.MapMode.WEST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(108, 32, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(109, 31, hoa_map.MapMode.WEST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(110, 61, hoa_map.MapMode.WEST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(111, 60, hoa_map.MapMode.SOUTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(112, 52, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(113, 51, hoa_map.MapMode.WEST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(114, 50, hoa_map.MapMode.WEST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(115, 40, hoa_map.MapMode.SOUTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(116, 41, hoa_map.MapMode.SOUTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(117, 42, hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(101, 2);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(102, 3);
+	event:Direction(hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(103, 70);
+	event:Direction(hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(104, 71);
+	event:Direction(hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(105, 72);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(106, 22);
+	event:Direction(hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(107, 21);
+	event:Direction(hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(108, 32);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(109, 31);
+	event:Direction(hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(110, 61);
+	event:Direction(hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(111, 60);
+	event:Direction(hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(112, 52);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(113, 51);
+	event:Direction(hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(114, 50);
+	event:Direction(hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(115, 40);
+	event:Direction(hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(116, 41);
+	event:Direction(hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(117, 42);
+	event:Direction(hoa_map.MapMode.NORTH);
 
 	-- These sprites change their directions more than once before the captain's speech
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(118, 2, hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(119, 72, hoa_map.MapMode.WEST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(120, 31, hoa_map.MapMode.SOUTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(121, 52, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(122, 41, hoa_map.MapMode.WEST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(123, 42, hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(124, 3, hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(118, 2);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(119, 72);
+	event:Direction(hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(120, 31);
+	event:Direction(hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(121, 52);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(122, 41);
+	event:Direction(hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(123, 42);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(124, 3);
+	event:Direction(hoa_map.MapMode.SOUTH);
 
 	-- Event Group #4: The captain's squad turns as if discussing before moving to the top of the screen
 	-- First change the directions of the sprites in the squad
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(150, 10, hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(150, 10);
+	event:Direction(hoa_map.MapMode.WEST);
 	event:AddEventLinkAtStart(151, 200);
 	event:AddEventLinkAtStart(152, 450);
 	event:AddEventLinkAtStart(153, 2400);
 	event:AddEventLinkAtStart(156, 2600);
 	event:AddEventLinkAtStart(159, 2800);
 	event:AddEventLinkAtStart(162, 2000);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(151, 11, hoa_map.MapMode.SOUTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(152, 12, hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(151, 11);
+	event:Direction(hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(152, 12);
+	event:Direction(hoa_map.MapMode.NORTH);
 
 	-- Next begin moving the squad to the top of the screen
 	local captain_move_x1 = 0;
@@ -520,7 +547,8 @@ function CreateEvents()
 	event = hoa_map.PathMoveSpriteEvent.Create(154, 11, captain_move_x2 - 1, captain_move_y2);
 	event:SetRelativeDestination(true);
 	event:AddEventLinkAtEnd(155);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(155, 11, hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(155, 11);
+	event:Direction(hoa_map.MapMode.SOUTH);
 	event:AddEventLinkAtEnd(163, 1500);
 
 	-- Captain movements
@@ -530,7 +558,8 @@ function CreateEvents()
 	event = hoa_map.PathMoveSpriteEvent.Create(157, 10, captain_move_x2, captain_move_y2);
 	event:SetRelativeDestination(true);
 	event:AddEventLinkAtEnd(158);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(158, 10, hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(158, 10);
+	event:Direction(hoa_map.MapMode.SOUTH);
 
 	-- Senior knight movements
 	event = hoa_map.PathMoveSpriteEvent.Create(159, 12, captain_move_x1, captain_move_y1);
@@ -539,7 +568,8 @@ function CreateEvents()
 	event = hoa_map.PathMoveSpriteEvent.Create(160, 12, captain_move_x2 + 5, captain_move_y2 - 2);
 	event:SetRelativeDestination(true);
 	event:AddEventLinkAtEnd(161);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(161, 12, hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(161, 12);
+	event:Direction(hoa_map.MapMode.SOUTH);
 
 	-- Center the camera on the captain while the squad is moving
 	event = hoa_map.CustomSpriteEvent.Create(162, 10, "FocusCameraOnSprite", "");
@@ -571,31 +601,51 @@ function CreateEvents()
 	event:AddEventLinkAtEnd(218, 480);
 	event:AddEventLinkAtEnd(219, 555);
 	event:AddEventLinkAtEnd(220, 1250);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(201, 1, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(202, 2, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(203, 3, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(204, 21, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(205, 22, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(206, 31, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(207, 32, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(208, 40, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(209, 41, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(210, 42, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(211, 50, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(212, 51, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(213, 52, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(214, 60, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(215, 61, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(216, 62, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(217, 70, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(218, 71, hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(219, 72, hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(201, 1);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(202, 2);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(203, 3);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(204, 21);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(205, 22);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(206, 31);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(207, 32);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(208, 40);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(209, 41);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(210, 42);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(211, 50);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(212, 51);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(213, 52);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(214, 60);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(215, 61);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(216, 62);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(217, 70);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(218, 71);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(219, 72);
+	event:Direction(hoa_map.MapMode.NORTH);
 
 	-- Sergeant moves northward back behind the captain, captain takes small step forward
 	event = hoa_map.PathMoveSpriteEvent.Create(220, 11, 0, -5);
 	event:SetRelativeDestination(true);
 	event:AddEventLinkAtEnd(221);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(221, 11, hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(221, 11);
+	event:Direction(hoa_map.MapMode.SOUTH);
 	event:AddEventLinkAtEnd(222, 250);
 	event = hoa_map.PathMoveSpriteEvent.Create(222, 10, 0, 4);
 	event:SetRelativeDestination(true);
@@ -629,7 +679,8 @@ function CreateEvents()
 
 	-- Event Group #7: Other squads turn toward each other again, then begin moving into the cave
 	-- Rear squad
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(300, 70, hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(300, 70);
+	event:Direction(hoa_map.MapMode.SOUTH);
 	event:AddEventLinkAtEnd(301, 400);
 	event:AddEventLinkAtEnd(304, 500);
 	event:AddEventLinkAtEnd(307, 700);
@@ -650,28 +701,37 @@ function CreateEvents()
 	event = hoa_map.CustomSpriteEvent.Create(309, 72, "DisableCollisionAndVisibility", "");
 
 	-- Hound squads
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(320, 22, hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(320, 22);
+	event:Direction(hoa_map.MapMode.SOUTH);
 	event:AddEventLinkAtStart(321, 500);
 	event:AddEventLinkAtStart(322, 2500);
 	event:AddEventLinkAtStart(323, 2200);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(321, 21, hoa_map.MapMode.WEST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(322, 32, hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(323, 31, hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(321, 21);
+	event:Direction(hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(322, 32);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(323, 31);
+	event:Direction(hoa_map.MapMode.WEST);
 
 	-- Middle squad
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(340, 60, hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(340, 60);
+	event:Direction(hoa_map.MapMode.WEST);
 	event:AddEventLinkAtStart(341);
 	event:AddEventLinkAtStart(342);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(341, 61, hoa_map.MapMode.SOUTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(342, 62, hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(341, 61);
+	event:Direction(hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(342, 62);
+	event:Direction(hoa_map.MapMode.EAST);
 
 	-- Top right squad
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(360, 40, hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(360, 40);
+	event:Direction(hoa_map.MapMode.SOUTH);
 	event:AddEventLinkAtStart(361);
 	event:AddEventLinkAtEnd(362, 400);
 	event:AddEventLinkAtEnd(365, 500);
 	event:AddEventLinkAtEnd(368, 700);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(361, 41, hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(361, 41);
+	event:Direction(hoa_map.MapMode.WEST);
 	event = hoa_map.PathMoveSpriteEvent.Create(362, 40, 0, -6);
 	event:SetRelativeDestination(true);
 	event:AddEventLinkAtEnd(363);
@@ -692,23 +752,28 @@ function CreateEvents()
 	event = hoa_map.CustomSpriteEvent.Create(370, 42, "DisableCollisionAndVisibility", "");
 
 	-- Bottom left squad
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(380, 52, hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(380, 52);
+	event:Direction(hoa_map.MapMode.EAST);
 	event:AddEventLinkAtStart(381);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(381, 50, hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(381, 50);
+	event:Direction(hoa_map.MapMode.WEST);
 
 	-- Event Group #8: Dialogue between the members of the character party, who then move to the cave
 	-- Move the camera to focus on Lukar, turn him toward his party, and open his first dialogue
 	event = hoa_map.CustomSpriteEvent.Create(400, 3, "FocusCameraOnSprite", "");
 	event:AddEventLinkAtEnd(401);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(401, 3, hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(401, 3);
+	event:Direction(hoa_map.MapMode.SOUTH);
 	event:AddEventLinkAtEnd(402, 250);
 	event = hoa_map.DialogueEvent.Create(402, 30);
 	event:AddEventLinkAtEnd(403, 500);
 	event:AddEventLinkAtEnd(404, 500);
 	event:AddEventLinkAtEnd(406, 1000);
 	-- Turn Claudius and Mark to face Lukar, who speaks again
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(403, 1, hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(404, 2, hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(403, 1);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(404, 2);
+	event:Direction(hoa_map.MapMode.NORTH);
 	event = hoa_map.DialogueEvent.Create(406, 31);
 	event:AddEventLinkAtEnd(407, 500);
 	event:AddEventLinkAtEnd(409, 500);

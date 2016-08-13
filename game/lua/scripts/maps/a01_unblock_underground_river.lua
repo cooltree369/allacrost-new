@@ -841,7 +841,8 @@ function CreateEvents()
 	event:AddEventLinkAtEnd(event_chains["find_corpse"] + 5);
 	event:AddEventLinkAtEnd(event_chains["find_corpse"] + 6);
 	-- Face Claudius east toward the corpse
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["find_corpse"] + 4, sprites["claudius"], hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["find_corpse"] + 4, sprites["claudius"]);
+	event:Direction(hoa_map.MapMode.EAST);
 	-- Move camera back to Cladius
 	event = hoa_map.CustomEvent.Create(event_chains["find_corpse"] + 5, "SetCameraToPlayer", "");
 	-- Start dialogue about corpse
@@ -866,7 +867,8 @@ function CreateEvents()
 	event = hoa_map.CustomEvent.Create(event_chains["follow_short_route"] + 1, "CameraToGuideSprite", "");
 	event:AddEventLinkAtEnd(event_chains["follow_short_route"] + 2, 500);
 	event:AddEventLinkAtEnd(event_chains["follow_short_route"] + 3, 1000);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["follow_short_route"] + 2, sprites["passage_knight1"], hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["follow_short_route"] + 2, sprites["passage_knight1"]);
+	event:Direction(hoa_map.MapMode.SOUTH);
 	-- Throw up dialogue calling out player's party
 	event = hoa_map.DialogueEvent.Create(event_chains["follow_short_route"] + 3, event_dialogues["prevent_long_route"]);
 	event:SetStopCameraMovement(true);
@@ -945,7 +947,8 @@ function CreateEvents()
 	event:AddEventLinkAtEnd(event_chains["passage_collapse"] + 8);
 	event:AddEventLinkAtEnd(event_chains["passage_collapse"] + 9);
 	-- Turn Claudius to face guide knight
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["passage_collapse"] + 8, sprites["claudius"], hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["passage_collapse"] + 8, sprites["claudius"]);
+	event:Direction(hoa_map.MapMode.WEST);
 	-- Dialogue after passage has collapsed
 	event = hoa_map.DialogueEvent.Create(event_chains["passage_collapse"] + 9, event_dialogues["passage_collapse2"]);
 	event:AddEventLinkAtEnd(event_chains["passage_collapse"] + 10);
@@ -1131,15 +1134,24 @@ function CreateEvents()
 	event:AddEventLinkAtStart(event_chains["boss_encounter"] + 9, 2470);
 	event:AddEventLinkAtStart(event_chains["boss_encounter"] + 10, 1500);
 	-- Sprites look around in random directions trying to find the source of the sound
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 1, sprites["claudius"], hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 2, sprites["river_knight5"], hoa_map.MapMode.SOUTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 3, sprites["captain"], hoa_map.MapMode.WEST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 4, sprites["river_knight7"], hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 5, sprites["river_knight8"], hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 6, sprites["sergeant"], hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 7, sprites["river_knight9"], hoa_map.MapMode.NORTH);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 8, sprites["river_knight1"], hoa_map.MapMode.WEST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 9, sprites["river_knight6"], hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 1, sprites["claudius"]);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 2, sprites["river_knight5"]);
+	event:Direction(hoa_map.MapMode.SOUTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 3, sprites["captain"]);
+	event:Direction(hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 4, sprites["river_knight7"]);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 5, sprites["river_knight8"]);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 6, sprites["sergeant"]);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 7, sprites["river_knight9"]);
+	event:Direction(hoa_map.MapMode.NORTH);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 8, sprites["river_knight1"]);
+	event:Direction(hoa_map.MapMode.WEST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 9, sprites["river_knight6"]);
+	event:Direction(hoa_map.MapMode.SOUTH);
 	-- After the dialogue, have all sprites look toward the spawning boss enemy
 	event = hoa_map.DialogueEvent.Create(event_chains["boss_encounter"] + 10, event_dialogues["before_boss"]);
 	event:AddEventLinkAtEnd(event_chains["boss_encounter"] + 11, 50);
@@ -1155,18 +1167,30 @@ function CreateEvents()
 	event:AddEventLinkAtEnd(event_chains["boss_encounter"] + 21, 75);
 	event:AddEventLinkAtEnd(event_chains["boss_encounter"] + 22, 50);
 	event:AddEventLinkAtEnd(event_chains["boss_encounter"] + 23);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 11, sprites["claudius"], hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 12, sprites["captain"], hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 13, sprites["sergeant"], hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 14, sprites["river_knight1"], hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 15, sprites["river_knight2"], hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 16, sprites["river_knight3"], hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 17, sprites["river_knight4"], hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 18, sprites["river_knight5"], hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 19, sprites["river_knight6"], hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 20, sprites["river_knight7"], hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 21, sprites["river_knight8"], hoa_map.MapMode.EAST);
-	event = hoa_map.ChangeDirectionSpriteEvent.Create(event_chains["boss_encounter"] + 22, sprites["river_knight9"], hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 11, sprites["claudius"]);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 12, sprites["captain"]);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 13, sprites["sergeant"]);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 14, sprites["river_knight1"]);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 15, sprites["river_knight2"]);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 16, sprites["river_knight3"]);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 17, sprites["river_knight4"]);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 18, sprites["river_knight5"]);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 19, sprites["river_knight6"]);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 20, sprites["river_knight7"]);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 21, sprites["river_knight8"]);
+	event:Direction(hoa_map.MapMode.EAST);
+	event = hoa_map.ChangePropertySpriteEvent.Create(event_chains["boss_encounter"] + 22, sprites["river_knight9"]);
+	event:Direction(hoa_map.MapMode.EAST);
 	-- Spawn the boss sprite, then move it close to the knights position while shaking the screen as it walks
 	event = hoa_map.CustomEvent.Create(event_chains["boss_encounter"] + 23, "SpawnBoss", "SpawnBossComplete");
 	event:AddEventLinkAtEnd(event_chains["boss_encounter"] + 24);
