@@ -795,58 +795,6 @@ protected:
 
 
 /** ****************************************************************************
-*** \brief A simple event used to set the direction of a sprite
-***
-*** This event finishes immediately after it starts, as all that it performs is
-*** to set the direction of a sprite in a particular orientation. Normally such
-*** a minor event would be better suited as a CustomEvent with no update function,
-*** but because a set direction operation is so common, it makes sense to create a
-*** specific event for it for convenience.
-***
-*** \note The only directions you should set in the class constructor are: NORTH,
-*** SOUTH, EAST, and WEST. This event is used when a sprite is stationary, so
-*** the other types of directions (which also infer movement) are unnecessary.
-*** Using a direction other than these four will result in a warning being printed.
-***
-*** \deprecated This class has been deprecated in favor of ChangePropertySpriteEvent.
-*** Use that class instead of this one.a
-*** ***************************************************************************/
-class ChangeDirectionSpriteEvent : public SpriteEvent {
-public:
-	/** \brief Creates an instance of the class and registers it with the event supervisor
-	*** \param event_id The ID of this event
-	*** \param sprite A pointer to the sprite to enact the event on
-	*** \param direction The direction in which to turn the sprite
-	*** \return A pointer to the instance of the event created
-	**/
-	static ChangeDirectionSpriteEvent* Create(uint32 event_id, VirtualSprite* sprite, uint16 direction);
-
-	/** \brief Creates an instance of the class and registers it with the event supervisor
-	*** \param event_id The ID of this event
-	*** \param sprite_id The ID of the sprite to enact the event on
-	*** \param direction The direction in which to turn the sprite
-	*** \return A pointer to the instance of the event created
-	**/
-	static ChangeDirectionSpriteEvent* Create(uint32 event_id, uint16 sprite_id, uint16 direction);
-
-protected:
-	ChangeDirectionSpriteEvent(uint32 event_id, VirtualSprite* sprite, uint16 direction);
-
-	~ChangeDirectionSpriteEvent()
-		{}
-
-	//! \brief Retains the direction to move the sprite when the event starts
-	uint16 _direction;
-
-	//! \brief Immediately changes the sprite's direction
-	void _Start();
-
-	//! \brief Always returns true immediately, terminating the event
-	bool _Update();
-}; // class ChangeDirectionSpriteEvent : public SpriteEvent
-
-
-/** ****************************************************************************
 *** \brief Displays specific sprite frames for a certain period of time
 ***
 *** This event displays a certain animation of a sprite for a specified amount of time.

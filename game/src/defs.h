@@ -317,11 +317,10 @@ namespace hoa_map {
 		class ShopEvent;
 		class SoundEvent;
 		class MapTransitionEvent;
-		class JoinPartyEvent;
 		class BattleEncounterEvent;
 		class SpriteEvent;
 		class ScriptedSpriteEvent;
-		class ChangeDirectionSpriteEvent;
+		class ChangePropertySpriteEvent;
 		class PathMoveSpriteEvent;
 		class RandomMoveSpriteEvent;
 		class AnimateSpriteEvent;

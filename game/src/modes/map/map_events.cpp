@@ -643,57 +643,6 @@ void ChangePropertySpriteEvent::_Start() {
 }
 
 // -----------------------------------------------------------------------------
-// ---------- ChangeDirectionSpriteEvent Class Methods
-// -----------------------------------------------------------------------------
-
-ChangeDirectionSpriteEvent::ChangeDirectionSpriteEvent(uint32 event_id, VirtualSprite* sprite, uint16 direction) :
-	SpriteEvent(event_id, CHANGE_DIRECTION_SPRITE_EVENT, sprite),
-	_direction(direction)
-{
-	if ((_direction != NORTH) && (_direction != SOUTH) && (_direction != EAST) && (_direction != WEST))
-		IF_PRINT_WARNING(MAP_DEBUG) << "non-standard direction specified (" << direction << ") "
-			<< "when trying to create an event with id: " << event_id << endl;
-}
-
-
-
-ChangeDirectionSpriteEvent* ChangeDirectionSpriteEvent::Create(uint32 event_id, VirtualSprite* sprite, uint16 direction) {
-	if (sprite == NULL) {
-		IF_PRINT_WARNING(MAP_DEBUG) << "function received NULL sprite argument when trying to create an event with id: " << event_id << endl;
-		return NULL;
-	}
-
-	ChangeDirectionSpriteEvent* event = new ChangeDirectionSpriteEvent(event_id, sprite, direction);
-	MapMode::CurrentInstance()->GetEventSupervisor()->RegisterEvent(event);
-	return event;
-}
-
-
-
-ChangeDirectionSpriteEvent* ChangeDirectionSpriteEvent::Create(uint32 event_id, uint16 sprite_id, uint16 direction) {
-	VirtualSprite* sprite = MapMode::CurrentInstance()->GetObjectSupervisor()->GetSprite(sprite_id);
-	if (sprite == NULL) {
-		IF_PRINT_WARNING(MAP_DEBUG) << "no sprite object was registered for the requested sprite_id (" << sprite_id << ") "
-			<< "when trying to create an event with id: " << event_id << endl;
-		return NULL;
-	}
-
-	return Create(event_id, sprite, direction);
-}
-
-
-
-void ChangeDirectionSpriteEvent::_Start() {
-	_sprite->SetDirection(_direction);
-}
-
-
-
-bool ChangeDirectionSpriteEvent::_Update() {
-	return true;
-}
-
-// -----------------------------------------------------------------------------
 // ---------- AnimateSpriteEvent Class Methods
 // -----------------------------------------------------------------------------
 

@@ -505,13 +505,6 @@ void BindModeCode() {
 			.def("StationaryMovement", &ChangePropertySpriteEvent::StationaryMovement)
 			.def("ReverseMovement", &ChangePropertySpriteEvent::ReverseMovement),
 
-		class_<ChangeDirectionSpriteEvent, SpriteEvent>("ChangeDirectionSpriteEvent")
-			.scope
-			[
-				def("Create", (ChangeDirectionSpriteEvent*(*)(uint32, VirtualSprite*, uint16))&ChangeDirectionSpriteEvent::Create),
-				def("Create", (ChangeDirectionSpriteEvent*(*)(uint32, uint16, uint16))&ChangeDirectionSpriteEvent::Create)
-			],
-
 		class_<AnimateSpriteEvent, MapEvent>("AnimateSpriteEvent")
 			.scope
 			[
