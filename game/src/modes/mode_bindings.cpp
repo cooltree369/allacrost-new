@@ -37,6 +37,7 @@
 #include "battle_dialogue.h"
 #include "battle_effects.h"
 #include "battle_utils.h"
+#include "custom.h"
 #include "map.h"
 #include "map_dialogue.h"
 #include "map_events.h"
@@ -726,6 +727,20 @@ void BindModeCode() {
 	];
 
 	} // End using test mode namespaces
+
+	// ----- Custom Mode bindings
+	{
+	using namespace hoa_custom;
+
+	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_custom")
+	[
+		class_<CustomMode, hoa_mode_manager::GameMode>("CustomMode")
+			.def_readonly("_load_complete", &CustomMode::_load_complete)
+			.def_readonly("_options", &CustomMode::_options)
+			.def("_Terminate", &CustomMode::_Terminate)
+	];
+
+	} // End using custom mode namespaces
 
 } // void BindModeCode()
 

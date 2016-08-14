@@ -42,6 +42,7 @@ const uint8 MODE_MANAGER_SCENE_MODE  =  7;
 const uint8 MODE_MANAGER_WORLD_MODE  =  8;
 const uint8 MODE_MANAGER_SAVE_MODE   =  9;
 const uint8 MODE_MANAGER_TEST_MODE   = 10;
+const uint8 MODE_MANAGER_CUSTOM_MODE = 11;
 //@}
 
 
