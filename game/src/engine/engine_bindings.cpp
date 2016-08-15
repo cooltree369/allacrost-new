@@ -235,6 +235,16 @@ void BindEngineCode() {
 		class_<Color>("Color")
 			.def(constructor<float, float, float, float>()),
 
+		class_<CoordSys>("CoordSys")
+			.def(constructor<>())
+			.def(constructor<float, float, float, float>())
+			.def_readonly("_left", &CoordSys::_left)
+			.def_readonly("_right", &CoordSys::_right)
+			.def_readonly("_bottom", &CoordSys::_bottom)
+			.def_readonly("_top", &CoordSys::_top)
+			.def_readonly("_vertical_direction", &CoordSys::_vertical_direction)
+			.def_readonly("_horizontal_direction", &CoordSys::_horizontal_direction),
+
 		class_<ImageDescriptor>("ImageDescriptor")
 			.def("Clear", &ImageDescriptor::Clear)
 			.def("Draw", (void(ImageDescriptor::*)()const)&ImageDescriptor::Draw)
@@ -287,7 +297,33 @@ void BindEngineCode() {
 			.def("SetLoopCounter", &AnimatedImage::SetLoopCounter)
 			.def("SetLoopsFinished", &AnimatedImage::SetLoopsFinished),
 
+		class_<TextStyle>("TextStyle")
+			.def(constructor<>())
+			.def(constructor<std::string>())
+			.def(constructor<Color>())
+			.def(constructor<TEXT_SHADOW_STYLE>())
+			.def(constructor<std::string, Color>())
+			.def(constructor<std::string, TEXT_SHADOW_STYLE>())
+			.def(constructor<Color, TEXT_SHADOW_STYLE>())
+			.def(constructor<std::string, Color, TEXT_SHADOW_STYLE>())
+			.def(constructor<std::string, Color, TEXT_SHADOW_STYLE, int32, int32>())
+			.def_readwrite("font", &TextStyle::font)
+			.def_readwrite("color", &TextStyle::color)
+			.def_readwrite("shadow_style", &TextStyle::shadow_style)
+			.def_readwrite("shadow_offset_x", &TextStyle::shadow_offset_x)
+			.def_readwrite("shadow_offset_y", &TextStyle::shadow_offset_y),
+
 		class_<VideoEngine>("GameVideo")
+			.def("SetDrawFlag", &VideoEngine::SetDrawFlag)
+			.def("Clear", (void(VideoEngine::*)())&VideoEngine::Clear)
+			.def("Clear", (void(VideoEngine::*)(const Color&))&VideoEngine::Clear)
+			.def("Display", &VideoEngine::Display)
+			.def("GetCoordSys", &VideoEngine::GetCoordSys)
+			.def("SetCoordSys", (void(VideoEngine::*)(float, float, float, float))&VideoEngine::SetCoordSys)
+			.def("SetCoordSys", (void(VideoEngine::*)(const CoordSys&))&VideoEngine::SetCoordSys)
+			.def("SetStandardCoordSys", &VideoEngine::SetStandardCoordSys)
+			.def("Move", &VideoEngine::Move)
+			.def("MoveRelative", &VideoEngine::MoveRelative)
 			.def("FadeScreen", &VideoEngine::FadeScreen)
 			.def("IsFading", &VideoEngine::IsFading)
 			.def("ShakeScreen", &VideoEngine::ShakeScreen)
@@ -305,12 +341,19 @@ void BindEngineCode() {
 
 			// Namespace constants
 			.enum_("constants") [
-				// Shake fall off types
+				// Screen shake fall off types
 				value("VIDEO_FALLOFF_NONE", VIDEO_FALLOFF_NONE),
 				value("VIDEO_FALLOFF_EASE", VIDEO_FALLOFF_EASE),
 				value("VIDEO_FALLOFF_LINEAR", VIDEO_FALLOFF_LINEAR),
 				value("VIDEO_FALLOFF_GRADUAL", VIDEO_FALLOFF_GRADUAL),
-				value("VIDEO_FALLOFF_SUDDEN", VIDEO_FALLOFF_SUDDEN)
+				value("VIDEO_FALLOFF_SUDDEN", VIDEO_FALLOFF_SUDDEN),
+				// Text shadow types
+				value("VIDEO_TEXT_SHADOW_NONE", VIDEO_TEXT_SHADOW_NONE),
+				value("VIDEO_TEXT_SHADOW_DARK", VIDEO_TEXT_SHADOW_DARK),
+				value("VIDEO_TEXT_SHADOW_LIGHT", VIDEO_TEXT_SHADOW_LIGHT),
+				value("VIDEO_TEXT_SHADOW_BLACK", VIDEO_TEXT_SHADOW_BLACK),
+				value("VIDEO_TEXT_SHADOW_COLOR", VIDEO_TEXT_SHADOW_COLOR),
+				value("VIDEO_TEXT_SHADOW_INVCOLOR", VIDEO_TEXT_SHADOW_INVCOLOR)
 			]
 	];
 

@@ -300,13 +300,8 @@ void VideoEngine::SetTarget(VIDEO_TARGET target) {
 
 
 
-void VideoEngine::SetDrawFlags(int32 first_flag, ...) {
-	int32 flag = first_flag;
-	va_list args;
-
-	va_start(args, first_flag);
-	while (flag != 0) {
-		switch (flag) {
+void VideoEngine::SetDrawFlag(int32 flag) {
+	switch (flag) {
 		case VIDEO_X_LEFT: _current_context.x_align = -1; break;
 		case VIDEO_X_CENTER: _current_context.x_align = 0; break;
 		case VIDEO_X_RIGHT: _current_context.x_align = 1; break;
@@ -326,9 +321,19 @@ void VideoEngine::SetDrawFlags(int32 first_flag, ...) {
 		case VIDEO_BLEND_ADD: _current_context.blend = 2; break;
 
 		default:
-			IF_PRINT_WARNING(VIDEO_DEBUG) << "Unknown flag in argument list: " << flag << endl;
+			IF_PRINT_WARNING(VIDEO_DEBUG) << "Unknown flag argument:  " << flag << endl;
 			break;
-		}
+	}
+}
+
+
+void VideoEngine::SetDrawFlags(int32 first_flag, ...) {
+	int32 flag = first_flag;
+	va_list args;
+
+	va_start(args, first_flag);
+	while (flag != 0) {
+		SetDrawFlag(flag);
 		flag = va_arg(args, int32);
 	}
 	va_end(args);
@@ -656,7 +661,7 @@ void VideoEngine::PopState() {
 
 	_current_context = _context_stack.top();
 	_context_stack.pop();
-    
+
 	// Restore the coordinate_system, i.e. the GL_PROJECTION matrix
 	// NOTE: This will implicitely lead to _current_context.coordinate_system = _current_context.coordinate_system
 	// NOTE: Another option is to also push and pop the matrix of GL_PROJECTION. However, the maximum size of the

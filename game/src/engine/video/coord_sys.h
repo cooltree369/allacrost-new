@@ -2,7 +2,7 @@
 //            Copyright (C) 2004-2015 by The Allacrost Project
 //                         All Rights Reserved
 //
-// This code is licensed under the GNU GPL version 2. It is free software 
+// This code is licensed under the GNU GPL version 2. It is free software
 // and you may modify it and/or redistribute it under the terms of this license.
 // See http://www.gnu.org/copyleft/gpl.html for details.
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,6 +32,8 @@ namespace hoa_video {
 *** as the game's default 1024x768 resolution.
 *** ***************************************************************************/
 class CoordSys {
+	friend void hoa_defs::BindEngineCode();
+
 public:
 	CoordSys()
 		{}
@@ -73,11 +75,10 @@ public:
 	//! \brief Normalisation functions
 	//@{
 	void ConvertNormalisedToLocal(float& localX, float& localY, float normalisedX, float normalisedY) const
-		{ localX = _left + normalisedX * (_right - _left);
-		  localY = _bottom + normalisedY * (_top - _bottom); }
+		{ localX = _left + normalisedX * (_right - _left); localY = _bottom + normalisedY * (_top - _bottom); }
+
 	void ConvertLocalToNormalised(float& normalisedX, float& normalisedY, float localX, float localY) const
-		{ normalisedX = (_left - localX) / (_right - _left);
-		  normalisedY = (_bottom - localY) / (_top - _bottom); }
+		{ normalisedX = (_left - localX) / (_right - _left); normalisedY = (_bottom - localY) / (_top - _bottom); }
 	//@}
 
 private:

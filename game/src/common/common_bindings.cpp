@@ -412,6 +412,45 @@ void BindCommonCode() {
 
 	} // End using global namespaces
 
+	// ---------- Bind GUI Components
+	{
+	using namespace hoa_gui;
+
+	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_gui")
+	[
+		class_<TextBox>("TextBox")
+			.def(constructor<>())
+			.def(constructor<float, float, float, float, TEXT_DISPLAY_MODE>())
+			.def("ClearText", &TextBox::ClearText)
+			.def("Update", &TextBox::Update)
+			.def("Draw", &TextBox::Draw)
+			.def("ForceFinish", &TextBox::ForceFinish)
+			.def("SetDimensions", &TextBox::SetDimensions)
+			.def("SetTextAlignment", &TextBox::SetTextAlignment)
+			.def("SetTextStyle", &TextBox::SetTextStyle)
+			.def("SetDisplayMode", &TextBox::SetDisplayMode)
+			.def("SetDisplaySpeed", &TextBox::SetDisplaySpeed)
+			.def("SetDisplayText", (void(TextBox::*)(const std::string&))&TextBox::SetDisplayText)
+			.def("GetTextAlignment", &TextBox::GetTextAlignment)
+			.def("GetTextStyle", &TextBox::GetTextStyle)
+			.def("GetDisplayMode", &TextBox::GetDisplayMode)
+			.def("GetDisplaySpeed", &TextBox::GetDisplaySpeed)
+			.def("IsFinished", &TextBox::IsFinished)
+			.def("IsEmpty", &TextBox::IsEmpty)
+			.def("IsInitialized", &TextBox::IsInitialized)
+			.def("CalculateTextHeight", &TextBox::CalculateTextHeight)
+
+			.enum_("constants") [
+				value("VIDEO_TEXT_INSTANT", VIDEO_TEXT_INSTANT),
+				value("VIDEO_TEXT_CHAR", VIDEO_TEXT_CHAR),
+				value("VIDEO_TEXT_FADELINE", VIDEO_TEXT_FADELINE),
+				value("VIDEO_TEXT_FADECHAR", VIDEO_TEXT_FADECHAR),
+				value("VIDEO_TEXT_REVEAL", VIDEO_TEXT_REVEAL)
+			]
+	];
+
+	} // End using gui namespace
+
 	// Bind the GlobalManager object to Lua
 	luabind::object global_table = luabind::globals(hoa_script::ScriptManager->GetGlobalState());
 	global_table["GlobalManager"] = hoa_global::GlobalManager;

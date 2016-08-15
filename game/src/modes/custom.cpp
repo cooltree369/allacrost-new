@@ -26,10 +26,10 @@ using namespace hoa_script;
 
 namespace hoa_custom {
 
-CustomMode::CustomMode(const std::string& script_filename, const std::string& options) :
+CustomMode::CustomMode(const std::string& script_filename) :
 	GameMode(MODE_MANAGER_CUSTOM_MODE),
 	_load_complete(false),
-	_options(options)
+	_options()
 {
 	if (_script_file.OpenFile(script_filename) == false) {
 		PRINT_ERROR << "Failed to open custom mode script file: " << script_filename << endl;
@@ -49,7 +49,8 @@ CustomMode::~CustomMode() {
 
 
 void CustomMode::Reset() {
-	_script_file.ExecuteFunction(_reset_function);
+	// A pointer to the class instance is passed in to the reset function so that the Lua script can access the members and methods
+	ScriptCallFunction<void>(_reset_function, this);
 	_load_complete = true;
 }
 
@@ -67,11 +68,12 @@ void CustomMode::Draw() {
 
 
 
-void CustomMode::_Terminate(GameMode* new_mode) {
-	ModeManager->Pop();
-	if (new_mode != NULL) {
-		ModeManager->Push(new_mode);
-	}
+const std::string CustomMode::GetOption(const std::string& option_key) const {
+	std::map<std::string, std::string>::const_iterator option = _options.find(option_key);
+	if (option != _options.end())
+		return option->second;
+	else
+		return "";
 }
 
 } // namespace hoa_custom
