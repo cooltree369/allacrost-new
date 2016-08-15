@@ -736,8 +736,8 @@ void BindModeCode() {
 	[
 		class_<CustomMode, hoa_mode_manager::GameMode>("CustomMode")
 			.def_readonly("_load_complete", &CustomMode::_load_complete)
-			.def_readonly("_options", &CustomMode::_options)
-			.def("_Terminate", &CustomMode::_Terminate)
+			.def("AddOption", &CustomMode::AddOption)
+			.def("GetOption", &CustomMode::GetOption)
 	];
 
 	} // End using custom mode namespaces
