@@ -47,7 +47,10 @@ Mode = {
 	textbox = nil,
 
 	-- A hoa_system.SystemTimer object used for line timings
-	timer = nil
+	timer = nil,
+
+	-- Background image to display. Should be a full-screen sized image
+	image = nil
 };
 
 
@@ -62,6 +65,8 @@ function Reset(mode)
 	end
 
 	VideoManager:SetStandardCoordSys();
+	VideoManager:SetDrawFlag(hoa_video.VideoEngine.VIDEO_X_LEFT);
+	VideoManager:SetDrawFlag(hoa_video.VideoEngine.VIDEO_Y_TOP);
 end
 
 
@@ -98,6 +103,10 @@ end
 
 -- Called by CustomMode::Draw() to draw all elements to the screen
 function Draw()
+	if (Mode.image ~= nil) then
+		Mode.image:Draw();
+	end
+
  	Mode.textbox:Draw();
 end
 
@@ -105,6 +114,13 @@ end
 -- Sets up all objects and loads appropriate data. Call only on the very first invocation of the Reset() function.
 function _Initialize()
 	local option;
+
+	-- Load the background image if one exists
+	option = Mode.instance:GetOption("image");
+	if (option ~= "") then
+		Mode.image = hoa_video.StillImage(false);
+		Mode.image:Load(option);
+	end
 
 	-- Load all the lines of text
 	local i = 1;
@@ -121,11 +137,11 @@ function _Initialize()
 	end
 
 	-- Setup the text box used to display the lines of text
-	Mode.textbox = hoa_gui.TextBox(512, 200, 800, 40, hoa_gui.TextBox.VIDEO_TEXT_FADELINE);
+	Mode.textbox = hoa_gui.TextBox(512 - 400, 200, 800, 30, hoa_gui.TextBox.VIDEO_TEXT_FADELINE);
 	-- TODO: the text box doesn't appear to properly respect these flags and center itself horizontally on the screen
 	Mode.textbox:SetAlignment(hoa_video.VideoEngine.VIDEO_X_CENTER, hoa_video.VideoEngine.VIDEO_Y_CENTER);
 	Mode.textbox:SetTextStyle(hoa_video.TextStyle("text24"));
-	Mode.textbox:SetTextAlignment(hoa_video.VideoEngine.VIDEO_X_CENTER, hoa_video.VideoEngine.VIDEO_Y_CENTER);
+	Mode.textbox:SetTextAlignment(hoa_video.VideoEngine.VIDEO_X_RIGHT, hoa_video.VideoEngine.VIDEO_Y_CENTER);
 	Mode.textbox:SetDisplaySpeed(20);
 	if (Mode.line_counter > 0) then
 		Mode.textbox:SetDisplayText(Mode.text_lines[1]);
