@@ -1287,14 +1287,14 @@ end
 
 -- Short screen shake during the passage collapse event chain
 functions["PassageCollapseShake"] = function()
-	VideoManager:ShakeScreen(2.0, 2000.0, hoa_video.GameVideo.VIDEO_FALLOFF_NONE);
+	VideoManager:ShakeScreen(2.0, 2000.0, hoa_video.VideoEngine.VIDEO_FALLOFF_NONE);
 end
 
 
 -- Small degree of screen shaking while the boss sprite is moving
 functions["BossMovementShake"] = function()
 	-- Shake time is 0, meaning it will continue to shake until VideoManager:StopShaking() is called
-	VideoManager:ShakeScreen(1.0, 0.0, hoa_video.GameVideo.VIDEO_FALLOFF_NONE);
+	VideoManager:ShakeScreen(1.0, 0.0, hoa_video.VideoEngine.VIDEO_FALLOFF_NONE);
 end
 
 -- Stop any active screen shaking

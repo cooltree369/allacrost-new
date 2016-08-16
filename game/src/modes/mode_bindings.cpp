@@ -735,9 +735,11 @@ void BindModeCode() {
 	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_custom")
 	[
 		class_<CustomMode, hoa_mode_manager::GameMode>("CustomMode")
-			.def_readonly("_load_complete", &CustomMode::_load_complete)
+			.def(constructor<std::string>())
 			.def("AddOption", &CustomMode::AddOption)
 			.def("GetOption", &CustomMode::GetOption)
+			.def_readonly("_load_complete", &CustomMode::_load_complete)
+
 	];
 
 	} // End using custom mode namespaces

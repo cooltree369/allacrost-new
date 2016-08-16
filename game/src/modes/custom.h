@@ -37,9 +37,6 @@ namespace hoa_custom {
 *** - The video engine's coordinate system should be set appropriately on every call to Reset()
 *** - User input needs to be handled in the Update() call. Otherwise expected changes such as quit and pause inputs by
 ***   the user will be ignored.
-*** - If the script pushes a new mode to the game stack (via _Termiante() or other means), make sure that the binding
-***   code that creates the GameMode object passes ownership to C++, so that the Lua garbage collector doesn't destroy
-***   the object when the script file is closed
 *** ***************************************************************************/
 class CustomMode : public hoa_mode_manager::GameMode {
 	friend void hoa_defs::BindModeCode();

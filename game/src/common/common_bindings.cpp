@@ -415,10 +415,19 @@ void BindCommonCode() {
 	// ---------- Bind GUI Components
 	{
 	using namespace hoa_gui;
+	using namespace hoa_gui::private_gui;
 
 	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_gui")
 	[
-		class_<TextBox>("TextBox")
+		class_<GUIElement>("GUIElement")
+			.def("SetDimensions", &GUIElement::SetDimensions)
+			.def("SetPosition", &GUIElement::SetPosition)
+			.def("SetAlignment", &GUIElement::SetAlignment),
+
+		class_<GUIControl, GUIElement>("GUIControl")
+			.def("SetOwner", &GUIControl::SetOwner),
+
+		class_<TextBox, GUIControl>("TextBox")
 			.def(constructor<>())
 			.def(constructor<float, float, float, float, TEXT_DISPLAY_MODE>())
 			.def("ClearText", &TextBox::ClearText)
