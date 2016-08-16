@@ -19,9 +19,10 @@ tests = {}
 
 tests[5001] = {
 	name = "Screen Display - Single Line";
-	description = "Displays a single line of text on a black background, then fades the screen out and starts a map";
+	description = "Displays a background image and single line of text, then fades the screen out and starts a map";
 	ExecuteTest = function()
 		local custom = hoa_custom.CustomMode("lua/scripts/custom/screen_display.lua");
+		custom:AddOption("image", "img/backdrops/boot_screen00.jpg");
 		custom:AddOption("text1", "Several days later...");
 		custom:AddOption("initial_time", "1000");
 		custom:AddOption("display_time", "2000");
