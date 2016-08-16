@@ -18,11 +18,15 @@
 #include "mode_manager.h"
 #include "script.h"
 
+#include "common.h"
+
 using namespace std;
 using namespace hoa_utils;
 
 using namespace hoa_mode_manager;
 using namespace hoa_script;
+
+using namespace hoa_common;
 
 namespace hoa_custom {
 
@@ -35,9 +39,12 @@ CustomMode::CustomMode(const std::string& script_filename) :
 		PRINT_ERROR << "Failed to open custom mode script file: " << script_filename << endl;
 		return;
 	}
-	_update_function = _script_file.ReadFunctionPointer("Reset");
+	std::string tablespace = DetermineLuaFileTablespaceName(script_filename);
+	_script_file.OpenTable(tablespace);
+	_reset_function = _script_file.ReadFunctionPointer("Reset");
 	_update_function = _script_file.ReadFunctionPointer("Update");
-	_update_function = _script_file.ReadFunctionPointer("Draw");
+	_draw_function = _script_file.ReadFunctionPointer("Draw");
+	_script_file.CloseTable();
 }
 
 
@@ -57,8 +64,7 @@ void CustomMode::Reset() {
 
 
 void CustomMode::Update() {
-	_script_file.ExecuteFunction(_update_function);
-}
+	_script_file.ExecuteFunction(_update_function);}
 
 
 
