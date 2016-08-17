@@ -198,6 +198,10 @@ function CreateZones()
 	zones["market_demon_fight"] = hoa_map.CameraZone(124, 126, 126, 134, contexts["exterior"]);
 	Map:AddZone(zones["market_demon_fight"]);
 
+	-- Right before the throne room, where Claudius gets separated from Lukar and Mark by spawning demons
+	zones["balcony_demons"] = hoa_map.CameraZone(89, 91, 60, 66, contexts["exterior"]);
+	Map:AddZone(zones["balcony_demons"]);
+
 	---------- Enemy Spawning Zones
 	-- Zone #01: Bottom left of map
 	zones["enemy01"] = hoa_map.EnemyZone(14, 62, 176, 188);
@@ -522,6 +526,17 @@ function CreateSprites()
 	sprite:SetDirection(hoa_map.MapMode.SOUTH);
 	sprites["stair_guard2"] = sprite;
 
+	-- Demons that spawn on the balcony outside the throne room
+	sprite = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 89, 62.75);
+	sprite:SetContext(contexts["exterior"]);
+	sprite:SetDirection(hoa_map.MapMode.SOUTH);
+	sprites["balcony_demon1"] = sprite;
+
+	sprite = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 89, 64.75);
+	sprite:SetContext(contexts["exterior"]);
+	sprite:SetDirection(hoa_map.MapMode.SOUTH);
+	sprites["balcony_demon2"] = sprite;
+
 	-- Royal guard, king, and demons in the throne room
 	sprite = ConstructSprite("Knight06", ObjectManager:GenerateObjectID(), 107.2, 41.8);
 	sprite:SetContext(contexts["interior_a"]);
@@ -630,16 +645,14 @@ end
 function CreateDialogues()
 	IfPrintDebug(DEBUG_PRINT, "Creating dialogues...");
 
-	event_dialogues = {}; -- Holds IDs of the dialogues used during events
-
 	local dialogue;
 	local text;
 
 	----------------------------------------------------------------------------
 	---------- Dialogues triggered by events
 	----------------------------------------------------------------------------
-	event_dialogues["opening"] = 10;
-	dialogue = hoa_map.MapDialogue.Create(event_dialogues["opening"]);
+	dialogues["opening"] = 10;
+	dialogue = hoa_map.MapDialogue.Create(dialogues["opening"]);
 		text = hoa_system.Translate("Wh...what the hell is going on? What the hell are they?!");
 		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
 		text = hoa_system.Translate("Captain!");
@@ -649,18 +662,18 @@ function CreateDialogues()
 		text = hoa_system.Translate("The rest of us will repel these demons! Now go! Defend our people and our homes!");
 		dialogue:AddLine(text, sprites["captain"]:GetObjectID());
 
-	event_dialogues["locked_door"] = 20;
-	dialogue = hoa_map.MapDialogue.Create(event_dialogues["locked_door"]);
+	dialogues["locked_door"] = 20;
+	dialogue = hoa_map.MapDialogue.Create(dialogues["locked_door"]);
 		text = hoa_system.Translate("With all the chaos going on out here, all the citizens have surely locked themselves in their homes. Stop wasting time and head for the castle.");
 		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
 
-	event_dialogues["demon_spawn1"] = 30;
-	dialogue = hoa_map.MapDialogue.Create(event_dialogues["demon_spawn1"]);
+	dialogues["demon_spawn1"] = 30;
+	dialogue = hoa_map.MapDialogue.Create(dialogues["demon_spawn1"]);
 		text = hoa_system.Translate("...!");
 		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
 
-	event_dialogues["demon_spawn2"] = 40;
-	dialogue = hoa_map.MapDialogue.Create(event_dialogues["demon_spawn2"]);
+	dialogues["demon_spawn2"] = 40;
+	dialogue = hoa_map.MapDialogue.Create(dialogues["demon_spawn2"]);
 		text = hoa_system.Translate("I don't believe what I just saw.");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 		text = hoa_system.Translate("That demon...just emerged from the shadows...?");
@@ -670,8 +683,8 @@ function CreateDialogues()
 		text = hoa_system.Translate("Here it comes!");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 
-	event_dialogues["citizen_chased"] = 50;
-	dialogue = hoa_map.MapDialogue.Create(event_dialogues["citizen_chased"]);
+	dialogues["citizen_chased"] = 50;
+	dialogue = hoa_map.MapDialogue.Create(dialogues["citizen_chased"]);
 		text = hoa_system.Translate("Help! Get it away from me!");
 		dialogue:AddLine(text, sprites["trap_citizen"]:GetObjectID());
 		dialogue:AddLineTiming(2000);
@@ -685,8 +698,8 @@ function CreateDialogues()
 	help_text["mark_response_help"] = hoa_system.Translate("God dammit rookie!");
 	help_text["lukar_response_help"] = hoa_system.Translate("If that's your decision, so be it. Try to catch back up to us. And stay alive.");
 
-	event_dialogues["help_citizen"] = 60;
-	dialogue = hoa_map.MapDialogue.Create(event_dialogues["help_citizen"]);
+	dialogues["help_citizen"] = 60;
+	dialogue = hoa_map.MapDialogue.Create(dialogues["help_citizen"]);
 		text = hoa_system.Translate("Where are you going, Claudius? That's not the way to the castle.");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 		text = hoa_system.Translate("Our orders are to find the king. We don't have time for this!");
@@ -707,8 +720,8 @@ function CreateDialogues()
 		dialogue:AddLineEventAtEnd(event_sequences["help_citizen_option"]);
 
 	-- Same dialogue as help_citizen, but a shorterned version so the player doesn't have to go through the entire thing again
-	event_dialogues["help_citizen_short"] = 70;
-	dialogue = hoa_map.MapDialogue.Create(event_dialogues["help_citizen_short"]);
+	dialogues["help_citizen_short"] = 70;
+	dialogue = hoa_map.MapDialogue.Create(dialogues["help_citizen_short"]);
 		text = hoa_system.Translate("We were given a mission of grave importance. Are you abandoning your duty?");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
 		text = hoa_system.Translate("...");
@@ -724,16 +737,31 @@ function CreateDialogues()
 		dialogue:AddLine(help_text["lukar_response_help"], sprites["lukar"]:GetObjectID());
 		dialogue:AddLineEventAtEnd(event_sequences["help_citizen_option"]);
 
-	event_dialogues["help_citizen_saved"] = 80;
-	dialogue = hoa_map.MapDialogue.Create(event_dialogues["help_citizen_saved"]);
+	dialogues["help_citizen_saved"] = 80;
+	dialogue = hoa_map.MapDialogue.Create(dialogues["help_citizen_saved"]);
 		text = hoa_system.Translate("Th, thank you sir! Thank you!");
 		dialogue:AddLine(text, sprites["trap_citizen"]:GetObjectID());
 		dialogue:AddLineTiming(3000);
 
-	event_dialogues["near_castle"] = 90;
-	dialogue = hoa_map.MapDialogue.Create(event_dialogues["near_castle"]);
+	dialogues["near_castle"] = 90;
+	dialogue = hoa_map.MapDialogue.Create(dialogues["near_castle"]);
 		text = hoa_system.Translate("Alright, the castle is just up ahead.");
 		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
+
+	dialogues["balcony_demons"] = 100;
+	dialogue = hoa_map.MapDialogue.Create(dialogues["balcony_demons"]);
+		text = hoa_system.Translate("Gahh, watch out!");
+		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
+		dialogue:AddLineTiming(3000);
+
+	dialogues["balcony_demons2"] = 101;
+	dialogue = hoa_map.MapDialogue.Create(dialogues["balcony_demons2"]);
+		text = hoa_system.Translate("Damn! The throne room is right there!");
+		dialogue:AddLine(text, sprites["mark"]:GetObjectID());
+		text = hoa_system.Translate("Claudius, leave us and go to the side of his majesty. We'll catch up with you as soon as we take care of this.");
+		dialogue:AddLine(text, sprites["lukar"]:GetObjectID());
+		text = hoa_system.Translate("Understood.");
+		dialogue:AddLine(text, sprites["claudius"]:GetObjectID());
 
 	----------------------------------------------------------------------------
 	---------- Dialogues attached to characters
@@ -741,12 +769,12 @@ function CreateDialogues()
 	dialogue = hoa_map.MapDialogue.Create(1000);
 		text = hoa_system.Translate("We'll hold them off and protect the citizens. Make your way to the castle with haste!");
 		dialogue:AddLine(text, sprites["captain"]:GetObjectID());
-	sprites["captain"]:AddDialogueReference(10);
+	sprites["captain"]:AddDialogueReference(1000);
 
 	dialogue = hoa_map.MapDialogue.Create(1010);
 		text = hoa_system.Translate("Go! We'll manage here.");
 		dialogue:AddLine(text, sprites["sergeant"]:GetObjectID());
-	sprites["sergeant"]:AddDialogueReference(11);
+	sprites["sergeant"]:AddDialogueReference(1010);
 
 	dialogue = hoa_map.MapDialogue.Create(1020);
 		text = hoa_system.Translate("We've been ordered by our captain to seek the king. Is he safe? Do you know where we can find him?");
@@ -791,7 +819,7 @@ function CreateEvents()
 	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["lukar"], 0, -22);
 	event:SetRelativeDestination(true);
 	event:AddEventLinkAtEnd(event_id + 1);
-	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, event_dialogues["opening"]);
+	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, dialogues["opening"]);
 	event:AddEventLinkAtEnd(event_id + 1);
 	event:AddEventLinkAtEnd(event_id + 2);
 	event:AddEventLinkAtEnd(event_id + 3);
@@ -806,12 +834,12 @@ function CreateEvents()
 	event_sequences["demon_spawns"], event_id = 50, 50;
 	event = hoa_map.PushMapStateEvent.Create(event_id, hoa_map.MapMode.STATE_SCENE);
  	event:AddEventLinkAtStart(event_id + 1);
-	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, event_dialogues["demon_spawn1"]);
+	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, dialogues["demon_spawn1"]);
 	event:SetStopCameraMovement(true);
 	event:AddEventLinkAtEnd(event_id + 1);
 	event_id = event_id + 1; event = hoa_map.CustomEvent.Create(event_id, "SpawnSceneDemon", "IsSceneDemonActive");
 	event:AddEventLinkAtEnd(event_id + 1, 1000);
-	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, event_dialogues["demon_spawn2"]);
+	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, dialogues["demon_spawn2"]);
 	event:AddEventLinkAtEnd(event_id + 1);
 	event:AddEventLinkAtEnd(event_id + 2);
 	event_id = event_id + 1; event = hoa_map.PopMapStateEvent.Create(event_id);
@@ -847,7 +875,7 @@ function CreateEvents()
 	event:AddEventLinkAtStart(event_id + 3);
 	event:AddEventLinkAtStart(event_id + 5);
 	event_id = event_id + 1; event = hoa_map.CameraMoveEvent.Create(event_id , sprites["trap_citizen"], 1000);
-	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, event_dialogues["citizen_chased"]);
+	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, dialogues["citizen_chased"]);
 	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["trap_citizen"], 190, 130);
 	event:AddEventLinkAtEnd(event_id + 1);
 	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["trap_citizen"], 192, 145);
@@ -868,7 +896,7 @@ function CreateEvents()
 	event:SetRelativeDestination(true);
 	event:SetFinalDirection(hoa_map.MapMode.WEST);
 	event:AddEventLinkAtEnd(event_id + 1);
-	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, event_dialogues["help_citizen"]);
+	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, dialogues["help_citizen"]);
 	-- Depending on which option the player selected in this dialogue, either the "help_citizen_option" or "ignore_citizen_option"
 	-- event sequence is started when the dialogue event ends
 
@@ -880,7 +908,7 @@ function CreateEvents()
 	event:SetRelativeDestination(true);
 	event:SetFinalDirection(hoa_map.MapMode.WEST);
 	event:AddEventLinkAtEnd(event_id + 1);
-	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, event_dialogues["help_citizen_short"]);
+	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, dialogues["help_citizen_short"]);
 	-- Depending on which option the player selected in this dialogue, either the "help_citizen_option" or "ignore_citizen_option"
 	-- event sequence is started when the dialogue event ends
 
@@ -908,7 +936,7 @@ function CreateEvents()
 	event:AddEventLinkAtEnd(event_id + 1, 500);
 	event_id = event_id + 1; event = hoa_map.CustomEvent.Create(event_id, "KillTrapDemon", "IsTrapDemonInactive");
 	event:AddEventLinkAtEnd(event_id + 1);
-	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, event_dialogues["help_citizen_saved"]);
+	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, dialogues["help_citizen_saved"]);
 	event:AddEventLinkAtStart(event_id + 1);
 	event:AddEventLinkAtStart(event_id + 2, 250);
 	event_id = event_id + 1; event = hoa_map.ChangePropertySpriteEvent.Create(event_id, sprites["claudius"]);
@@ -957,7 +985,7 @@ function CreateEvents()
 	event:AddSprite(sprites["mark"]);
 	event:Direction(hoa_map.MapMode.EAST);
 	event:AddEventLinkAtEnd(event_id + 1, 300);
-	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, event_dialogues["near_castle"]);
+	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, dialogues["near_castle"]);
 	event:AddEventLinkAtEnd(event_id + 1);
 	event:AddEventLinkAtEnd(event_id + 2);
 	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["mark"], 113, 130);
@@ -985,22 +1013,48 @@ function CreateEvents()
 	-- TODO: add a battle event here
 	event_id = event_id + 1; event = hoa_map.CustomEvent.Create(event_id, "KillMarketDemons", "AreMarketDemonsInactive");
 	event:AddEventLinkAtEnd(event_id + 1);
-	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, event_dialogues["near_castle"]);
+	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, dialogues["near_castle"]);
 	event:AddEventLinkAtEnd(event_id + 1);
 	event_id = event_id + 1; event = hoa_map.PopMapStateEvent.Create(event_id);
 
 	-- Enemies drop down between Claudius and his allies. Claudius continues on alone
-	event_sequences["claudius_separated"], event_id = 400, 400;
+	event_sequences["separate_party"], event_id = 400, 400;
+	event = hoa_map.PushMapStateEvent.Create(event_id, hoa_map.MapMode.STATE_SCENE);
+	event:AddEventLinkAtStart(event_id + 1);
+	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, dialogues["balcony_demons"]);
+	event:SetStopCameraMovement(true);
+	event:AddEventLinkAtStart(event_id + 1, 500);
+	event:AddEventLinkAtStart(event_id + 2, 800);
+	event:AddEventLinkAtStart(event_id + 3, 800);
+	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["claudius"], 92, 63);
+	event:SetFinalDirection(hoa_map.MapMode.WEST);
+	event:AddEventLinkAtEnd(event_id + 3);
+	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["lukar"], 86, 64.75);
+	event:SetFinalDirection(hoa_map.MapMode.EAST);
+	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["mark"], 86, 60.75);
+	event:SetFinalDirection(hoa_map.MapMode.EAST);
+	event_id = event_id + 1; event = hoa_map.CustomEvent.Create(event_id, "SpawnBalconyDemons", "AreBalconyDemonsActive");
+	event:AddEventLinkAtEnd(event_id + 1, 300);
+	event_id = event_id + 1; event = hoa_map.ChangePropertySpriteEvent.Create(event_id, sprites["lukar"]);
+	event:AddSprite(sprites["mark"]);
+	event:StationaryMovement(true);
+	event:AddEventLinkAtEnd(event_id + 1);
+	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, dialogues["balcony_demons2"]);
+	event:AddEventLinkAtEnd(event_id + 1);
+	-- TODO: remove Lukar and Mark from active party
+	event_id = event_id + 1; event = hoa_map.PopMapStateEvent.Create(event_id);
 
 	-- Claudius enters the throne room
 	event_sequences["throne_entered"], event_id = 450, 450;
 
 	-- Closing scene of map
 	event_sequences["closing_scene"], event_id = 500, 500;
+	event = hoa_map.CustomEvent.Create(event_id, "MapEndTransition", "IsMapEndTransitionComplete");
+	event:AddEventLinkAtEnd(event_id + 1);
 
 	---------- Miscellaneous Events
 	event_sequences["locked_door"] = 10000;
-	event = hoa_map.DialogueEvent.Create(event_sequences["locked_door"], event_dialogues["locked_door"]);
+	event = hoa_map.DialogueEvent.Create(event_sequences["locked_door"], dialogues["locked_door"]);
 
 	event_sequences["pop_state"] = 10100;
 	event = hoa_map.PopMapStateEvent.Create(event_sequences["pop_state"])
@@ -1062,6 +1116,17 @@ function Update()
 			EventManager:StartEvent(event_sequences["market_demon_spawns"]);
 		elseif (EventManager:TimesEventStarted(event_sequences["rejoin_allies"]) == 0) then
 			EventManager:StartEvent(event_sequences["rejoin_allies"]);
+		end
+	elseif (zones["balcony_demons"]:IsPlayerSpriteEntering() == true) then
+		if (EventManager:TimesEventStarted(event_sequences["separate_party"]) == 0) then
+			-- Make Lukar's and Mark's sprites visible and put them at the same position as Claudius
+			sprites["lukar"]:MoveToObject(sprites["claudius"], false);
+			sprites["lukar"]:SetDirection(sprites["claudius"]:GetDirection());
+			sprites["lukar"].visible = true;
+			sprites["mark"]:MoveToObject(sprites["claudius"], false);
+			sprites["mark"]:SetDirection(sprites["claudius"]:GetDirection());
+			sprites["mark"].visible = true;
+			EventManager:StartEvent(event_sequences["separate_party"]);
 		end
 	end
 end
@@ -1370,4 +1435,50 @@ functions["SetupReuniteEvent"] = function()
 	sprites["market_demon2"]:SetStationaryMovement(true);
 	sprites["market_demon2"].visible = true;
 	sprites["market_demon2"].collidable = false;
+end
+
+
+-- Spawn the two demons on the balcony for two seconds
+functions["SpawnBalconyDemons"] = function()
+	sprites["balcony_demon1"]:SetFadeTime(2000);
+	sprites["balcony_demon1"]:ChangeState(hoa_map.EnemySprite.SPAWN);
+	sprites["balcony_demon1"]:SetSpawnedState(hoa_map.EnemySprite.ACTIVE);
+	sprites["balcony_demon2"]:SetFadeTime(2000);
+	sprites["balcony_demon2"]:ChangeState(hoa_map.EnemySprite.SPAWN);
+	sprites["balcony_demon2"]:SetSpawnedState(hoa_map.EnemySprite.ACTIVE);
+end
+
+
+-- Returns true once both balcony demons are in the active state
+functions["AreBalconyDemonsActive"] = function()
+	if (sprites["balcony_demon1"]:GetState() == hoa_map.EnemySprite.ACTIVE and sprites["balcony_demon2"]:GetState() == hoa_map.EnemySprite.ACTIVE) then
+		sprites["balcony_demon1"]:SetStationaryMovement(true);
+		sprites["balcony_demon1"]:SetDirection(hoa_map.MapMode.WEST);
+		sprites["balcony_demon2"]:SetStationaryMovement(true);
+		sprites["balcony_demon2"]:SetDirection(hoa_map.MapMode.WEST);
+		return true;
+	else
+		return false;
+	end
+end
+
+
+-- End the map through a transition to a custom mode that displays screen text before loading the next map
+functions["MapEndTransition"] = function()
+	local mode = hoa_custom.CustomMode("lua/scripts/custom/screen_display.lua");
+	mode:AddOption("text1", "Several days later...");
+	mode:AddOption("initial_time", "1000");
+	mode:AddOption("display_time", "2000");
+	mode:AddOption("map", "lua/scripts/maps/a01_harrvah_capital_aftermath.lua");
+	Map:TransitionToNewMode(mode, true);
+end
+
+
+-- Returns true once the map is no longer in the transition state
+functions["IsMapEndTransitionComplete"] = function()
+	if (Map:CurrentState() == hoa_map.MapMode.STATE_TRANSITION) then
+		return false;
+	else
+		return true;
+	end
 end
