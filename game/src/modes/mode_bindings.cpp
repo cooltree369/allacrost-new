@@ -55,6 +55,160 @@ using namespace luabind;
 namespace hoa_defs {
 
 void BindModeCode() {
+	// ----- Battle Mode bindings
+	{
+	using namespace hoa_battle;
+	using namespace hoa_battle::private_battle;
+
+	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_battle")
+	[
+		def("CalculateStandardEvasion", (bool(*)(BattleTarget*)) &CalculateStandardEvasion),
+		def("CalculateStandardEvasionAdder", (bool(*)(BattleTarget*, float)) &CalculateStandardEvasion),
+		def("CalculateStandardEvasionMultiplier", (bool(*)(BattleTarget*, float)) &CalculateStandardEvasionMultiplier),
+		def("CalculatePhysicalDamage", (uint32(*)(BattleActor*, BattleTarget*)) &CalculatePhysicalDamage),
+		def("CalculatePhysicalDamage", (uint32(*)(BattleActor*, BattleTarget*, float)) &CalculatePhysicalDamage),
+		def("CalculatePhysicalDamageAdder", (uint32(*)(BattleActor*, BattleTarget*, int32)) &CalculatePhysicalDamageAdder),
+		def("CalculatePhysicalDamageAdder", (uint32(*)(BattleActor*, BattleTarget*, int32, float)) &CalculatePhysicalDamageAdder),
+		def("CalculatePhysicalDamageMultiplier", (uint32(*)(BattleActor*, BattleTarget*, float)) &CalculatePhysicalDamageMultiplier),
+		def("CalculatePhysicalDamageMultiplier", (uint32(*)(BattleActor*, BattleTarget*, float, float)) &CalculatePhysicalDamageMultiplier),
+		def("CalculateEtherealDamage", (uint32(*)(BattleActor*, BattleTarget*)) &CalculateEtherealDamage),
+		def("CalculateEtherealDamage", (uint32(*)(BattleActor*, BattleTarget*, float)) &CalculateEtherealDamage),
+		def("CalculateEtherealDamageAdder", (uint32(*)(BattleActor*, BattleTarget*, int32)) &CalculateEtherealDamageAdder),
+		def("CalculateEtherealDamageAdder", (uint32(*)(BattleActor*, BattleTarget*, int32, float)) &CalculateEtherealDamageAdder),
+		def("CalculateEtherealDamageMultiplier", (uint32(*)(BattleActor*, BattleTarget*, float)) &CalculateEtherealDamageMultiplier),
+		def("CalculateEtherealDamageMultiplier", (uint32(*)(BattleActor*, BattleTarget*, float, float)) &CalculateEtherealDamageMultiplier),
+
+		class_<BattleMode, hoa_mode_manager::GameMode>("BattleMode")
+			.def(constructor<>())
+			.def("AddEnemy", (void(BattleMode::*)(uint32)) &BattleMode::AddEnemy)
+			.def("LoadBattleScript", &BattleMode::LoadBattleScript)
+			.def("RestartBattle", &BattleMode::RestartBattle)
+			.def("FreezeTimers", &BattleMode::FreezeTimers)
+			.def("UnFreezeTimers", &BattleMode::UnFreezeTimers)
+			.def("GetState", &BattleMode::GetState)
+			.def("ChangeState", &BattleMode::ChangeState)
+			.def("OpenCommandMenu", &BattleMode::OpenCommandMenu)
+			.def("IsBattleFinished", &BattleMode::IsBattleFinished)
+			.def("SetPlayFinishMusic", &BattleMode::SetPlayFinishMusic)
+			.def("GetNumberOfCharacters", &BattleMode::GetNumberOfCharacters)
+			.def("GetNumberOfEnemies", &BattleMode::GetNumberOfEnemies)
+			.def("GetMedia", &BattleMode::GetMedia)
+			.def("GetDialogueSupervisor", &BattleMode::GetDialogueSupervisor)
+			.def("GetCommandSupervisor", &BattleMode::GetCommandSupervisor)
+
+			// Namespace constants
+			.enum_("constants") [
+				// Battle states
+				value("BATTLE_STATE_INITIAL", BATTLE_STATE_INITIAL),
+				value("BATTLE_STATE_NORMAL", BATTLE_STATE_NORMAL),
+				value("BATTLE_STATE_COMMAND", BATTLE_STATE_COMMAND),
+				value("BATTLE_STATE_EVENT", BATTLE_STATE_EVENT),
+				value("BATTLE_STATE_VICTORY", BATTLE_STATE_VICTORY),
+				value("BATTLE_STATE_DEFEAT", BATTLE_STATE_DEFEAT),
+				value("BATTLE_STATE_EXITING", BATTLE_STATE_EXITING)
+			],
+
+		class_<BattleMedia>("BattleMedia")
+			.def("SetBackgroundImage", &BattleMedia::SetBackgroundImage)
+			.def("SetBattleMusic", &BattleMedia::SetBattleMusic),
+
+		class_<BattleActor, hoa_global::GlobalActor>("BattleActor")
+			.def("ChangeSpriteAnimation", &BattleActor::ChangeSpriteAnimation)
+			.def("RegisterDamage", (void(BattleActor::*)(uint32)) &BattleActor::RegisterDamage)
+			.def("RegisterDamage", (void(BattleActor::*)(uint32, BattleTarget*)) &BattleActor::RegisterDamage)
+			.def("RegisterHealing", &BattleActor::RegisterHealing)
+			.def("RegisterMiss", &BattleActor::RegisterMiss)
+			.def("RegisterStatusChange", &BattleActor::RegisterStatusChange)
+			.def("ResetHitPoints", &BattleActor::ResetHitPoints)
+			.def("ResetMaxHitPoints", &BattleActor::ResetMaxHitPoints)
+			.def("ResetSkillPoints", &BattleActor::ResetSkillPoints)
+			.def("ResetMaxSkillPoints", &BattleActor::ResetMaxSkillPoints)
+			.def("ResetStrength", &BattleActor::ResetStrength)
+			.def("ResetVigor", &BattleActor::ResetVigor)
+			.def("ResetFortitude", &BattleActor::ResetFortitude)
+			.def("ResetProtection", &BattleActor::ResetProtection)
+			.def("ResetAgility", &BattleActor::ResetAgility)
+			.def("ResetEvade", &BattleActor::ResetEvade)
+			.def("TotalPhysicalDefense", &BattleActor::TotalPhysicalDefense)
+			.def("TotalEtherealDefense", &BattleActor::TotalEtherealDefense)
+			.def("TotalEvadeRating", &BattleActor::TotalEvadeRating)
+			.def("SetStatePaused", &BattleActor::SetStatePaused),
+
+		class_<BattleCharacter, BattleActor>("BattleCharacter")
+			.def("ChangeSpriteAnimation", &BattleCharacter::ChangeSpriteAnimation),
+
+		class_<BattleEnemy, BattleActor>("BattleEnemy")
+			.def("ChangeSpriteAnimation", &BattleEnemy::ChangeSpriteAnimation),
+
+		class_<CommandSupervisor>("CommandSupervisor"),
+
+		class_<BattleDialogue, hoa_common::CommonDialogue>("BattleDialogue")
+			.def(constructor<uint32>())
+			.def("AddLine", (void(BattleDialogue::*)(std::string, uint32))&BattleDialogue::AddLine)
+			.def("AddLine", (void(BattleDialogue::*)(std::string, uint32, int32))&BattleDialogue::AddLine)
+			.def("AddLineTimed", (void(BattleDialogue::*)(std::string, uint32, uint32))&BattleDialogue::AddLineTimed)
+			.def("AddLineTimed", (void(BattleDialogue::*)(std::string, uint32, int32, uint32))&BattleDialogue::AddLineTimed)
+			.def("AddOption", (void(BattleDialogue::*)(std::string))&BattleDialogue::AddOption)
+			.def("AddOption", (void(BattleDialogue::*)(std::string, int32))&BattleDialogue::AddOption)
+			.def("Validate", &BattleDialogue::Validate)
+			.def("SetHaltBattleAction", &BattleDialogue::SetHaltBattleAction),
+
+		class_<DialogueSupervisor>("DialogueSupervisor")
+			.def("AddDialogue", &DialogueSupervisor::AddDialogue, adopt(_2))
+			.def("AddCharacterSpeaker", &DialogueSupervisor::AddCharacterSpeaker)
+			.def("AddEnemySpeaker", &DialogueSupervisor::AddEnemySpeaker)
+			.def("AddCustomSpeaker", &DialogueSupervisor::AddCustomSpeaker)
+			.def("ChangeSpeakerName", &DialogueSupervisor::ChangeSpeakerName)
+			.def("ChangeSpeakerPortrait", &DialogueSupervisor::ChangeSpeakerPortrait)
+			.def("BeginDialogue", &DialogueSupervisor::BeginDialogue)
+			.def("EndDialogue", &DialogueSupervisor::EndDialogue)
+			.def("ForceNextLine", &DialogueSupervisor::ForceNextLine)
+			.def("IsDialogueActive", &DialogueSupervisor::IsDialogueActive)
+			.def("GetCurrentDialogue", &DialogueSupervisor::GetCurrentDialogue)
+			.def("GetLineCounter", &DialogueSupervisor::GetLineCounter),
+
+		class_<BattleTarget>("BattleTarget")
+			.def("SetPointTarget", &BattleTarget::SetPointTarget)
+			.def("SetActorTarget", &BattleTarget::SetActorTarget)
+			.def("SetPartyTarget", &BattleTarget::SetPartyTarget)
+			.def("IsValid", &BattleTarget::IsValid)
+			.def("SelectNextPoint", &BattleTarget::SelectNextPoint)
+			.def("SelectNextActor", &BattleTarget::SelectNextActor)
+			.def("GetType", &BattleTarget::GetType)
+			.def("GetPoint", &BattleTarget::GetPoint)
+			.def("GetActor", &BattleTarget::GetActor)
+			.def("GetPartyActor", &BattleTarget::GetPartyActor),
+
+		class_<BattleEffect>("BattleEffect")
+			.def("GetEffectActor", &BattleEffect::GetEffectActor),
+
+		class_<StatusEffect, BattleEffect>("StatusEffect")
+			.def("GetDurationTimer", &StatusEffect::GetDurationTimer)
+			.def("GetIntensity", &StatusEffect::GetIntensity)
+			.def("IncrementIntensity", &StatusEffect::IncrementIntensity)
+			.def("DecrementIntensity", &StatusEffect::DecrementIntensity)
+			.def("SetIntensity", &StatusEffect::SetIntensity)
+			.def("IsIntensityChanged", &StatusEffect::IsIntensityChanged)
+	];
+
+	} // End using battle mode namespaces
+
+	// ----- Custom Mode bindings
+	{
+	using namespace hoa_custom;
+
+	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_custom")
+	[
+		class_<CustomMode, hoa_mode_manager::GameMode>("CustomMode")
+			.def(constructor<std::string>())
+			.def("AddOption", &CustomMode::AddOption)
+			.def("GetOption", &CustomMode::GetOption)
+			.def_readonly("_load_complete", &CustomMode::_load_complete)
+
+	];
+
+	} // End using custom mode namespaces
+
 	// ----- Map Mode Bindings
 	{
 	using namespace hoa_map;
@@ -87,6 +241,7 @@ void BindModeCode() {
 			.def("GetVirtualFocus", &MapMode::GetVirtualFocus)
 			.def("MoveVirtualFocus", (void(MapMode::*)(uint16, uint16))&MapMode::MoveVirtualFocus)
 			.def("MoveVirtualFocus", (void(MapMode::*)(uint16, uint16, uint32))&MapMode::MoveVirtualFocus)
+			.def("TransitionToNewMode", &MapMode::TransitionToNewMode, adopt(_2))
 			.def("ContextTransitionInstant", &MapMode::ContextTransitionInstant)
 			.def("ContextTransitionBlend", &MapMode::ContextTransitionBlend)
 			.def("ContextTransitionBlackColor", &MapMode::ContextTransitionBlackColor)
@@ -553,143 +708,7 @@ void BindModeCode() {
 
 	} // End using map mode namespaces
 
-	// ----- Battle Mode bindings
-	{
-	using namespace hoa_battle;
-	using namespace hoa_battle::private_battle;
 
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_battle")
-	[
-		def("CalculateStandardEvasion", (bool(*)(BattleTarget*)) &CalculateStandardEvasion),
-		def("CalculateStandardEvasionAdder", (bool(*)(BattleTarget*, float)) &CalculateStandardEvasion),
-		def("CalculateStandardEvasionMultiplier", (bool(*)(BattleTarget*, float)) &CalculateStandardEvasionMultiplier),
-		def("CalculatePhysicalDamage", (uint32(*)(BattleActor*, BattleTarget*)) &CalculatePhysicalDamage),
-		def("CalculatePhysicalDamage", (uint32(*)(BattleActor*, BattleTarget*, float)) &CalculatePhysicalDamage),
-		def("CalculatePhysicalDamageAdder", (uint32(*)(BattleActor*, BattleTarget*, int32)) &CalculatePhysicalDamageAdder),
-		def("CalculatePhysicalDamageAdder", (uint32(*)(BattleActor*, BattleTarget*, int32, float)) &CalculatePhysicalDamageAdder),
-		def("CalculatePhysicalDamageMultiplier", (uint32(*)(BattleActor*, BattleTarget*, float)) &CalculatePhysicalDamageMultiplier),
-		def("CalculatePhysicalDamageMultiplier", (uint32(*)(BattleActor*, BattleTarget*, float, float)) &CalculatePhysicalDamageMultiplier),
-		def("CalculateEtherealDamage", (uint32(*)(BattleActor*, BattleTarget*)) &CalculateEtherealDamage),
-		def("CalculateEtherealDamage", (uint32(*)(BattleActor*, BattleTarget*, float)) &CalculateEtherealDamage),
-		def("CalculateEtherealDamageAdder", (uint32(*)(BattleActor*, BattleTarget*, int32)) &CalculateEtherealDamageAdder),
-		def("CalculateEtherealDamageAdder", (uint32(*)(BattleActor*, BattleTarget*, int32, float)) &CalculateEtherealDamageAdder),
-		def("CalculateEtherealDamageMultiplier", (uint32(*)(BattleActor*, BattleTarget*, float)) &CalculateEtherealDamageMultiplier),
-		def("CalculateEtherealDamageMultiplier", (uint32(*)(BattleActor*, BattleTarget*, float, float)) &CalculateEtherealDamageMultiplier),
-
-		class_<BattleMode, hoa_mode_manager::GameMode>("BattleMode")
-			.def(constructor<>())
-			.def("AddEnemy", (void(BattleMode::*)(uint32)) &BattleMode::AddEnemy)
-			.def("LoadBattleScript", &BattleMode::LoadBattleScript)
-			.def("RestartBattle", &BattleMode::RestartBattle)
-			.def("FreezeTimers", &BattleMode::FreezeTimers)
-			.def("UnFreezeTimers", &BattleMode::UnFreezeTimers)
-			.def("GetState", &BattleMode::GetState)
-			.def("ChangeState", &BattleMode::ChangeState)
-			.def("OpenCommandMenu", &BattleMode::OpenCommandMenu)
-			.def("IsBattleFinished", &BattleMode::IsBattleFinished)
-			.def("SetPlayFinishMusic", &BattleMode::SetPlayFinishMusic)
-			.def("GetNumberOfCharacters", &BattleMode::GetNumberOfCharacters)
-			.def("GetNumberOfEnemies", &BattleMode::GetNumberOfEnemies)
-			.def("GetMedia", &BattleMode::GetMedia)
-			.def("GetDialogueSupervisor", &BattleMode::GetDialogueSupervisor)
-			.def("GetCommandSupervisor", &BattleMode::GetCommandSupervisor)
-
-			// Namespace constants
-			.enum_("constants") [
-				// Battle states
-				value("BATTLE_STATE_INITIAL", BATTLE_STATE_INITIAL),
-				value("BATTLE_STATE_NORMAL", BATTLE_STATE_NORMAL),
-				value("BATTLE_STATE_COMMAND", BATTLE_STATE_COMMAND),
-				value("BATTLE_STATE_EVENT", BATTLE_STATE_EVENT),
-				value("BATTLE_STATE_VICTORY", BATTLE_STATE_VICTORY),
-				value("BATTLE_STATE_DEFEAT", BATTLE_STATE_DEFEAT),
-				value("BATTLE_STATE_EXITING", BATTLE_STATE_EXITING)
-			],
-
-		class_<BattleMedia>("BattleMedia")
-			.def("SetBackgroundImage", &BattleMedia::SetBackgroundImage)
-			.def("SetBattleMusic", &BattleMedia::SetBattleMusic),
-
-		class_<BattleActor, hoa_global::GlobalActor>("BattleActor")
-			.def("ChangeSpriteAnimation", &BattleActor::ChangeSpriteAnimation)
-			.def("RegisterDamage", (void(BattleActor::*)(uint32)) &BattleActor::RegisterDamage)
-			.def("RegisterDamage", (void(BattleActor::*)(uint32, BattleTarget*)) &BattleActor::RegisterDamage)
-			.def("RegisterHealing", &BattleActor::RegisterHealing)
-			.def("RegisterMiss", &BattleActor::RegisterMiss)
-			.def("RegisterStatusChange", &BattleActor::RegisterStatusChange)
-			.def("ResetHitPoints", &BattleActor::ResetHitPoints)
-			.def("ResetMaxHitPoints", &BattleActor::ResetMaxHitPoints)
-			.def("ResetSkillPoints", &BattleActor::ResetSkillPoints)
-			.def("ResetMaxSkillPoints", &BattleActor::ResetMaxSkillPoints)
-			.def("ResetStrength", &BattleActor::ResetStrength)
-			.def("ResetVigor", &BattleActor::ResetVigor)
-			.def("ResetFortitude", &BattleActor::ResetFortitude)
-			.def("ResetProtection", &BattleActor::ResetProtection)
-			.def("ResetAgility", &BattleActor::ResetAgility)
-			.def("ResetEvade", &BattleActor::ResetEvade)
-			.def("TotalPhysicalDefense", &BattleActor::TotalPhysicalDefense)
-			.def("TotalEtherealDefense", &BattleActor::TotalEtherealDefense)
-			.def("TotalEvadeRating", &BattleActor::TotalEvadeRating)
-			.def("SetStatePaused", &BattleActor::SetStatePaused),
-
-		class_<BattleCharacter, BattleActor>("BattleCharacter")
-			.def("ChangeSpriteAnimation", &BattleCharacter::ChangeSpriteAnimation),
-
-		class_<BattleEnemy, BattleActor>("BattleEnemy")
-			.def("ChangeSpriteAnimation", &BattleEnemy::ChangeSpriteAnimation),
-
-		class_<CommandSupervisor>("CommandSupervisor"),
-
-		class_<BattleDialogue, hoa_common::CommonDialogue>("BattleDialogue")
-			.def(constructor<uint32>())
-			.def("AddLine", (void(BattleDialogue::*)(std::string, uint32))&BattleDialogue::AddLine)
-			.def("AddLine", (void(BattleDialogue::*)(std::string, uint32, int32))&BattleDialogue::AddLine)
-			.def("AddLineTimed", (void(BattleDialogue::*)(std::string, uint32, uint32))&BattleDialogue::AddLineTimed)
-			.def("AddLineTimed", (void(BattleDialogue::*)(std::string, uint32, int32, uint32))&BattleDialogue::AddLineTimed)
-			.def("AddOption", (void(BattleDialogue::*)(std::string))&BattleDialogue::AddOption)
-			.def("AddOption", (void(BattleDialogue::*)(std::string, int32))&BattleDialogue::AddOption)
-			.def("Validate", &BattleDialogue::Validate)
-			.def("SetHaltBattleAction", &BattleDialogue::SetHaltBattleAction),
-
-		class_<DialogueSupervisor>("DialogueSupervisor")
-			.def("AddDialogue", &DialogueSupervisor::AddDialogue, adopt(_2))
-			.def("AddCharacterSpeaker", &DialogueSupervisor::AddCharacterSpeaker)
-			.def("AddEnemySpeaker", &DialogueSupervisor::AddEnemySpeaker)
-			.def("AddCustomSpeaker", &DialogueSupervisor::AddCustomSpeaker)
-			.def("ChangeSpeakerName", &DialogueSupervisor::ChangeSpeakerName)
-			.def("ChangeSpeakerPortrait", &DialogueSupervisor::ChangeSpeakerPortrait)
-			.def("BeginDialogue", &DialogueSupervisor::BeginDialogue)
-			.def("EndDialogue", &DialogueSupervisor::EndDialogue)
-			.def("ForceNextLine", &DialogueSupervisor::ForceNextLine)
-			.def("IsDialogueActive", &DialogueSupervisor::IsDialogueActive)
-			.def("GetCurrentDialogue", &DialogueSupervisor::GetCurrentDialogue)
-			.def("GetLineCounter", &DialogueSupervisor::GetLineCounter),
-
-		class_<BattleTarget>("BattleTarget")
-			.def("SetPointTarget", &BattleTarget::SetPointTarget)
-			.def("SetActorTarget", &BattleTarget::SetActorTarget)
-			.def("SetPartyTarget", &BattleTarget::SetPartyTarget)
-			.def("IsValid", &BattleTarget::IsValid)
-			.def("SelectNextPoint", &BattleTarget::SelectNextPoint)
-			.def("SelectNextActor", &BattleTarget::SelectNextActor)
-			.def("GetType", &BattleTarget::GetType)
-			.def("GetPoint", &BattleTarget::GetPoint)
-			.def("GetActor", &BattleTarget::GetActor)
-			.def("GetPartyActor", &BattleTarget::GetPartyActor),
-
-		class_<BattleEffect>("BattleEffect")
-			.def("GetEffectActor", &BattleEffect::GetEffectActor),
-
-		class_<StatusEffect, BattleEffect>("StatusEffect")
-			.def("GetDurationTimer", &StatusEffect::GetDurationTimer)
-			.def("GetIntensity", &StatusEffect::GetIntensity)
-			.def("IncrementIntensity", &StatusEffect::IncrementIntensity)
-			.def("DecrementIntensity", &StatusEffect::DecrementIntensity)
-			.def("SetIntensity", &StatusEffect::SetIntensity)
-			.def("IsIntensityChanged", &StatusEffect::IsIntensityChanged)
-	];
-
-	} // End using battle mode namespaces
 
 	// ----- Menu Mode bindings
 	{
@@ -727,22 +746,6 @@ void BindModeCode() {
 	];
 
 	} // End using test mode namespaces
-
-	// ----- Custom Mode bindings
-	{
-	using namespace hoa_custom;
-
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_custom")
-	[
-		class_<CustomMode, hoa_mode_manager::GameMode>("CustomMode")
-			.def(constructor<std::string>())
-			.def("AddOption", &CustomMode::AddOption)
-			.def("GetOption", &CustomMode::GetOption)
-			.def_readonly("_load_complete", &CustomMode::_load_complete)
-
-	];
-
-	} // End using custom mode namespaces
 
 } // void BindModeCode()
 

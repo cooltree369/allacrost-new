@@ -886,6 +886,7 @@ function CreateEvents()
 
 	-- Player chose to help the citizen. Mark and Lukar leave Claudius and exit the screen to the left as dialogue ends
 	event_id = event_sequences["help_citizen_option"];
+	-- TODO: remove mark and lukar from active party
 	event = hoa_map.ChangePropertySpriteEvent.Create(event_id, sprites["lukar"]);
 	event:Collidable(true);
 	event:AddEventLinkAtEnd(event_id + 1);
@@ -899,6 +900,9 @@ function CreateEvents()
 	event:Direction(hoa_map.MapMode.NORTH);
 	event:AddEventLinkAtEnd(event_id + 1);
 	-- TODO: add a battle event here
+	event_id = event_id + 1; event = hoa_map.BattleEncounterEvent.Create(event_id);
+	event:AddEnemy(3);
+	event:AddEventLinkAtEnd(event_id + 1);
 	event_id = event_id + 1; event = hoa_map.ChangePropertySpriteEvent.Create(event_id, sprites["trap_demon"]);
 	event:StationaryMovement(false);
 	event:AddEventLinkAtEnd(event_id + 1, 500);
@@ -938,6 +942,7 @@ function CreateEvents()
 
 	-- Claudius catches up with Mark and Lukar as they defeat enemies and continue on together (only seen if Claudius helped citizen)
 	event_sequences["rejoin_allies"], event_id = 300, 300;
+	-- TODO: add lukar and mark back to active party
 	event = hoa_map.PushMapStateEvent.Create(event_id, hoa_map.MapMode.STATE_SCENE);
 	event:AddEventLinkAtEnd(event_id + 1);
 	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["claudius"], 118, 130);
