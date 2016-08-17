@@ -322,7 +322,7 @@ void VirtualSprite::_ResolveCollision(COLLISION_TYPE coll_type, MapObject* coll_
 			string enemy_battle_script = enemy->GetBattleScriptFile();
 			if (enemy_battle_script != "")
 				BM->LoadBattleScript(enemy_battle_script);
-			MapMode::CurrentInstance()->_TransitionToMode(BM);
+			MapMode::CurrentInstance()->TransitionToNewMode(BM);
 
 			// TODO: some sort of map-to-battle transition animation sequence needs to start here
 			return;

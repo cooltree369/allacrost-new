@@ -13,15 +13,17 @@
 *** \brief   Source file for map mode utility code
 *** *****************************************************************************/
 
+#include "utils.h"
+
 #include "map_utils.h"
 
-// Local map mode headers
 #include "map.h"
 #include "map_events.h"
 
 using namespace std;
 
 using namespace hoa_common;
+using namespace hoa_utils;
 
 namespace hoa_map {
 
@@ -120,6 +122,55 @@ bool MapEventData::ValidateEvents() const {
 	}
 
 	return return_value;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// MapCollisionNotificationEvent Class Functions
+///////////////////////////////////////////////////////////////////////////////
+
+const string MapCollisionNotificationEvent::DEBUG_PrintInfo() {
+	string line = "MapCollisionNotificationEvent::" + category + "/" + event + " -";
+	line += " Sprite-ID:" + NumberToString(sprite->GetObjectID());
+
+	ostringstream stream;
+	stream.precision(4);
+	stream << (static_cast<float>(x_position) + x_offset);
+	line += " X-Position:" + stream.str();
+	stream.str("");
+	stream << (static_cast<float>(y_position) + y_offset);
+	line += " Y-Position:" + stream.str();
+
+	line += " Collision-Type:";
+	switch (collision_type) {
+		case NO_COLLISION:
+			line += "None";
+			break;
+		case BOUNDARY_COLLISION:
+			line += "Boundary";
+			break;
+		case GRID_COLLISION:
+			line += "Grid";
+			break;
+		case OBJECT_COLLISION:
+			line += "Object";
+			break;
+		default:
+			line += "unknown(" + NumberToString(collision_type) + ")";
+			break;
+	}
+
+	if (object != NULL) {
+		line += " Object-ID: " + NumberToString(object->GetObjectID());
+	}
+
+	return line;
+}
+
+void MapCollisionNotificationEvent::_CopySpritePosition() {
+	x_position = sprite->x_position;
+	x_offset = sprite->x_offset;
+	y_position = sprite->y_position;
+	y_offset = sprite->y_offset;
 }
 
 } // namespace private_map

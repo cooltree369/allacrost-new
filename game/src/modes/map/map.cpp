@@ -60,55 +60,6 @@ MapMode* MapMode::_current_instance = NULL;
 // The maximum value of the run stamina bar
 const uint32 RUN_STAMINA_MAX = 10000;
 
-namespace private_map {
-
-const string MapCollisionNotificationEvent::DEBUG_PrintInfo() {
-	string line = "MapCollisionNotificationEvent::" + category + "/" + event + " -";
-	line += " Sprite-ID:" + NumberToString(sprite->GetObjectID());
-
-	ostringstream stream;
-	stream.precision(4);
-	stream << (static_cast<float>(x_position) + x_offset);
-	line += " X-Position:" + stream.str();
-	stream.str("");
-	stream << (static_cast<float>(y_position) + y_offset);
-	line += " Y-Position:" + stream.str();
-
-	line += " Collision-Type:";
-	switch (collision_type) {
-		case NO_COLLISION:
-			line += "None";
-			break;
-		case BOUNDARY_COLLISION:
-			line += "Boundary";
-			break;
-		case GRID_COLLISION:
-			line += "Grid";
-			break;
-		case OBJECT_COLLISION:
-			line += "Object";
-			break;
-		default:
-			line += "unknown(" + NumberToString(collision_type) + ")";
-			break;
-	}
-
-	if (object != NULL) {
-		line += " Object-ID: " + NumberToString(object->GetObjectID());
-	}
-
-	return line;
-}
-
-void MapCollisionNotificationEvent::_CopySpritePosition() {
-	x_position = sprite->x_position;
-	x_offset = sprite->x_offset;
-	y_position = sprite->y_position;
-	y_offset = sprite->y_offset;
-}
-
-} // namespace private_map
-
 // ****************************************************************************
 // ********** MapMode Public Class Methods
 // ****************************************************************************
@@ -134,15 +85,15 @@ MapMode::MapMode(string script_filename) :
 	_previous_context(MAP_CONTEXT_NONE),
 	_transition_type(TRANSITION_BLEND),
 	_transition_color(Color::black),
+	_transition_mode(NULL),
+	_transition_terminate(false),
 	_run_disabled(false),
 	_run_state(false),
 	_run_stamina(RUN_STAMINA_MAX),
 	_unlimited_stamina(false),
 	_dialogue_icons_visible(false),
 	_stamina_bar_visible(false),
-	_current_track(INVALID_TRACK),
-	_fade_out(false),
-	_transition_mode(NULL)
+	_current_track(0xFFFFFFFF) // intentionally invalid track number
 {
 	mode_type = MODE_MANAGER_MAP_MODE;
 	_current_instance = this;
@@ -290,7 +241,7 @@ void MapMode::Update() {
 			_treasure_supervisor->Update();
 			break;
         case STATE_TRANSITION:
-            _UpdateModeTransition();
+            _UpdateTransition();
             break;
 		default:
 			IF_PRINT_WARNING(MAP_DEBUG) << "map was in an unknown state: " << CurrentState() << endl;
@@ -310,8 +261,7 @@ void MapMode::Update() {
 	// ---------- (5) Update all active map events
 	_event_supervisor->Update();
 
-	// TODO: the code only supports color context transitions right now, not blended. Support for blended transitions needs to be added
-	// later
+	// TODO: the code only supports color context transitions right now, not blended. Support for blended transitions needs to be added later
 	if (_context_transition_timer.IsRunning() && _context_transition_timer.PercentComplete() >= 0.50f) {
 		_transition_color.SetAlpha(0.0f); // Set the alpha to zero so we can fade out the color
 		VideoManager->FadeScreen(_transition_color, _context_transition_timer.GetDuration() - _context_transition_timer.GetTimeExpired());
@@ -337,8 +287,6 @@ void MapMode::Draw() {
 	}
 	else if (CurrentState() == STATE_TREASURE) {
 		_treasure_supervisor->Draw();
-	} else if (CurrentState() == STATE_TRANSITION) {
-                _DrawModeTransition();
 	}
 }
 
@@ -472,6 +420,24 @@ void MapMode::MoveVirtualFocus(uint16 x, uint16 y, uint32 duration) {
 		MoveVirtualFocus(x, y);
 	}
 }
+
+
+void MapMode::TransitionToNewMode(GameMode* mode, bool terminate) {
+	if (mode == NULL) {
+		PRINT_WARNING << "function received NULL argument; transition aborted" << endl;
+	}
+	else if (_transition_mode != NULL) {
+		PRINT_WARNING << "function called when a mode transition was already in progress; " << endl;
+		delete mode;
+	}
+	else {
+		_transition_mode = mode;
+		_transition_terminate = terminate;
+		VideoManager->FadeScreen(Color::black, 1000);
+		MapMode::PushState(STATE_TRANSITION);
+	}
+}
+
 
 
 void MapMode::ContextTransitionInstant(MAP_CONTEXT new_context) {
@@ -749,6 +715,24 @@ void MapMode::_UpdateExplore() {
 
 
 
+void MapMode::_UpdateTransition() {
+	// When the screen is finished fading, push the transition mode to the game stack and restore the map state
+	if (VideoManager->IsFading() == FALSE) {
+		ModeManager->Push(_transition_mode);
+		// Remove this instance of MapMode from the stack if instructed to do so
+		if (_transition_terminate == true) {
+			ModeManager->Pop();
+		}
+
+		PopState();
+		_transition_mode = NULL;
+		// Fade the screen back in so that the new mode will be visible
+		VideoManager->FadeScreen(Color::clear, 1000);
+	}
+}
+
+
+
 void MapMode::_CalculateMapFrame() {
 	// ---------- (1) Determine the center position coordinates for the camera
 	float camera_x, camera_y; // Holds the final X, Y coordinates of the camera
@@ -996,37 +980,5 @@ void MapMode::_DrawGUI() {
 
 	VideoManager->PopState();
 } // void MapMode::_DrawGUI()
-
-
-
-void MapMode::_DrawModeTransition () {
-    if(_fade_out == false) {
-        _fade_out = true;
-        VideoManager->FadeScreen(Color::black, 1000);
-    }
-}
-
-
-
-void MapMode::_UpdateModeTransition() {
-    if (_fade_out) {
-		// When the screen is finished fading to black, clear the variables and push the battle mode
-		if (!VideoManager->IsFading()) {
-			ModeManager->Push(_transition_mode);
-			_fade_out = false;
-			_transition_mode = NULL;
-                        PopState();
-                        // This will fade the screen back in from black
-                        VideoManager->FadeScreen(Color::clear, 1000);
-		}
-	}
-}
-
-
-
-void MapMode::_TransitionToMode(GameMode * game_mode) {
-    MapMode::PushState(STATE_TRANSITION);
-    _transition_mode = game_mode;
-}
 
 } // namespace hoa_map
