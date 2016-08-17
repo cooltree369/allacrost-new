@@ -270,6 +270,7 @@ void BindModeCode() {
 				value("STATE_SCENE", STATE_SCENE),
 				value("STATE_DIALOGUE", STATE_DIALOGUE),
 				value("STATE_TREASURE", STATE_TREASURE),
+				value("STATE_TRANSITION", STATE_TRANSITION),
 				// Map contexts
 				value("CONTEXT_NONE", MAP_CONTEXT_NONE),
 				value("CONTEXT_01", MAP_CONTEXT_01),
