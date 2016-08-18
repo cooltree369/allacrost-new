@@ -382,8 +382,10 @@ void BattleEncounterEvent::_Start() {
 
 
 bool BattleEncounterEvent::_Update() {
-	// TODO
-	return true;
+	if (MapMode::CurrentInstance()->CurrentState() != STATE_TRANSITION)
+		return true;
+	else
+		return false;
 }
 
 // -----------------------------------------------------------------------------
