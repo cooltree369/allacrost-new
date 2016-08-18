@@ -541,10 +541,10 @@ protected:
 	//! \brief Filename for battle background
 	std::string _battle_background;
 
-	//! \brief Starts the battle
+	//! \brief Begins the transition to the battle
 	void _Start();
 
-	//! \brief Currently does nothing
+	//! \brief Returns true once the map is no longer in the transition state
 	bool _Update();
 }; // class BattleEncounterEvent : public MapEvent
 
