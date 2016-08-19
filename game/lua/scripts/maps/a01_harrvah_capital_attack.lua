@@ -552,56 +552,66 @@ function CreateSprites()
 	sprite:SetContext(contexts["interior_a"]);
 	sprite:SetDirection(hoa_map.MapMode.SOUTH);
 	sprite:SetStationaryMovement(true);
+	sprites["guard1"] = sprite;
 
 	sprite = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 107, 46);
 	sprite:SetContext(contexts["interior_a"]);
 	sprite:SetDirection(hoa_map.MapMode.NORTH);
 	sprite:SetStationaryMovement(true);
 	sprite:ChangeState(hoa_map.EnemySprite.ACTIVE);
+	sprites["minion_demon1"] = sprite;
 
 	sprite = ConstructSprite("Knight01", ObjectManager:GenerateObjectID(), 105, 42);
 	sprite:SetContext(contexts["interior_a"]);
 	sprite:SetDirection(hoa_map.MapMode.SOUTH);
 	sprite:SetStationaryMovement(true);
+	sprites["guard2"] = sprite;
 
 	sprite = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 105, 44);
 	sprite:SetContext(contexts["interior_a"]);
 	sprite:SetDirection(hoa_map.MapMode.NORTH);
 	sprite:SetStationaryMovement(true);
 	sprite:ChangeState(hoa_map.EnemySprite.ACTIVE);
+	sprites["minion_demon2"] = sprite;
 
-	sprite = ConstructSprite("Knight01", ObjectManager:GenerateObjectID(), 103.6, 39.6);
+	sprite = ConstructSprite("Knight01", ObjectManager:GenerateObjectID(), 102.4, 39.6);
 	sprite:SetContext(contexts["interior_a"]);
 	sprite:SetDirection(hoa_map.MapMode.WEST);
 	sprite:SetStationaryMovement(true);
+	sprites["guard3"] = sprite;
 
-	sprite = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 101, 40);
+	sprite = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 100.8, 39);
 	sprite:SetContext(contexts["interior_a"]);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
 	sprite:SetStationaryMovement(true);
 	sprite:ChangeState(hoa_map.EnemySprite.ACTIVE);
+	sprites["minion_demon3"] = sprite;
 
 	sprite = ConstructSprite("Knight01", ObjectManager:GenerateObjectID(), 87.5, 47);
 	sprite:SetContext(contexts["interior_a"]);
 	sprite:SetDirection(hoa_map.MapMode.EAST);
 	sprite:SetStationaryMovement(true);
+	sprites["guard4"] = sprite;
 
 	sprite = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 90, 47);
 	sprite:SetContext(contexts["interior_a"]);
 	sprite:SetDirection(hoa_map.MapMode.WEST);
 	sprite:SetStationaryMovement(true);
 	sprite:ChangeState(hoa_map.EnemySprite.ACTIVE);
+	sprites["minion_demon4"] = sprite;
 
 	sprite = ConstructSprite("Knight01", ObjectManager:GenerateObjectID(), 90, 56.5);
 	sprite:SetContext(contexts["interior_a"]);
 	sprite:SetDirection(hoa_map.MapMode.NORTH);
 	sprite:SetStationaryMovement(true);
+	sprites["guard5"] = sprite;
 
 	sprite = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 90, 54);
 	sprite:SetContext(contexts["interior_a"]);
 	sprite:SetDirection(hoa_map.MapMode.SOUTH);
 	sprite:SetStationaryMovement(true);
 	sprite:ChangeState(hoa_map.EnemySprite.ACTIVE);
+	sprites["minion_demon5"] = sprite;
 
 	sprite = ConstructEnemySprite("scorpion", ObjectManager:GenerateObjectID(), 106, 38);
 	sprite:SetContext(contexts["interior_a"]);
@@ -1082,7 +1092,7 @@ function CreateEvents()
 	event:AddEventLinkAtEnd(event_id + 1);
 	event:AddEventLinkAtEnd(event_id + 2);
 	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, dialogues["boss_appears"]);
-	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["claudius"], 111, 38);
+	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["claudius"], 110, 39);
 	event:AddEventLinkAtEnd(event_id + 1);
 	event_id = event_id + 1; event = hoa_map.PathMoveSpriteEvent.Create(event_id, sprites["claudius"], 106, 38);
 	event:SetFinalDirection(hoa_map.MapMode.WEST);
@@ -1095,12 +1105,16 @@ function CreateEvents()
 	event:Direction(hoa_map.MapMode.NORTH);
 	event_id = event_id + 1; event = hoa_map.BattleEncounterEvent.Create(event_id);
 	event:AddEnemy(1);
-	event:AddEventLinkAtEnd(500); -- Proceed to the closing scene sequence after the boss is defeated
+	event:AddEventLinkAtEnd(500, 2000); -- Proceed to the closing scene sequence after the boss is defeated
 
 	-- Closing scene of map where demons retreat, followed by a short dialogue and fading to a transition screen
 	event_sequences["closing_scene"], event_id = 500, 500;
-	event = hoa_map.CustomEvent.Create(event_id, "KillBossDemon", "");
-	event:AddEventLinkAtEnd(event_id + 1);
+	event = hoa_map.CustomSpriteEvent.Create(event_id, sprites["boss_demon"], "KillEnemy", "");
+	event:AddEventLinkAtStart(event_id + 1, 500);
+	event:AddEventLinkAtStart(event_id + 2, 800);
+	event:AddEventLinkAtEnd(event_id + 3, 2000);
+	event = hoa_map.CustomSpriteEvent.Create(event_id, sprites["minion_demon1"], "KillEnemy", "");
+	event = hoa_map.CustomSpriteEvent.Create(event_id, sprites["minion_demon4"], "KillEnemy", "");
 	event_id = event_id + 1; event = hoa_map.DialogueEvent.Create(event_id, dialogues["demons_retreat"]);
 	event:AddEventLinkAtEnd(event_id + 1);
 	event_id = event_id + 1; event = hoa_map.CustomEvent.Create(event_id, "MapEndTransition", "");
@@ -1539,11 +1553,11 @@ functions["IsBossDemonActive"] = function()
 end
 
 
--- Stops the boss from moving and fades it out, simulating its death
-functions["KillBossDemon"] = function()
-	sprites["boss_demon"]:SetStationaryMovement(false);
-	sprites["boss_demon"]:SetFadeTime(1000);
-	sprites["boss_demon"]:ChangeState(hoa_map.EnemySprite.DISSIPATE);
+-- Stops any stationary movement of the enemy sprite and fades it out over a second
+functions["KillEnemy"] = function(sprite)
+	sprite:SetStationaryMovement(false);
+	sprite:SetFadeTime(1000);
+	sprite:ChangeState(hoa_map.EnemySprite.DISSIPATE);
 end
 
 
