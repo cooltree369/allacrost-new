@@ -34,6 +34,7 @@ end
 
 -- Begins a new game. Called from boot mode to begin
 function NewGame()
+	print "begin new game";
 	-- Make sure that any global data is cleared away
 	GlobalManager:ClearAllData();
 
@@ -41,7 +42,7 @@ function NewGame()
 	GlobalManager:AddCharacter(LUKAR);
 	GlobalManager:AddCharacter(MARK);
 	GlobalManager:AddCharacter(CLAUDIUS);
-	GlobalManager:AddNewEventGroup("global_events"); -- This group stores the primary list of events completed in the game
+	GlobalManager:AddNewRecordGroup("global_events"); -- This group stores the primary list of events completed in the game
 	GlobalManager:SetDrunes(100);
 	GlobalManager:AddToInventory(1, 3); -- Healing potions
 
@@ -52,6 +53,7 @@ function NewGame()
 
 	ModeManager:Pop();
 	ModeManager:Push(opening_map);
+	print "here";
 end
 
 
