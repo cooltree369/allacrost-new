@@ -477,7 +477,7 @@ bool ReadScriptDescriptor::ExecuteFunction(const ScriptObject& object) {
 	try {
 	    ScriptCallFunction<void>(object);
 	}
-	catch(luabind::error e) {
+	catch (luabind::error e) {
 		IF_PRINT_WARNING(SCRIPT_DEBUG) << "caught Luabind error while trying to execute script object in file: "
 			<< _filename << endl;
 		ScriptManager->HandleLuaError(e);

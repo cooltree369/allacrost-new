@@ -36,60 +36,21 @@ namespace private_map {
 /** ****************************************************************************
 *** \brief A special type of sprite with no physical image
 ***
-*** The VirtualSprite is a special type of MapObject because it has no physical
-*** form (no image). Virtual sprites may be manipulated to move around on the screen
-*** just like any other sprite. VirtualSprites do take collision detection into account
-*** by default, unless the no_collision member is set to true. Here are some examples of
-*** where virtual sprites may be of use:
+*** The VirtualSprite is a special type of MapObject because it has no physical form (no image). Virtual sprites may be
+*** manipulated to move around on the screen just like any other sprite. The visible and collidable properties are set
+*** to false during construction. Some possible uses for a virtual sprite include:
 ***
-*** - As a mobile focusing point for the map camera
-*** - As an impassible map location for ground objects in a specific context only
-*** - To set impassible locations for objects in the sky layer
+*** - A mobile focusing point for the map camera
+*** - An impassible map location for other sprites and objects in a specific context
 ***
-*** \note The VirtualSprite class serves as a base class for all other types of
-*** sprites.
+*** \note The VirtualSprite class serves as a base class for all other types of sprites.
 *** ***************************************************************************/
 class VirtualSprite : public MapObject {
 public:
 	VirtualSprite();
 
-	~VirtualSprite();
-
-	// ---------- Public Members: Orientation and Movement
-
-	/** \brief A bit-mask for the sprite's draw orientation and direction vector.
-	*** This member determines both where to move the sprite (8 directions) and
-	*** which way the sprite is facing (4 directions). See the Sprite direction
-	*** constants for the values that this member may be set to.
-	**/
-	uint16 direction;
-
-	//! \brief The speed at which the sprite moves around the map.
-	float movement_speed;
-
-	/** \brief Set to true when the sprite is currently in motion.
-	*** This does not necessarily mean that the sprite actually is moving, but rather
-	*** that the sprite is <i>trying</i> to move in a certain direction.
-	**/
-	bool moving;
-
-	/** \brief Set to true whenever the sprite's position was changed due to movement
-	*** This is distinctly different than the moving member. Whereas the moving member
-	*** indicates desired movement, this member indicates that positional change due to
-	*** movement actually occurred. It is used for drawing functions to determine if they
-	*** should draw the sprite in motion or not in motion
-	**/
-	bool moved_position;
-
-	//! \brief Set to true when the sprite is running rather than walking
-	bool is_running;
-
-	// ---------- Public Members: Events
-
-	//! \brief A pointer to the event that is controlling the action of this sprite
-	SpriteEvent* control_event;
-
-	// ---------- Public methods
+	~VirtualSprite()
+		{}
 
 	//! \brief Updates the virtual object's position if it is moving, otherwise does nothing.
 	virtual void Update();
@@ -98,17 +59,16 @@ public:
 	virtual void Draw()
 		{}
 
-	/** \note This method takes into account the current direction when setting the new direction
-	*** in the case of diagonal movement. For example, if the sprite is currently facing north
-	*** and this function indicates that the sprite should move northwest, it will face north
-	*** during the northwest movement.
+	/** \brief Used to check if a sprite is facing in a particular direction
+	*** \param direction The direction to check. Should be one of the following four directional constants: NORTH, SOUTH, EAST, WEST
+	*** \return True if the sprite is facing the direction being checked
 	**/
-	void SetDirection(uint16 dir);
+	bool IsFacingDirection(uint16 direction) const;
 
 	/** \brief Sets the sprite's direction to a random value
 	*** This function is used mostly for the ActionRandomMove class.
 	**/
-	void SetRandomDirection();
+	virtual void SetRandomDirection();
 
 	/** \brief Calculates the distance the sprite should move given its velocity (speed and direction)
 	*** \return A floating point value representing the distance moved
@@ -146,41 +106,64 @@ public:
 	**/
 	virtual void RestoreState();
 
-	/** \name Lua Access Functions
+	/** \name Class Member Access Functions
 	*** These functions are specifically written to enable Lua to access the members of this class.
 	**/
 	//@{
-	bool IsStateSaved() const
-		{ return _state_saved; }
-
-	void SetMovementSpeed(float speed)
-		{ movement_speed = speed; }
-
-	void SetMoving(bool motion)
-		{ moving = motion; }
-
-	bool IsMoving() const
-		{ return moving; }
-
-	/** \brief Used to check if a sprite is facing in a particular direction
-	*** \param check_direction The direction to check. Should be one of the following four directional constants: NORTH, SOUTH, EAST, WEST
-	*** \return True if the sprite is facing the direction being checked
-	**/
-	bool IsFacingDirection(uint16 check_direction) const;
-
 	uint16 GetDirection() const
-		{ return direction; }
+		{ return _direction; }
+
+	/** \note This method takes into account the current direction when setting the new direction
+	*** in the case of diagonal movement. For example, if the sprite is currently facing north
+	*** and this function indicates that the sprite should move northwest, it will face north
+	*** during the northwest movement.
+	**/
+	virtual void SetDirection(uint16 direction);
 
 	float GetMovementSpeed() const
-		{ return movement_speed; }
+		{ return _movement_speed; }
+
+	virtual void SetMovementSpeed(float speed)
+		{ _movement_speed = speed; }
+
+	bool IsMoving() const
+		{ return _moving; }
+
+	virtual void SetMoving(bool moving)
+		{ _moving = moving; }
+
+	bool IsRunning() const
+		{ return _running; }
+
+	virtual void SetRunning(bool running)
+		{ _running = running; }
+
+	bool IsStateSaved() const
+		{ return _state_saved; }
 	//@}
 
 protected:
-	/** \brief Determines an appropriate resolution when the sprite collides with an obstruction
-	*** \param coll_type The type of collision that has occurred
-	*** \param coll_obj A pointer to the MapObject that the sprite has collided with, if any
+	/** \brief A bit-mask for the sprite's draw orientation and direction vector.
+	*** This member determines both where to move the sprite (8 directions) and
+	*** which way the sprite is facing (4 directions). See the Sprite direction
+	*** constants for the values that this member may be set to.
 	**/
-	void _ResolveCollision(COLLISION_TYPE coll_type, MapObject* coll_obj);
+	uint16 _direction;
+
+	//! \brief The speed at which the sprite moves around the map.
+	float _movement_speed;
+
+	/** \brief Set to true when the sprite is currently in motion.
+	*** \note This does not necessarily mean that the sprite actually is moving, but rather
+	*** that the sprite is <i>trying</i> to move in a certain direction.
+	**/
+	bool _moving;
+
+	//! \brief True when the sprite movement is running, false and movement will be by walking
+	bool _running;
+
+	//! \brief A pointer to the event that is controlling the action of this sprite. If NULL, no event is controlling
+	SpriteEvent* _control_event;
 
 	/** \name Saved state attributes
 	*** These attributes are used to save and restore the state of a VirtualSprite
@@ -192,6 +175,12 @@ protected:
 	float _saved_movement_speed;
 	bool _saved_moving;
 	//@}
+
+	/** \brief Determines an appropriate resolution when the sprite collides with an obstruction
+	*** \param coll_type The type of collision that has occurred
+	*** \param coll_obj A pointer to the MapObject that the sprite has collided with, if any
+	**/
+	void _ResolveCollision(COLLISION_TYPE coll_type, MapObject* coll_obj);
 }; // class VirtualSprite : public MapObject
 
 
@@ -210,6 +199,13 @@ public:
 	MapSprite();
 
 	~MapSprite();
+
+	/** \brief Creates an instance of the class and registers it with the object supervisor
+	*** \param object_id The object ID of this sprite
+	*** \return A pointer to the instance of the sprite created
+	**/
+	static MapSprite* Create(int16 object_id);
+// 		{ return MapObject::_Create<MapSprite>(object_id); }
 
 	// ---------- Public methods
 
@@ -241,6 +237,29 @@ public:
 
     //! \brief Draws the dialogue icon at the top of the sprite
     virtual void DrawDialog();
+
+	/** \brief Sets the sprite's direction to a random value and updates the new animation appropriately
+	*** \note Do not call this function until after you have loaded all of the standard sprite animations.
+	*** Otherwise you will get a seg fault.
+	**/
+	void SetRandomDirection()
+		{ VirtualSprite::SetRandomDirection(); _ChangeCurrentAnimation(); }
+
+	bool IsStationaryMovement() const
+		{ return _stationary_movement; }
+
+	void SetStationaryMovement(bool stationary)
+		{ if (_stationary_movement != stationary) { _stationary_movement = stationary; _ChangeCurrentAnimation(); } }
+
+	bool IsReverseMovement() const
+		{ return _reverse_movement; }
+
+	/** \note Enabling reverse movment will instantly flip the direction the sprite appears to be facing, even if they are
+	*** stationary. If you want to reverse the movement but not have the sprite suddenly change their facing direction, you'll
+	*** need to also call SetDirection() with the opposite direction that you want the sprite to be facing.
+	**/
+	void SetReverseMovement(bool reverse)
+		{ if (_reverse_movement != reverse) { _reverse_movement = reverse; _ChangeCurrentAnimation();} }
 
 	/** \brief Adds a new reference to a dialogue that the sprite uses
 	*** \param dialogue_id The ID number of the dialogue
@@ -290,10 +309,20 @@ public:
 	**/
 	virtual void RestoreState();
 
-	/** \name Lua Access Functions
-	*** These functions are specifically written to enable Lua to access the members of this class.
-	**/
+	//! \name Class Member Access Functions
 	//@{
+	/** \note Do not call this function until after you have loaded all of the standard sprite animations.
+	*** Otherwise you will get a seg fault.
+	**/
+	void SetDirection(uint16 direction)
+		{ if (_direction != direction) { VirtualSprite::SetDirection(direction); _ChangeCurrentAnimation(); } }
+
+	void SetMoving(bool moving)
+		{ if (_moving != moving) { _moving = moving; _ChangeCurrentAnimation(); } }
+
+	void SetRunning(bool running)
+		{ if (_running != running) { _running = running; _ChangeCurrentAnimation(); } }
+
 	// TODO: needs to be a ustring
 	void SetName(std::string na)
 		{ _name = hoa_utils::MakeUnicodeString(na); }
@@ -352,11 +381,27 @@ protected:
 	**/
 	hoa_video::StillImage* _face_portrait;
 
+	//! \brief The index to the animations vector containing the current sprite image to display
+	uint8 _current_animation;
+
 	//! \brief Set to true if the sprite has running animations loaded
 	bool _has_running_animations;
 
-	//! \brief The index to the animations vector containing the current sprite image to display
-	uint8 _current_animation;
+	//! \brief When true, the sprite will always be drawn with a movement animation, even if they are not physically moving
+	bool _stationary_movement;
+
+	//! \brief When true, the sprite standing and movement animations will be opposite of the direction the sprite is facing
+	bool _reverse_movement;
+
+	//! \brief True if a custom animation is currently in use
+	bool _custom_animation_on;
+
+	/** \name Saved state attributes
+	*** These attributes are used to save and load the state of a VirtualSprite
+	**/
+	//@{
+	uint8 _saved_current_animation;
+	//@}
 
 	/** \brief A vector containing all the sprite's various animations.
 	*** The first four entries in this vector are the walking animation frames.
@@ -381,26 +426,19 @@ protected:
 	//! \brief True if at least one dialogue referenced by this sprite has not yet been viewed -and- is available to be viewed
 	bool _has_unseen_dialogue;
 
-	//! \brief True if a custom animation is in use
-	bool _custom_animation_on;
-
-	/** \name Saved state attributes
-	*** These attributes are used to save and load the state of a VirtualSprite
-	**/
-	//@{
-	uint8 _saved_current_animation;
-	//@}
+	//! \brief Called when a change to the sprite takes place that may require a different animation to be displayed
+	void _ChangeCurrentAnimation();
 }; // class MapSprite : public VirtualSprite
 
 
 /** ****************************************************************************
 *** \brief A mobile map object that represents a hostile force
 ***
-*** Enemy sprites are have all the same features and functionality as a map sprite.
+*** Enemy sprites have all the same features and functionality as a map sprite.
 *** In addition to this, they have some additional data and methods that are commonly
 *** needed for enemies encountered on a map, including:
 ***
-*** - State information to determine if an enemy is spawning or active
+*** - State information to determine if an enemy is spawning, dead, etc.
 *** - Ability to be controlled by an EnemyZone, used for restricting the area where an enemy may roam
 *** - Battle data to determine what enemies, music, etc. are loaded when a battle begins
 ***
@@ -427,20 +465,25 @@ protected:
 *** that it may spawn once more.
 *** ***************************************************************************/
 class EnemySprite : public MapSprite {
-private:
+public:
 	//! \brief The possible states that the enemy sprite may be in
-	enum STATE {
-		SPAWN,        //<! Enemy is in the process of "fading in"
-		ACTIVE,       //<! Enemy is fully visible and active. Behaves like a standard map sprite, even if inside a zone.
-		ACTIVE_ZONED, //<! Enemy has completed spawning and is being controlled by an EnemyZone
+	enum ENEMY_STATE {
 		INACTIVE,     //<! Enemy is in a "dead" state, waiting to be spawned or made active by a zone or script call
+		SPAWN,        //<! Enemy is in the process of "fading in"
+		ACTIVE,       //<! Fully visible and active. Behaves like a standard map sprite, even if inside a zone.
+		HUNT,         //<! Roaming around and will pursue the player if they get too close
 		DISSIPATE     //<! Enemy is in the process of disappearing, either due to death or a retreat
 	};
 
-public:
 	EnemySprite();
 
-	//! \brief Resets various members of the class so that the enemy is dead, invisible, and does not produce a collision
+	/** \brief Creates an instance of the class and registers it with the object supervisor
+	*** \param object_id The object ID of this sprite
+	*** \return A pointer to the instance of the sprite created
+	**/
+	static EnemySprite* Create(int16 object_id);
+
+	//! \brief Resets various members of the class so that the enemy is inactive, invisible, and does not produce a collision
 	void Reset();
 
 	//! \brief Updates the sprite's position and state.
@@ -465,27 +508,27 @@ public:
 	//! \brief Returns a reference to a random battle party of enemies
 	const std::vector<uint32>& RetrieveRandomParty();
 
-	//! \brief Returns the number of enemy battle parties that have been defined
-	uint32 NumberEnemyParties() const
-		{ return _enemy_parties.size(); }
+	//! \brief Returns true if the sprite has at least one party
+	bool HasEnemyParties() const
+		{ return !_enemy_parties.empty(); }
 
-	void ChangeStateSpawn()
-		{ updatable = true; no_collision = false; _state = SPAWN; _state_timer.Initialize(_fade_time); _state_timer.Run(); _fade_color.SetAlpha(0.0f); }
-
-	void ChangeStateActive()
-		{ updatable = true; no_collision = false; _state = ACTIVE; }
-
-	void ChangeStateActiveZoned()
-		{ updatable = true; no_collision = false; moving = true; _state = ACTIVE_ZONED; _state_timer.Initialize(_directional_change_time); _state_timer.Run(); }
-
-	void ChangeStateDissipate()
-		{ _state = DISSIPATE; _state_timer.Initialize(_fade_time); _state_timer.Run(); _fade_color.SetAlpha(1.0f); }
-
-	void ChangeStateInactive()
-		{ Reset(); if (_zone) _zone->EnemyDead(); }
+	/** \brief Changes the current state of the sprite and updates other class members appropriately
+	*** \param new_state The state to change to. If it is the same as the current state, no change will happen
+	***
+	**/
+	void ChangeState(ENEMY_STATE new_state);
 
 	//! \name Class Member Access Functions
 	//@{
+	ENEMY_STATE GetState() const
+		{ return _state; }
+
+	ENEMY_STATE GetSpawnedState() const
+		{ return _spawned_state; }
+
+	EnemyZone* GetZone() const
+		{ return _zone; }
+
 	float GetPursuitRange() const
 		{ return _pursuit_range; }
 
@@ -504,20 +547,8 @@ public:
 	std::string GetBattleScriptFile() const
 		{ return _battle_script_file; }
 
-	bool IsStateSpawn() const
-		{ return _state == SPAWN; }
-
-	bool IsStateActive() const
-		{ return _state == ACTIVE; }
-
-	bool IsStateActiveZoned() const
-		{ return _state == ACTIVE_ZONED; }
-
-	bool IsStateDissipate() const
-		{ return _state == DISSIPATE; }
-
-	bool IsStateInactive() const
-		{ return _state == INACTIVE; }
+	void SetSpawnedState(ENEMY_STATE state)
+		{ _spawned_state = state; }
 
 	void SetZone(EnemyZone* zone)
 		{ _zone = zone; }
@@ -543,7 +574,10 @@ public:
 
 private:
 	//! \brief The state that the enemy sprite is currently in
-	STATE _state;
+	ENEMY_STATE _state;
+
+	//! \brief The state that the sprite will be changed to after spawning completes (default == HUNT)
+	ENEMY_STATE _spawned_state;
 
 	//! \brief The zone that the enemy sprite belongs to
 	private_map::EnemyZone* _zone;
@@ -563,8 +597,8 @@ private:
 	//! \brief The total time to take to fade an enemy sprite during the SPAWN or DISSIPATE states
 	uint32 _fade_time;
 
-	//! \brief Indicates if the enemy is outside of its zone. If it is, it won't change direction until it gets back in.
-	bool _out_of_zone;
+	//! \brief Set to true when the enemy has gone outside of its zone
+	bool _returning_to_zone;
 
 	//! \brief The filename of the music to play for the battle
 	std::string _battle_music_file;

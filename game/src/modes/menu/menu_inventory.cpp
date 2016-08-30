@@ -8,7 +8,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /*!****************************************************************************
-* \file    menu_views.cpp
+* \file    menu_inventory.cpp
 * \author  Daniel Steuernol steu@allacrost.org
 * \author  Andy Gardner chopperdave@allacrost.org
 * \brief   Source file for inventory menu.
@@ -57,8 +57,7 @@ InventoryWindow::InventoryWindow() : _active_box(ITEM_ACTIVE_NONE) {
 
 } // void InventoryWindow::InventoryWindow
 
-InventoryWindow::~InventoryWindow()
-{
+InventoryWindow::~InventoryWindow() {}
 
 //Initializes the list of items
 void InventoryWindow::_InitInventoryItems() {
@@ -140,247 +139,247 @@ void InventoryWindow::Activate(bool new_status) {
 	}
 }
 
-	// Updates the window
-	void InventoryWindow::Update() {
+// Updates the window
+void InventoryWindow::Update() {
 
-		//bool cancel = false;
-		if (GlobalManager->GetInventory()->size() == 0)
-		{
-			// no more items in inventory, exit inventory window
-			Activate(false);
-			return;
-		}
+    //bool cancel = false;
+    if (GlobalManager->GetInventory()->size() == 0)
+    {
+        // no more items in inventory, exit inventory window
+        Activate(false);
+        return;
+    }
 
-			// Points to the active option box
-			OptionBox *active_option = NULL;
-			_inventory_items.Update(SystemManager->GetUpdateTime()); //For scrolling
+        // Points to the active option box
+        OptionBox *active_option = NULL;
+        _inventory_items.Update(SystemManager->GetUpdateTime()); //For scrolling
 
-		switch (_active_box) {
-			case ITEM_ACTIVE_CATEGORY:
-				active_option = &_item_categories;
-				break;
-			case ITEM_ACTIVE_CHAR:
-				active_option = &_char_select;
-				break;
-			case ITEM_ACTIVE_LIST:
-				active_option = &_inventory_items;
-				break;
-		}
+    switch (_active_box) {
+        case ITEM_ACTIVE_CATEGORY:
+            active_option = &_item_categories;
+            break;
+        case ITEM_ACTIVE_CHAR:
+            active_option = &_char_select;
+            break;
+        case ITEM_ACTIVE_LIST:
+            active_option = &_inventory_items;
+            break;
+    }
 
-		// Handle the appropriate input events
-		if (InputManager->ConfirmPress())
-			{
-				active_option->InputConfirm();
-			}
-			else if (InputManager->CancelPress())
-			{
-				active_option->InputCancel();
-			}
-			else if (InputManager->LeftPress())
-			{
-				active_option->InputLeft();
-			}
-			else if (InputManager->RightPress())
-			{
-				active_option->InputRight();
-			}
-			else if (InputManager->UpPress())
-			{
-				active_option->InputUp();
-			}
-			else if (InputManager->DownPress())
-			{
-				active_option->InputDown();
-			}
+    // Handle the appropriate input events
+    if (InputManager->ConfirmPress())
+        {
+            active_option->InputConfirm();
+        }
+        else if (InputManager->CancelPress())
+        {
+            active_option->InputCancel();
+        }
+        else if (InputManager->LeftPress())
+        {
+            active_option->InputLeft();
+        }
+        else if (InputManager->RightPress())
+        {
+            active_option->InputRight();
+        }
+        else if (InputManager->UpPress())
+        {
+            active_option->InputUp();
+        }
+        else if (InputManager->DownPress())
+        {
+            active_option->InputDown();
+        }
 
-			uint32 event = active_option->GetEvent();
-			active_option->Update();
-			// Handle confirm/cancel presses differently for each window
-			switch (_active_box) {
-			case ITEM_ACTIVE_NONE:
-				break;
+        uint32 event = active_option->GetEvent();
+        active_option->Update();
+        // Handle confirm/cancel presses differently for each window
+        switch (_active_box) {
+        case ITEM_ACTIVE_NONE:
+            break;
 
-			case ITEM_ACTIVE_CATEGORY:
-			{
-				// Activate the item list for this category
-				if (event == VIDEO_OPTION_CONFIRM) {
-					if (_inventory_items.GetNumberOptions() > 0) {
-						_inventory_items.SetSelection(0);
-						_item_categories.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
-						_inventory_items.SetCursorState(VIDEO_CURSOR_STATE_VISIBLE);
-						_description.SetDisplayText(_item_objects[0]->GetDescription());
-						_active_box = ITEM_ACTIVE_LIST;
-						MenuMode::CurrentInstance()->_menu_sounds["confirm"].Play();
-					} // if _inventory_items.GetNumberOptions() > 0
-				} // if VIDEO_OPTION_CONFIRM
-				  // Deactivate inventory
-				else if (event == VIDEO_OPTION_CANCEL) {
-					MenuMode::CurrentInstance()->_menu_sounds["cancel"].Play();
-					_item_categories.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
-					Activate(false);
-				} // if VIDEO_OPTION_CANCEL
-				break;
-			} // case ITEM_ACTIVE_CATEGORY
+        case ITEM_ACTIVE_CATEGORY:
+        {
+            // Activate the item list for this category
+            if (event == VIDEO_OPTION_CONFIRM) {
+                if (_inventory_items.GetNumberOptions() > 0) {
+                    _inventory_items.SetSelection(0);
+                    _item_categories.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
+                    _inventory_items.SetCursorState(VIDEO_CURSOR_STATE_VISIBLE);
+                    _description.SetDisplayText(_item_objects[0]->GetDescription());
+                    _active_box = ITEM_ACTIVE_LIST;
+                    MenuMode::CurrentInstance()->_menu_sounds["confirm"].Play();
+                } // if _inventory_items.GetNumberOptions() > 0
+            } // if VIDEO_OPTION_CONFIRM
+              // Deactivate inventory
+            else if (event == VIDEO_OPTION_CANCEL) {
+                MenuMode::CurrentInstance()->_menu_sounds["cancel"].Play();
+                _item_categories.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
+                Activate(false);
+            } // if VIDEO_OPTION_CANCEL
+            break;
+        } // case ITEM_ACTIVE_CATEGORY
 
-			case ITEM_ACTIVE_LIST:
-			{
-				// Activate the character select for application
-				if (event == VIDEO_OPTION_CONFIRM) {
-					GlobalObject* obj = _item_objects[_inventory_items.GetSelection()];
-					if (obj->GetObjectType() == GLOBAL_OBJECT_ITEM) {
-						GlobalItem* item = dynamic_cast<GlobalItem*>(obj);
-						if (item->IsUsableInField() == true) {
-							_active_box = ITEM_ACTIVE_CHAR;
-							_inventory_items.SetCursorState(VIDEO_CURSOR_STATE_BLINKING);
-							_char_select.SetCursorState(VIDEO_CURSOR_STATE_VISIBLE);
-							MenuMode::CurrentInstance()->_menu_sounds["confirm"].Play();
-						}
-					}
+        case ITEM_ACTIVE_LIST:
+        {
+            // Activate the character select for application
+            if (event == VIDEO_OPTION_CONFIRM) {
+                GlobalObject* obj = _item_objects[_inventory_items.GetSelection()];
+                if (obj->GetObjectType() == GLOBAL_OBJECT_ITEM) {
+                    GlobalItem* item = dynamic_cast<GlobalItem*>(obj);
+                    if (item->IsUsableInField() == true) {
+                        _active_box = ITEM_ACTIVE_CHAR;
+                        _inventory_items.SetCursorState(VIDEO_CURSOR_STATE_BLINKING);
+                        _char_select.SetCursorState(VIDEO_CURSOR_STATE_VISIBLE);
+                        MenuMode::CurrentInstance()->_menu_sounds["confirm"].Play();
+                    }
+                }
 
-				} // if VIDEO_OPTION_CONFIRM
-				  // Return to category selection
-				else if (event == VIDEO_OPTION_CANCEL) {
-					_active_box = ITEM_ACTIVE_CATEGORY;
-					_inventory_items.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
-					_item_categories.SetCursorState(VIDEO_CURSOR_STATE_VISIBLE);
-					MenuMode::CurrentInstance()->_menu_sounds["cancel"].Play();
-				} // else if VIDEO_OPTION_CANCEL
-				else if (event == VIDEO_OPTION_BOUNDS_UP || VIDEO_OPTION_BOUNDS_DOWN) {
-					_description.SetDisplayText(_item_objects[_inventory_items.GetSelection()]->GetDescription());
-				} // else if VIDEO_OPTION_BOUNDS_UP
-				break;
-			} // case ITEM_ACTIVE_LIST
+            } // if VIDEO_OPTION_CONFIRM
+              // Return to category selection
+            else if (event == VIDEO_OPTION_CANCEL) {
+                _active_box = ITEM_ACTIVE_CATEGORY;
+                _inventory_items.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
+                _item_categories.SetCursorState(VIDEO_CURSOR_STATE_VISIBLE);
+                MenuMode::CurrentInstance()->_menu_sounds["cancel"].Play();
+            } // else if VIDEO_OPTION_CANCEL
+            else if (event == VIDEO_OPTION_BOUNDS_UP || VIDEO_OPTION_BOUNDS_DOWN) {
+                _description.SetDisplayText(_item_objects[_inventory_items.GetSelection()]->GetDescription());
+            } // else if VIDEO_OPTION_BOUNDS_UP
+            break;
+        } // case ITEM_ACTIVE_LIST
 
-			case ITEM_ACTIVE_CHAR:
-			{
-				// Use the item on the chosen character
-				if (event == VIDEO_OPTION_CONFIRM) {
-					GlobalObject* obj = _item_objects[_inventory_items.GetSelection()];
-					if (obj->GetObjectType() == GLOBAL_OBJECT_ITEM) {
-						GlobalItem *item = (GlobalItem*)GlobalManager->RetrieveFromInventory(obj->GetID());
-						const ScriptObject* script_function = item->GetFieldUseFunction();
-						if (script_function == NULL) {
-							IF_PRINT_WARNING(MENU_DEBUG) << "item did not have a menu use function" << endl;
-						}
-						else {
-							if (IsTargetParty(item->GetTargetType()) == true) {
-								GlobalParty *ch_party = GlobalManager->GetActiveParty();
-								ScriptCallFunction<void>(*script_function, ch_party);
-								item->DecrementCount();
-							} // if GLOBAL_TARGET_PARTY
-							else { // Use on a single character only
-								GlobalCharacter *ch = dynamic_cast<GlobalCharacter*>(GlobalManager->GetActiveParty()->GetActorAtIndex(_char_select.GetSelection()));
-								ScriptCallFunction<void>(*script_function, ch);
-								item->DecrementCount();
-								// Go back to inventory list after 
-							}
-							// If they are anymore items in the category then go back to item select
-							if (_inventory_items.GetNumberOptions() > 0) {
-								_active_box = ITEM_ACTIVE_LIST;
-								_inventory_items.SetCursorState(VIDEO_CURSOR_STATE_VISIBLE);
-								_char_select.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
+        case ITEM_ACTIVE_CHAR:
+        {
+            // Use the item on the chosen character
+            if (event == VIDEO_OPTION_CONFIRM) {
+                GlobalObject* obj = _item_objects[_inventory_items.GetSelection()];
+                if (obj->GetObjectType() == GLOBAL_OBJECT_ITEM) {
+                    GlobalItem *item = (GlobalItem*)GlobalManager->RetrieveFromInventory(obj->GetID());
+                    const ScriptObject* script_function = item->GetFieldUseFunction();
+                    if (script_function == NULL) {
+                        IF_PRINT_WARNING(MENU_DEBUG) << "item did not have a menu use function" << endl;
+                    }
+                    else {
+                        if (IsTargetParty(item->GetTargetType()) == true) {
+                            GlobalParty *ch_party = GlobalManager->GetActiveParty();
+                            ScriptCallFunction<void>(*script_function, ch_party);
+                            item->DecrementCount();
+                        } // if GLOBAL_TARGET_PARTY
+                        else { // Use on a single character only
+                            GlobalCharacter *ch = dynamic_cast<GlobalCharacter*>(GlobalManager->GetActiveParty()->GetActorAtIndex(_char_select.GetSelection()));
+                            ScriptCallFunction<void>(*script_function, ch);
+                            item->DecrementCount();
+                            // Go back to inventory list after
+                        }
+                        // If they are anymore items in the category then go back to item select
+                        if (_inventory_items.GetNumberOptions() > 0) {
+                            _active_box = ITEM_ACTIVE_LIST;
+                            _inventory_items.SetCursorState(VIDEO_CURSOR_STATE_VISIBLE);
+                            _char_select.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
 
-								if (item->GetCount() < 1 && (_inventory_items.GetNumberOptions() - 1) == _inventory_items.GetSelection()) {
-									_inventory_items.SetSelection(_inventory_items.GetSelection() - 1);
-								}
-							}// If they aren't anymore irems in the category then go to category select
-							else {
-								_active_box = ITEM_ACTIVE_CATEGORY;
-								_inventory_items.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
-								_char_select.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
-								_item_categories.SetCursorState(VIDEO_CURSOR_STATE_VISIBLE);
-							}
-						}
-					} // if GLOBAL_OBJECT_ITEM
-				} // if VIDEO_OPTION_CONFIRM
-				  // Return to item selection
-				else if (event == VIDEO_OPTION_CANCEL) {
-					_active_box = ITEM_ACTIVE_LIST;
-					_inventory_items.SetCursorState(VIDEO_CURSOR_STATE_VISIBLE);
-					_char_select.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
-					MenuMode::CurrentInstance()->_menu_sounds["cancel"].Play();
-				} // if VIDEO_OPTION_CANCEL
-				break;
-			} // case ITEM_ACTIVE_CHAR
-			} // switch (_active_box)
+                            if (item->GetCount() < 1 && (_inventory_items.GetNumberOptions() - 1) == _inventory_items.GetSelection()) {
+                                _inventory_items.SetSelection(_inventory_items.GetSelection() - 1);
+                            }
+                        }// If they aren't anymore irems in the category then go to category select
+                        else {
+                            _active_box = ITEM_ACTIVE_CATEGORY;
+                            _inventory_items.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
+                            _char_select.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
+                            _item_categories.SetCursorState(VIDEO_CURSOR_STATE_VISIBLE);
+                        }
+                    }
+                } // if GLOBAL_OBJECT_ITEM
+            } // if VIDEO_OPTION_CONFIRM
+              // Return to item selection
+            else if (event == VIDEO_OPTION_CANCEL) {
+                _active_box = ITEM_ACTIVE_LIST;
+                _inventory_items.SetCursorState(VIDEO_CURSOR_STATE_VISIBLE);
+                _char_select.SetCursorState(VIDEO_CURSOR_STATE_HIDDEN);
+                MenuMode::CurrentInstance()->_menu_sounds["cancel"].Play();
+            } // if VIDEO_OPTION_CANCEL
+            break;
+        } // case ITEM_ACTIVE_CHAR
+        } // switch (_active_box)
 
-			  // Update the item list
-			_UpdateItemText();
-		} // void InventoryWindow::Update()
+          // Update the item list
+        _UpdateItemText();
+} // void InventoryWindow::Update()
 
-		  // Updates the item list
-		void InventoryWindow::_UpdateItemText() {
-			_item_objects.clear();
-			_inventory_items.ClearOptions();
+  // Updates the item list
+void InventoryWindow::_UpdateItemText() {
+    _item_objects.clear();
+    _inventory_items.ClearOptions();
 
-			switch (_item_categories.GetSelection()) {
-			case ITEM_ALL:
-			{
-				std::map<uint32, GlobalObject*>* inv = GlobalManager->GetInventory();
-				for (std::map<uint32, GlobalObject*>::iterator i = inv->begin(); i != inv->end(); i++) {
-					_item_objects.push_back(i->second);
-				}
-			}
-			break;
+    switch (_item_categories.GetSelection()) {
+    case ITEM_ALL:
+    {
+        std::map<uint32, GlobalObject*>* inv = GlobalManager->GetInventory();
+        for (std::map<uint32, GlobalObject*>::iterator i = inv->begin(); i != inv->end(); i++) {
+            _item_objects.push_back(i->second);
+        }
+    }
+    break;
 
-			case ITEM_ITEM:
-				_item_objects = _GetItemVector(GlobalManager->GetInventoryItems());
-				break;
+    case ITEM_ITEM:
+        _item_objects = _GetItemVector(GlobalManager->GetInventoryItems());
+        break;
 
-			case ITEM_WEAPONS:
-				_item_objects = _GetItemVector(GlobalManager->GetInventoryWeapons());
-				break;
+    case ITEM_WEAPONS:
+        _item_objects = _GetItemVector(GlobalManager->GetInventoryWeapons());
+        break;
 
-			case ITEM_HEAD_ARMOR:
-				_item_objects = _GetItemVector(GlobalManager->GetInventoryHeadArmor());
-				break;
+    case ITEM_HEAD_ARMOR:
+        _item_objects = _GetItemVector(GlobalManager->GetInventoryHeadArmor());
+        break;
 
-			case ITEM_TORSO_ARMOR:
-				_item_objects = _GetItemVector(GlobalManager->GetInventoryTorsoArmor());
-				break;
+    case ITEM_TORSO_ARMOR:
+        _item_objects = _GetItemVector(GlobalManager->GetInventoryTorsoArmor());
+        break;
 
-			case ITEM_ARM_ARMOR:
-				_item_objects = _GetItemVector(GlobalManager->GetInventoryArmArmor());
-				break;
+    case ITEM_ARM_ARMOR:
+        _item_objects = _GetItemVector(GlobalManager->GetInventoryArmArmor());
+        break;
 
-			case ITEM_LEG_ARMOR:
-				_item_objects = _GetItemVector(GlobalManager->GetInventoryLegArmor());
-				break;
+    case ITEM_LEG_ARMOR:
+        _item_objects = _GetItemVector(GlobalManager->GetInventoryLegArmor());
+        break;
 
-			case ITEM_KEY:
-				_item_objects = _GetItemVector(GlobalManager->GetInventoryKeyItems());
-				break;
-			}
+    case ITEM_KEY:
+        _item_objects = _GetItemVector(GlobalManager->GetInventoryKeyItems());
+        break;
+    }
 
-			ustring text;
-			std::vector<ustring> inv_names;
+    ustring text;
+    std::vector<ustring> inv_names;
 
-			for (size_t ctr = 0; ctr < _item_objects.size(); ctr++) {
-				text = MakeUnicodeString("<" + _item_objects[ctr]->GetIconImage().GetFilename() + "><32>     ") +
-					_item_objects[ctr]->GetName() + MakeUnicodeString("<R><350>" + NumberToString(_item_objects[ctr]->GetCount()) + "   ");
-				inv_names.push_back(text);
-			}
+    for (size_t ctr = 0; ctr < _item_objects.size(); ctr++) {
+        text = MakeUnicodeString("<" + _item_objects[ctr]->GetIconImage().GetFilename() + "><32>     ") +
+            _item_objects[ctr]->GetName() + MakeUnicodeString("<R><350>" + NumberToString(_item_objects[ctr]->GetCount()) + "   ");
+        inv_names.push_back(text);
+    }
 
-			_inventory_items.SetOptions(inv_names);
-		} // void InventoryWindow::UpdateItemText()
+    _inventory_items.SetOptions(inv_names);
+} // void InventoryWindow::UpdateItemText()
 
 
 
-		void InventoryWindow::Draw() {
-			MenuWindow::Draw();
+void InventoryWindow::Draw() {
+    MenuWindow::Draw();
 
-			// Update the item text in case the number of items changed.
-			_UpdateItemText();
+    // Update the item text in case the number of items changed.
+    _UpdateItemText();
 
-			// Draw char select option box
-			_char_select.Draw();
+    // Draw char select option box
+    _char_select.Draw();
 
-			// Draw item categories option box
-			_item_categories.Draw();
+    // Draw item categories option box
+    _item_categories.Draw();
 
-			// Draw item list
-			_inventory_items.Draw();
-		} // bool InventoryWindow::Draw()
+    // Draw item list
+    _inventory_items.Draw();
+} // bool InventoryWindow::Draw()
 
 } // namespace private_menu
 

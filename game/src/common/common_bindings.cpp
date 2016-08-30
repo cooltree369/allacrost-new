@@ -59,6 +59,21 @@ void BindCommonCode() {
 
 	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_common")
 	[
+		class_<CommonRecordGroup>("CommonRecordGroup")
+			.def("DoesRecordExist", &CommonRecordGroup::DoesRecordExist)
+			.def("AddNewRecord", &CommonRecordGroup::AddNewRecord)
+			.def("GetRecord", &CommonRecordGroup::GetRecord)
+			.def("SetRecord", &CommonRecordGroup::SetRecord)
+			.def("ModifyRecord", &CommonRecordGroup::ModifyRecord)
+			.def("DeleteRecord", &CommonRecordGroup::DeleteRecord)
+			.def("GetNumberRecords", &CommonRecordGroup::GetNumberRecords)
+			.def("GetGroupName", &CommonRecordGroup::GetGroupName)
+
+			// Constants
+			.enum_("constants") [
+				value("BAD_RECORD", CommonRecordGroup::BAD_RECORD)
+			],
+
 		class_<CommonDialogue>("CommonDialogue")
 			// TODO: add commented lines back in later. There is a build issue with the editor when these lines are included
 // 			.def("AddLine", (void(CommonDialogue::*)(std::string))&CommonDialogue::AddLine)
@@ -70,6 +85,12 @@ void BindCommonCode() {
 			.def("HasAlreadySeen", &CommonDialogue::HasAlreadySeen)
 			.def("SetTimesSeen", &CommonDialogue::SetTimesSeen)
 			.def("SetMaxViews", &CommonDialogue::SetMaxViews)
+
+			// Constants
+			.enum_("constants") [
+				value("NEXT_LINE", COMMON_DIALOGUE_NEXT_LINE),
+				value("END_DIALOGUE", COMMON_DIALOGUE_END)
+			]
 	];
 
 	} // End using common namespace
@@ -107,14 +128,14 @@ void BindCommonCode() {
 			.def("RemoveFromInventory", (void (GameGlobal::*)(uint32)) &GameGlobal::RemoveFromInventory)
 			.def("IncrementObjectCount", &GameGlobal::IncrementObjectCount)
 			.def("DecrementObjectCount", &GameGlobal::DecrementObjectCount)
-			.def("DoesEventGroupExist", &GameGlobal::DoesEventGroupExist)
-			.def("DoesEventExist", &GameGlobal::DoesEventExist)
-			.def("AddNewEventGroup", &GameGlobal::AddNewEventGroup)
-			.def("GetEventGroup", &GameGlobal::GetEventGroup)
-			.def("GetEventValue", &GameGlobal::GetEventValue)
-			.def("SetEventValue", &GameGlobal::SetEventValue)
-			.def("GetNumberEventGroups", &GameGlobal::GetNumberEventGroups)
-			.def("GetNumberEvents", &GameGlobal::GetNumberEvents)
+			.def("DoesRecordGroupExist", &GameGlobal::DoesRecordGroupExist)
+			.def("DoesRecordExist", &GameGlobal::DoesRecordExist)
+			.def("AddNewRecordGroup", &GameGlobal::AddNewRecordGroup)
+			.def("GetRecordGroup", &GameGlobal::GetRecordGroup)
+			.def("GetRecordValue", &GameGlobal::GetRecordValue)
+			.def("SetRecordValue", &GameGlobal::SetRecordValue)
+			.def("GetNumberRecordGroups", &GameGlobal::GetNumberRecordGroups)
+			.def("GetNumberRecords", &GameGlobal::GetNumberRecords)
 			.def("SetLocation", (void(GameGlobal::*)(const std::string&)) &GameGlobal::SetLocation)
 			.def("GetBattleSetting", &GameGlobal::GetBattleSetting)
 			.def("SetBattleSetting", &GameGlobal::SetBattleSetting)
@@ -204,17 +225,6 @@ void BindCommonCode() {
 				value("GLOBAL_TARGET_ALL_ALLIES", GLOBAL_TARGET_ALL_ALLIES),
 				value("GLOBAL_TARGET_ALL_FOES", GLOBAL_TARGET_ALL_FOES)
 			]
-	];
-
-	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_global")
-	[
-		class_<GlobalEventGroup>("GlobalEventGroup")
-			.def("DoesEventExist", &GlobalEventGroup::DoesEventExist)
-			.def("AddNewEvent", &GlobalEventGroup::AddNewEvent)
-			.def("GetEvent", &GlobalEventGroup::GetEvent)
-			.def("SetEvent", &GlobalEventGroup::SetEvent)
-			.def("GetNumberEvents", &GlobalEventGroup::GetNumberEvents)
-			.def("GetGroupName", &GlobalEventGroup::GetGroupName)
 	];
 
 	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_global")
@@ -401,6 +411,54 @@ void BindCommonCode() {
 	];
 
 	} // End using global namespaces
+
+	// ---------- Bind GUI Components
+	{
+	using namespace hoa_gui;
+	using namespace hoa_gui::private_gui;
+
+	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_gui")
+	[
+		class_<GUIElement>("GUIElement")
+			.def("SetDimensions", &GUIElement::SetDimensions)
+			.def("SetPosition", &GUIElement::SetPosition)
+			.def("SetAlignment", &GUIElement::SetAlignment),
+
+		class_<GUIControl, GUIElement>("GUIControl")
+			.def("SetOwner", &GUIControl::SetOwner),
+
+		class_<TextBox, GUIControl>("TextBox")
+			.def(constructor<>())
+			.def(constructor<float, float, float, float, TEXT_DISPLAY_MODE>())
+			.def("ClearText", &TextBox::ClearText)
+			.def("Update", &TextBox::Update)
+			.def("Draw", &TextBox::Draw)
+			.def("ForceFinish", &TextBox::ForceFinish)
+			.def("SetDimensions", &TextBox::SetDimensions)
+			.def("SetTextAlignment", &TextBox::SetTextAlignment)
+			.def("SetTextStyle", &TextBox::SetTextStyle)
+			.def("SetDisplayMode", &TextBox::SetDisplayMode)
+			.def("SetDisplaySpeed", &TextBox::SetDisplaySpeed)
+			.def("SetDisplayText", (void(TextBox::*)(const std::string&))&TextBox::SetDisplayText)
+			.def("GetTextAlignment", &TextBox::GetTextAlignment)
+			.def("GetTextStyle", &TextBox::GetTextStyle)
+			.def("GetDisplayMode", &TextBox::GetDisplayMode)
+			.def("GetDisplaySpeed", &TextBox::GetDisplaySpeed)
+			.def("IsFinished", &TextBox::IsFinished)
+			.def("IsEmpty", &TextBox::IsEmpty)
+			.def("IsInitialized", &TextBox::IsInitialized)
+			.def("CalculateTextHeight", &TextBox::CalculateTextHeight)
+
+			.enum_("constants") [
+				value("VIDEO_TEXT_INSTANT", VIDEO_TEXT_INSTANT),
+				value("VIDEO_TEXT_CHAR", VIDEO_TEXT_CHAR),
+				value("VIDEO_TEXT_FADELINE", VIDEO_TEXT_FADELINE),
+				value("VIDEO_TEXT_FADECHAR", VIDEO_TEXT_FADECHAR),
+				value("VIDEO_TEXT_REVEAL", VIDEO_TEXT_REVEAL)
+			]
+	];
+
+	} // End using gui namespace
 
 	// Bind the GlobalManager object to Lua
 	luabind::object global_table = luabind::globals(hoa_script::ScriptManager->GetGlobalState());

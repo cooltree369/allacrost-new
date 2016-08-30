@@ -34,75 +34,18 @@
 // Allacrost engines
 #include "audio.h"
 #include "mode_manager.h"
-#include "notification.h"
 #include "script.h"
 #include "video.h"
 #include "system.h"
+
+// Common files
+#include "common.h"
 
 // Local map mode headers
 #include "map_utils.h"
 
 //! All calls to map mode are wrapped in this namespace.
 namespace hoa_map {
-
-//! An internal namespace to be used only within the map code. Don't use this namespace anywhere else!
-namespace private_map {
-
-//! \brief Used to set the current music track to invalid, effectively stops any music from playing
-const uint32 INVALID_TRACK = 0xFFFFFFFF;
-
-/** ****************************************************************************
-*** \brief A notification event class describing sprite collisions
-***
-*** Whenever a sprite of any type moves on the map and has a collision, one of these
-*** notification events is generated to describe the type and particulars about the
-*** collision. This can be used by a map script to determine whether to play a sound,
-*** switch the context of the sprite, or take some other action.
-***
-*** \note Because collision resolution changes the position of the sprite, you can
-*** not rely on the position of the sprite when the notification event is being processed.
-*** This is why this class has members that retain the position of the sprite as the collision
-*** happened.
-*** ***************************************************************************/
-class MapCollisionNotificationEvent : public hoa_notification::NotificationEvent {
-public:
-	/** \param type The type of collision that occurred
-	*** \param sprite The sprite that had the collision
-	*** \note You should \b not use this constructor for object-type collisions
-	**/
-	MapCollisionNotificationEvent(COLLISION_TYPE type, VirtualSprite* sprite) :
-		NotificationEvent("map", "collision"), collision_type(type), sprite(sprite), object(NULL) { _CopySpritePosition(); }
-
-	/** \param type The type of collision that occurred (should be COLLISION_OBJECT)
-	*** \param sprite The sprite that had the collision
-	*** \param object The object that the sprite collided with
-	*** \note You should \b only use this constructor for object-type collisions
-	**/
-	MapCollisionNotificationEvent(COLLISION_TYPE type, VirtualSprite* sprite, MapObject* object) :
-		NotificationEvent("map", "collision"), collision_type(type), sprite(sprite), object(object) { _CopySpritePosition(); }
-
-	//! \brief Returns a string representation of the collision data stored in this object
-	const std::string DEBUG_PrintInfo();
-
-	//! \brief The type of collision that caused the notification to be generated
-	COLLISION_TYPE collision_type;
-
-	//! \brief The sprite that had the collision
-	VirtualSprite* sprite;
-
-	//! \brief Saved position data from the sprite at the time of the collision
-	uint16 x_position, y_position;
-	float x_offset, y_offset;
-
-	//! \brief The object that the sprite collided with, if it was an object type collision. Otherwise will be NULL
-	MapObject* object;
-
-private:
-	//! \brief Retains the state of the sprite's position data in the class members
-	void _CopySpritePosition();
-}; // class MapCollisionNotificationEvent : public hoa_notification::NotificationEvent
-
-} // namespace private_map
 
 /** ****************************************************************************
 *** \brief Handles the game execution while the player is exploring maps.
@@ -211,6 +154,12 @@ public:
     bool AttackAllowed()
 		{ return (CurrentState() != private_map::STATE_DIALOGUE && CurrentState() != private_map::STATE_TREASURE && !IsCameraOnVirtualFocus()); }
 
+	/** \brief Transitions to the supplied game mode with a screen fade
+	*** \param mode A pointer to the game mode that should be pushed on top of the game stack
+	*** \param terminate If true, after the transition is complete the active instance of MapMode will be destroyed. Defaults to false
+	**/
+	void TransitionToNewMode(GameMode* mode, bool terminate = false);
+
 	/** \brief Instantly changes the current context
 	*** \param new_context The context to change to. If it is invalid or the same as the current context, no change will take place
 	**/
@@ -244,8 +193,11 @@ public:
 	const hoa_utils::ustring& GetMapName() const
 		{ return _map_name; }
 
-	hoa_global::GlobalEventGroup* GetMapEventGroup() const
-		{ return _map_event_group; }
+	hoa_common::CommonRecordGroup* GetGlobalRecordGroup() const
+		{ return _global_record_group; }
+
+	hoa_common::CommonRecordGroup* GetLocalRecordGroup()
+		{ return &_local_record_group; }
 
 	hoa_script::ReadScriptDescriptor& GetMapScript()
 		{ return _map_script; }
@@ -349,17 +301,11 @@ public:
 	void SetCurrentTrack(uint32 track)
 		{ _current_track = track; }
 
-	/** \brief Transitions to the supplied game mode from the current game mode with a graphical effect.
-	*** \param game_mode that is to be transitioned to from the current mode.
-	**/
-	void _TransitionToMode(GameMode *);
-
 	const hoa_video::AnimatedImage& GetDialogueIcon() const
 		{ return _dialogue_icon; }
 
 	const hoa_video::StillImage& GetLocationGraphic() const
 		{ return _location_graphic; }
-
 	//@}
 
 private:
@@ -382,8 +328,13 @@ private:
 	//! \brief The name of the map, as it will be read by the player in the game.
 	hoa_utils::ustring _map_name;
 
-	//! \brief A pointer to the object containing all of the event information for the map
-	hoa_global::GlobalEventGroup* _map_event_group;
+	//! \brief A pointer to the object containing all of the global record information for the map
+	hoa_common::CommonRecordGroup* _global_record_group;
+
+	/** \brief Another record group that is local to the map mode instance
+	*** \note Data entered to the local record is permanently destroyed when the MapMode instance destructor is called
+	**/
+	hoa_common::CommonRecordGroup _local_record_group;
 
 	/** \brief The interface to the file which contains all the map's stored data and subroutines.
 	*** This class generally performs a large amount of communication with this script continuously.
@@ -463,6 +414,12 @@ private:
 
 	//! \brief Holds the color to transition with if doing a color transition type
 	hoa_video::Color _transition_color;
+
+	//! \brief When in the MAP_TRANSITION state, holds a pointer to the game mode to be transitioned to
+	hoa_mode_manager::GameMode* _transition_mode;
+
+	//! \brief If set to true, removes the active instance of MapMode from the game stack and destroyes it when the next mode transition completes
+	bool _transition_terminate;
 
 	// ----- Members : Running and Stamina -----
 
@@ -554,6 +511,9 @@ private:
 	//! \brief A helper function to Update() that is called only when the map is in the explore state
 	void _UpdateExplore();
 
+	//! \brief A herlper function to Update() that is called only when the map is in the transition state
+	void _UpdateTransition();
+
 	//! \brief Calculates information about how to draw the next map frame
 	void _CalculateMapFrame();
 
@@ -562,21 +522,6 @@ private:
 
 	//! \brief Draws all GUI visuals, such as dialogue icons and the stamina bar
 	void _DrawGUI();
-
-	//! \brief Draws the transition effect that occurs during game mode transitions from map mode.
-	void _DrawModeTransition();
-
-	/** \brief Updates during the map mode transition, checking when the transition is complete
-	*** to know when to push the game mode that is to be transitioned to.
-	**/
-	void _UpdateModeTransition();
-
-	//! \brief When true the map mode is transitioning and the screen should be faded out
-	bool _fade_out;
-
-        //! \brief Variable to store game mode to be transitioned into from map mode
-	hoa_mode_manager::GameMode* _transition_mode;
-
 }; // class MapMode
 
 } // namespace hoa_map;

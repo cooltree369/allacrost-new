@@ -25,6 +25,11 @@
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/class_rep.hpp>
 
+#if LUA_VERSION_NUM < 502
+# define lua_getuservalue lua_getfenv
+# define lua_setuservalue lua_setfenv
+#endif
+
 namespace luabind { namespace detail
 {
 
@@ -86,6 +91,9 @@ namespace luabind { namespace detail
 
         instance->release_dependency_refs(L);
         instance->~object_rep();
+
+        lua_pushnil(L);
+        lua_setmetatable(L, 1);
         return 0;
     }
 
@@ -94,7 +102,7 @@ namespace luabind { namespace detail
 
       int set_instance_value(lua_State* L)
       {
-          lua_getfenv(L, 1);
+          lua_getuservalue(L, 1);
           lua_pushvalue(L, 2);
           lua_rawget(L, -2);
 
@@ -122,6 +130,34 @@ namespace luabind { namespace detail
               lua_call(L, 2, 0);
               return 0;
           }
+          else if (lua_isnil(L, -1))
+          {
+              // If a metatable exists we need to use that
+              if (!lua_getmetatable(L, -2))
+              {
+                  // No metatable, push user value to the right position
+                  lua_pushvalue(L, -2);
+              }
+
+              // Value not known, check the __newindex function
+              lua_pushstring(L, "__newindex");
+              lua_rawget(L, -2);
+
+              if (!lua_isnil(L, -1))
+              {
+                  // We hava an index function, hopefully it's actually a function...
+                  lua_pushvalue(L, 1);
+                  lua_pushvalue(L, 2);
+                  lua_pushvalue(L, 3);
+                  lua_call(L, 3, 0);
+              }
+              else
+              {
+                  lua_pop(L, 1);
+              }
+              // Pop the table again
+              lua_pop(L, 1);
+          }
 
           lua_pop(L, 1);
 
@@ -129,7 +165,7 @@ namespace luabind { namespace detail
           {
               lua_newtable(L);
               lua_pushvalue(L, -1);
-              lua_setfenv(L, 1);
+              lua_setuservalue(L, 1);
               lua_pushvalue(L, 4);
               lua_setmetatable(L, -2);
           }
@@ -147,7 +183,7 @@ namespace luabind { namespace detail
 
       int get_instance_value(lua_State* L)
       {
-          lua_getfenv(L, 1);
+          lua_getuservalue(L, 1);
           lua_pushvalue(L, 2);
           lua_rawget(L, -2);
 
@@ -163,6 +199,33 @@ namespace luabind { namespace detail
               lua_getupvalue(L, -1, 1);
               lua_pushvalue(L, 1);
               lua_call(L, 1, 1);
+          }
+          else if (lua_isnil(L, -1))
+          {
+              // We don't want to handle __finalize
+              if (lua_isstring(L, 2) && ! lua_isnumber(L, 2))
+              {
+                  if (!strcmp(lua_tostring(L, 2), "__finalize"))
+                  {
+                      return 1;
+                  }
+              }
+
+              // Value not known, check the __index function
+              lua_pushstring(L, "__index");
+              lua_rawget(L, -3);
+
+              if (!lua_isnil(L, -1))
+              {
+                  // We hava an index function
+                  lua_pushvalue(L, 1);
+                  lua_pushvalue(L, 2);
+                  lua_call(L, 2, 1);
+              }
+              else
+              {
+                  lua_pop(L, 1);
+              }
           }
 
           return 1;
@@ -210,13 +273,8 @@ namespace luabind { namespace detail
     {
         lua_newtable(L);
 
-        // just indicate that this really is a class and not just
-        // any user data
-        lua_pushboolean(L, 1);
-        lua_setfield(L, -2, "__luabind_class");
-
         // This is used as a tag to determine if a userdata is a luabind
-        // instance. We use a numeric key and a cclosure for fast comparision.
+        // instance. We use a numeric key and a cclosure for fast comparison.
         lua_pushnumber(L, 1);
         lua_pushcclosure(L, get_instance_value, 0);
         lua_rawset(L, -3);
@@ -262,7 +320,7 @@ namespace luabind { namespace detail
         void* storage = lua_newuserdata(L, sizeof(object_rep));
         object_rep* result = new (storage) object_rep(0, cls);
         cls->get_table(L);
-        lua_setfenv(L, -2);
+        lua_setuservalue(L, -2);
         lua_rawgeti(L, LUA_REGISTRYINDEX, cls->metatable_ref());
         lua_setmetatable(L, -2);
         return result;

@@ -271,6 +271,8 @@ modes_SOURCES = \
 	$(MODES_DIR)/boot/boot_credits.h \
 	$(MODES_DIR)/boot/boot_welcome.cpp \
 	$(MODES_DIR)/boot/boot_welcome.h \
+	$(MODES_DIR)/custom.cpp \
+	$(MODES_DIR)/custom.h \
 	$(MODES_DIR)/map/map.cpp \
 	$(MODES_DIR)/map/map.h \
 	$(MODES_DIR)/map/map_dialogue.cpp \
@@ -291,8 +293,18 @@ modes_SOURCES = \
 	$(MODES_DIR)/map/map_zones.h \
 	$(MODES_DIR)/menu/menu.cpp \
 	$(MODES_DIR)/menu/menu.h \
-	$(MODES_DIR)/menu/menu_views.cpp \
-	$(MODES_DIR)/menu/menu_views.h \
+	$(MODES_DIR)/menu/menu_formation.cpp \
+	$(MODES_DIR)/menu/menu_formation.h \
+	$(MODES_DIR)/menu/menu_character.cpp \
+	$(MODES_DIR)/menu/menu_character.h \
+	$(MODES_DIR)/menu/menu_equip.cpp \
+	$(MODES_DIR)/menu/menu_equip.h \
+	$(MODES_DIR)/menu/menu_inventory.cpp \
+	$(MODES_DIR)/menu/menu_inventory.h \
+	$(MODES_DIR)/menu/menu_skills.cpp \
+	$(MODES_DIR)/menu/menu_skills.h \
+	$(MODES_DIR)/menu/menu_status.cpp \
+	$(MODES_DIR)/menu/menu_status.h \
 	$(MODES_DIR)/pause.cpp \
 	$(MODES_DIR)/pause.h \
 	$(MODES_DIR)/save/save_mode.h \

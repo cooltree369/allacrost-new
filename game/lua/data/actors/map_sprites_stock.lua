@@ -43,9 +43,10 @@ function ConstructSprite(name, id, x, y)
 
 	local direction = (2 ^ math.random(0, 3));
 
-	local sprite = hoa_map.MapSprite();
-	sprite:SetName(sprites[name].name);
-	sprite:SetObjectID(id);
+	local sprite = hoa_map.MapSprite.Create(id);
+	if (sprites[name].name) then
+		sprite:SetName(sprites[name].name);
+	end
 	sprite:SetContext(hoa_map.MapMode.CONTEXT_01);
 	if (x and y) then
 		sprite:SetXPosition(x_int, x_off);
@@ -56,7 +57,6 @@ function ConstructSprite(name, id, x, y)
 	sprite:SetImgHalfWidth(sprites[name].img_half_width);
 	sprite:SetImgHeight(sprites[name].img_height);
 	sprite:SetMovementSpeed(sprites[name].movement_speed);
-	sprite:SetDirection(direction);
 	sprite:LoadStandardAnimations(sprites[name].standard_animations);
 	if (sprites[name].running_animations) then
 		sprite:LoadRunningAnimations(sprites[name].running_animations);
@@ -64,6 +64,7 @@ function ConstructSprite(name, id, x, y)
 	if (sprites[name].face_portrait) then
 		sprite:LoadFacePortrait(sprites[name].face_portrait);
 	end
+	sprite:SetDirection(direction);
 	return sprite;
 end
 
@@ -94,8 +95,7 @@ function ConstructEnemySprite(name, id, x, y)
 
 	local direction = (2 ^ math.random(0, 3));
 
-	local enemy = hoa_map.EnemySprite();
-	enemy:SetObjectID(id);
+	local enemy = hoa_map.EnemySprite.Create(id);
 	enemy:SetContext(hoa_map.MapMode.CONTEXT_01);
 	if (x and y) then
 		enemy:SetXPosition(x_int, x_off);
@@ -106,8 +106,8 @@ function ConstructEnemySprite(name, id, x, y)
 	enemy:SetImgHalfWidth(enemies[name].img_half_width);
 	enemy:SetImgHeight(enemies[name].img_height);
 	enemy:SetMovementSpeed(enemies[name].movement_speed);
-	enemy:SetDirection(direction);
 	enemy:LoadStandardAnimations(enemies[name].standard_animations);
+	enemy:SetDirection(direction);
 	return enemy;
 end
 
@@ -241,19 +241,7 @@ sprites["Vanica"] = {
 	face_portrait = "img/portraits/face/vanica.png"
 }
 
-sprites["Alexander"] = {
-	name = hoa_system.Translate("Alexander"),
-	coll_half_width = 0.95,
-	coll_height = 1.9,
-	img_half_width = 1.0,
-	img_height = 4.0,
-	movement_speed = NORMAL_SPEED,
-
-	standard_animations = "img/sprites/characters/man_npc02_walk.png"
-}
-
-sprites["Laine"] = {
-	name = hoa_system.Translate("Laine"),
+sprites["Man01"] = {
 	coll_half_width = 0.95,
 	coll_height = 1.9,
 	img_half_width = 1.0,
@@ -263,8 +251,17 @@ sprites["Laine"] = {
 	standard_animations = "img/sprites/characters/man_npc01_walk.png"
 }
 
-sprites["Torl"] = {
-	name = hoa_system.Translate("Torl"),
+sprites["Man02"] = {
+	coll_half_width = 0.95,
+	coll_height = 1.9,
+	img_half_width = 1.0,
+	img_height = 4.0,
+	movement_speed = NORMAL_SPEED,
+
+	standard_animations = "img/sprites/characters/man_npc02_walk.png"
+}
+
+sprites["MaleChild01"] = {
 	coll_half_width = 0.95,
 	coll_height = 1.9,
 	img_half_width = 1.0,

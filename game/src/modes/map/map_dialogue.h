@@ -36,61 +36,27 @@ namespace hoa_map {
 namespace private_map {
 
 /** ****************************************************************************
-*** \brief A simple class used to define events that are launched from dialogues
-***
-*** Every line or option in a dialogue has the capability to launch any number of
-*** events. This class is used to manage all of that information.
-***
-*** \note This class is not related to the DialogueEvent class. That class is an event
-*** which begins a dialogue, whereas this class contains the data of events that may be
-*** launched from within an active dialogue.
-*** ***************************************************************************/
-class MapDialogueEventData {
-public:
-	MapDialogueEventData()
-		{}
-
-	~MapDialogueEventData()
-		{}
-
-	/** \brief Adds a new event to the container
-	*** \param event_id The ID of the event to add (must be non-zero)
-	*** \param launch_at_start If true, the event launches as soon as the line begins. Default value is false
-	*** \param launch_timing The number of milliseconds to wait before launching the event. Default value is zero
-	***
-	*** \note All events should be added via this method.
-	**/
-	void AddEvent(uint32 event_id, bool launch_at_start = false, uint32 launch_timing = 0);
-
-	/** \brief Processes all events, sending any events to activate to the launch supervisor
-	*** \param at_start If true, only events set to launch at start will be processed. If false, events set to launch at end will be processed
-	**/
-	void ProcessEvents(bool at_start) const;
-
-	/** \brief Examines all event ids to check that a corresponding event is constructed and registered with the event manager
-	*** \return True if no invalid events were found
-	**/
-	bool ValidateEvents() const;
-
-private:
-	//! \brief The list of ids for each events that should be launched for the dialogue piece
-	std::vector<uint32> _event_ids;
-
-	//! \brief Determines whether the event launches at the start or the end of the dialogue piece
-	std::vector<bool> _launches_at_start;
-
-	//! \brief The number of milliseconds to wait before launching the event. A zero value will launch the event immediately
-	std::vector<uint32> _launch_timings;
-}; // class MapDialogueEventData
-
-
-/** ****************************************************************************
 *** \brief Represents a dialogue that occurs between one or more sprites on a map
+***
+*** MapDialogues is a more specialized version of CommonDialogue. Like CommonDialogue,
+*** a dialogue has multiple lines, non-linear line sequencing support, timed line support,
+*** and selectable option support. Map dialogues also have the following properties.
+***
+*** - Every line has a speaker, which must point to an existing sprite object on the map.
+*** The name and portrait of this sprite (if available) is used in the dialogue display.
+*** - Lines can modify the global or local record groups for a map, or launch map events.
+*** Selected options can also enact these changes.
+*** - A record name is automatically generated for the dialogue based on its ID, and this
+*** record is entered into the map's global record group in order to keep track of how many
+*** times a player has seen a dialogue.
+***
+*** There are various other properties that you can set for a map dialogue object, such as
+*** declaring that user input should be ignored while the dialogue is active, or modifying
+*** the state of the sprites for the line speakers.
 *** ***************************************************************************/
 class MapDialogue : public hoa_common::CommonDialogue {
 public:
-	~MapDialogue()
-		{}
+	~MapDialogue();
 
 	/** \brief Creates an instance of the class and registers it with the dialogue supervisor
 	*** \param event_id The unique ID of the dialogue to be created
@@ -105,7 +71,8 @@ public:
 	*** The following line properties are set when using this call:
 	*** - proceed to next sequential line, no display time
 	**/
-	void AddLine(std::string text, uint32 speaker);
+	void AddLine(std::string text, uint32 speaker)
+		{ AddLine(text, speaker, hoa_common::COMMON_DIALOGUE_NEXT_LINE); }
 
 	/** \brief Adds a new line of text to the dialogue
 	*** \param text The text to show on the screen
@@ -123,7 +90,8 @@ public:
 	*** The following line properties are set when using this call:
 	*** - proceed to next sequential line, no display time
 	**/
-	void AddLine(std::string text);
+	void AddLine(std::string text)
+		{ AddLine(text,NO_SPRITE, hoa_common::COMMON_DIALOGUE_NEXT_LINE); }
 
 	/** \brief Sets a a display time for the last line of dialogue added
 	*** \param display_time The number of milliseconds that the line should be displayed for
@@ -136,27 +104,45 @@ public:
 	**/
 	void AddLineTiming(uint32 display_time, uint32 line);
 
-	/** \brief Adds an event to the most recently added line of text that will be launched when the line begins
-	*** \param event_id The ID of the event to add
+	/** \brief Adds a record to be set on the global record group once the line begins
+	*** \param record_name The name of the record to set
+	*** \param record_value The value of the record to set
 	**/
-	void AddLineEventAtStart(uint32 event_id);
+	void AddLineGlobalRecord(const std::string& record_name, int32 record_value)
+		{ _AddLineRecord(record_name, record_value, true); }
+
+	/** \brief Adds a record to be set on the local record group once the line begins
+	*** \param record_name The name of the record to set
+	*** \param record_value The value of the record to set
+	**/
+	void AddLineLocalRecord(const std::string& record_name, int32 record_value)
+		{ _AddLineRecord(record_name, record_value, false); }
 
 	/** \brief Adds an event to the most recently added line of text that will be launched when the line begins
 	*** \param event_id The ID of the event to add
-	*** \param delay_ms The number of milliseconds to wait after the line begins before launching the event. Should be non-zero
 	**/
-	void AddLineEventAtStart(uint32 event_id, uint32 delay_ms);
+	void AddLineEventAtStart(uint32 event_id)
+		{ _AddLineEvent(event_id, 0, true); }
+
+	/** \brief Adds an event to the most recently added line of text that will be launched when the line begins
+	*** \param event_id The ID of the event to add
+	*** \param start_timing The number of milliseconds to wait before starting the event
+	**/
+	void AddLineEventAtStart(uint32 event_id, uint32 start_timing)
+		{ _AddLineEvent(event_id, start_timing, true); }
 
 	/** \brief Adds an event to the most recently added line of text that will be launched when the line ends
 	*** \param event_id The ID of the event to add
 	**/
-	void AddLineEventAtEnd(uint32 event_id);
+	void AddLineEventAtEnd(uint32 event_id)
+		{ _AddLineEvent(event_id, 0, false); }
 
 	/** \brief Adds an event to the most recently added line of text that will be launched when the line ends
 	*** \param event_id The ID of the event to add
-	*** \param delay_ms The number of milliseconds to wait after the line ends before launching the event. Should be non-zero
+	*** \param start_timing The number of milliseconds to wait before starting the event
 	**/
-	void AddLineEventAtEnd(uint32 event_id, uint32 delay_ms);
+	void AddLineEventAtEnd(uint32 event_id, uint32 start_timing)
+		{ _AddLineEvent(event_id, start_timing, false); }
 
 	/** \brief Adds an option to the most recently added line of text
 	*** \param text The text for this particular option
@@ -174,16 +160,39 @@ public:
 	**/
 	void AddOption(std::string text, int32 next_line);
 
-	/** \brief Adds an event to the most recently added option
-	*** \param event_id The ID of the event to execute should this option be selected
+	/** \brief Adds a record to be set for the global record group to the most recently added option
+	*** \param record_name The name of the record to set
+	*** \param record_value The value of the record to set
 	**/
-	void AddOptionEvent(uint32 event_id);
+	void AddOptionGlobalRecord(const std::string& record_name, int32 record_value)
+		{ _AddOptionRecord(record_name, record_value, true); }
+
+	/** \brief Adds a record to be set for the local record group to the most recently added option
+	*** \param record_name The name of the record to set
+	*** \param record_value The value of the record to set
+	**/
+	void AddOptionLocalRecord(const std::string& record_name, int32 record_value)
+		{ _AddOptionRecord(record_name, record_value, true); }
 
 	/** \brief Adds an event to the most recently added option
 	*** \param event_id The ID of the event to execute should this option be selected
-	*** \param delay_ms The number of milliseconds to wait after the option is selected before launching the event. Should be non-zero
 	**/
-	void AddOptionEvent(uint32 event_id, uint32 delay_ms);
+	void AddOptionEvent(uint32 event_id)
+		{ AddOptionEvent(event_id, 0); }
+
+	/** \brief Adds an event to the most recently added option
+	*** \param event_id The ID of the event to execute should this option be selected
+	*** \param start_timing The number of milliseconds to wait before starting the event
+	**/
+	void AddOptionEvent(uint32 event_id, uint32 start_timing);
+
+	/** \brief Commits records and starts events for a specific line
+	*** \param current_line The line of the dialogue to process
+	*** \param begin_or_end If true, only start events that are to occur the beginning of the line. Otherwise start the end line events
+	***
+	*** Note that records are only committed when a line begins (begin_or_end is set to true).
+	**/
+	void ProcessLineActions(uint32 current_line, bool begin_or_end);
 
 	/** \brief Checks all the data stored by the dialogue class to ensure that it is acceptable and ready for use
 	*** \return True if the validation was successful, false if any problems were discovered
@@ -195,14 +204,10 @@ public:
 	bool Validate();
 
 	/** \brief Returns the object ID of the speaker for the line specified (or zero if the line index was invalid or if no speaker)
-	***	\todo Need to determine a way to differentitate an invalid index or no speaker (possibly print warning message for invalid index) 
+	***	\todo Need to determine a way to differentitate an invalid index or no speaker (possibly print warning message for invalid index)
 	**/
 	uint32 GetLineSpeaker(uint32 line) const
 		{ if (line >= _line_count) return 0; else return _speakers[line]; }
-
-	//! \brief Returns the event data for the line specified (NULL if the line index was invalid)
-	MapDialogueEventData* GetLineEventData(uint32 line)
-		{ return (line >= _line_count) ? NULL : &_line_events[line]; }
 
 	//! \name Class Member Access Functions
 	//@{
@@ -238,8 +243,32 @@ protected:
 	//! \brief Contains object ID numbers that declare the speaker of each line
 	std::vector<uint32> _speakers;
 
+	//! \brief Maintains the list of map records that may be set after each line of the dialogue
+	std::vector<MapRecordData*> _line_records;
+
 	//! \brief Maintains the list of map events that may activate after each line of the dialogue
-	std::vector<MapDialogueEventData> _line_events;
+	std::vector<MapEventData*> _line_events;
+
+	/** \brief Adds a record to the most recently added line
+	*** \param record_name The name of the record to set
+	*** \param record_value The value of the record to set
+	*** \param is_global If true, the record will be set to the global record group. Otherwise the local record group will be used.
+	**/
+	void _AddLineRecord(const std::string& record_name, int32 record_value, bool is_global);
+
+	/** \brief Adds an event to the most recently added line
+	*** \param event_id The ID of the event to add
+	*** \param start_timing The number of milliseconds to wait before starting the event
+	*** \param launch_at_start If true, the event will launch when the line begins. Otherwise it will launch when the line ends
+	**/
+	void _AddLineEvent(uint32 event_id, uint32 start_timing, bool launch_at_start);
+
+	/** \brief Adds a record to the most recently added option for the most recently added line
+	*** \param record_name The name of the record to set
+	*** \param record_value The value of the record to set
+	*** \param is_global If true, the record will be set to the global record group. Otherwise the local record group will be used.
+	**/
+	void _AddOptionRecord(const std::string& record_name, int32 record_value, bool is_global);
 }; // class MapDialogue : public hoa_common::CommonDialogue
 
 
@@ -248,16 +277,15 @@ protected:
 ***
 *** When the player reads a dialogue, they may be presented with a small number of options to
 *** select from when coming to a particular line. The selected option determines the next line
-*** that will follow. Optionally, each particular option may trigger a different map event when
-*** it is selected.
+*** that will follow. Optionally, each particular option may trigger changes to the global or
+*** local record group for the map, or start a map event when it is selected.
 *** **************************************************************************************/
 class MapDialogueOptions : public hoa_common::CommonDialogueOptions {
 public:
 	MapDialogueOptions()
 		{}
 
-	~MapDialogueOptions()
-		{}
+	~MapDialogueOptions();
 
 	/** \brief Adds a new option to the set of options
 	*** \param text The text for the new option
@@ -276,28 +304,40 @@ public:
 	**/
 	void AddOption(std::string text, int32 next_line);
 
-	/** \brief Adds an event to the most recently added option
-	*** \param event_id The ID of the event to execute should this option be selected
+	/** \brief Adds a record to be set to the most recently added option
+	*** \param record_name The name of the record to set
+	*** \param record_value The value of the record to set
+	*** \param is_global If true, the record will be set to the global record group. Otherwise the local record group will be used.
 	**/
-	void AddOptionEvent(uint32 event_id);
+	void AddOptionRecord(const std::string& record_name, int32 record_value, bool is_global);
 
 	/** \brief Adds an event to the most recently added option
 	*** \param event_id The ID of the event to execute should this option be selected
-	*** \param delay_ms The number of milliseconds to wait after the option is selected before launching the event. Should be non-zero
 	**/
-	void AddOptionEvent(uint32 event_id, uint32 delay_ms);
+	void AddOptionEvent(uint32 event_id)
+		{ AddOptionEvent(event_id, 0); }
+
+	/** \brief Adds an event to the most recently added option
+	*** \param event_id The ID of the event to execute should this option be selected
+	*** \param start_timing The number of milliseconds to wait before starting the event
+	**/
+	void AddOptionEvent(uint32 event_id, uint32 start_timing);
 
 	//! \brief Returns the number of options stored by this class
 	uint32 GetNumberOptions() const
 		{ return _text.size(); }
 
-	//! \brief Returns the event data for a particular option (returns NULL if the option index was invalid)
-	MapDialogueEventData* GetOptionEventData(uint32 option)
-		{ return (option >= _option_events.size()) ? NULL : &_option_events[option]; }
+	/** \brief Performs necessary actions for an option, updating any records and launching events appropriately
+	*** \param option The index of the option to process
+	**/
+	void ProcessOptionActions(uint32 option);
 
 private:
-	//! \brief An optional MapEvent that may occur as a result of selecting each option
-	std::vector<MapDialogueEventData> _option_events;
+	//! \brief Holds any local or global records that are set when an option is selected
+	std::vector<MapRecordData*> _option_records;
+
+	//! \brief MapEvents that may be launched as a result of selecting each option
+	std::vector<MapEventData*> _option_events;
 }; // class MapDialogueOptions : public hoa_common::CommonDialogueOptions
 
 
@@ -305,9 +345,8 @@ private:
 *** \brief Manages dialogue execution on maps
 ***
 *** The MapMode class creates an instance of this class to handle all dialogue
-*** processing that occurs on the map. This includes containing the dialogue objects,
-*** handling user input, processing of dialogue events, and display timing of the
-*** dialogue.
+*** processing that occurs on the map. This includes retention of the dialogue objects,
+*** handling user input, display timing, and more.
 ***
 *** \todo Add support so that the player may backtrack through lines in a
 *** dialogue (without re-processing selected options or previous script events).
@@ -363,8 +402,8 @@ public:
 	hoa_system::SystemTimer& GetLineTimer()
 		{ return _line_timer; }
 
-	uint32 GetLineCounter() const
-		{ return _line_counter; }
+	uint32 GetCurrentLine() const
+		{ return _current_line; }
 	//@}
 
 private:
@@ -377,14 +416,14 @@ private:
 	//! \brief A pointer to the current piece of dialogue that is active
 	MapDialogue* _current_dialogue;
 
+	//! \brief Keeps track of which line is active for the current dialogue
+	uint32 _current_line;
+
 	//! \brief A pointer to the current set of options for the active dialogue line
 	MapDialogueOptions* _current_options;
 
 	//! \brief A timer employed for dialogues which have a display time limit
 	hoa_system::SystemTimer _line_timer;
-
-	//! \brief Keeps track of which line is active for the current dialogue
-	uint32 _line_counter;
 
 	//! \brief Holds the text and graphics that should be displayed for the dialogue
 	hoa_common::CommonDialogueWindow _dialogue_window;

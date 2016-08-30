@@ -215,7 +215,7 @@ protected:
 *** \brief A helper class to the video engine to manage all of the GUI functionality.
 ***
 *** There is exactly one instance of this class, which is both created and destroyed
-*** by the VideoEngine class. This class is essentially an extension of the GameVideo
+*** by the VideoEngine class. This class is essentially an extension of the VideoEngine
 *** class which manages the GUI system. It also handles the drawing of the
 *** average frames per second (FPS) on the screen.
 *** ***************************************************************************/
@@ -304,7 +304,7 @@ public:
 	// Don't commit this.
 	std::vector<hoa_video::StillImage>* GetScrollArrows()
 		{ return &_scroll_arrows; }
-	
+
 	/** \brief Debug functioning for enabling/disabling the drawing of GUI element boundaries
 	*** \param enable Set to true to enable outlines, false to disable
 	**/

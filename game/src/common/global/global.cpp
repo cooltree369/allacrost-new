@@ -24,6 +24,8 @@ using namespace hoa_video;
 using namespace hoa_script;
 using namespace hoa_system;
 
+using namespace hoa_common;
+
 template<> hoa_global::GameGlobal* Singleton<hoa_global::GameGlobal>::_singleton_reference = NULL;
 
 namespace hoa_global {
@@ -32,43 +34,6 @@ using namespace private_global;
 
 GameGlobal* GlobalManager = NULL;
 bool GLOBAL_DEBUG = false;
-
-////////////////////////////////////////////////////////////////////////////////
-// GlobalEventGroup class
-////////////////////////////////////////////////////////////////////////////////
-
-void GlobalEventGroup::AddNewEvent(const string& event_name, int32 event_value) {
-	if (DoesEventExist(event_name) == true) {
-		IF_PRINT_WARNING(GLOBAL_DEBUG) << "an event with the desired name \"" << event_name << "\" already existed in this group: "
-			<< _group_name << endl;
-		return;
-	}
-	_events.insert(make_pair(event_name, event_value));
-}
-
-
-
-int32 GlobalEventGroup::GetEvent(const string& event_name) {
-	map<string, int32>::iterator event_iter = _events.find(event_name);
-	if (event_iter == _events.end()) {
-		IF_PRINT_WARNING(GLOBAL_DEBUG) << "an event with the specified name \"" << event_name << "\" did not exist in this group: "
-			<< _group_name << endl;
-		return GLOBAL_BAD_EVENT;
-	}
-	return event_iter->second;
-}
-
-
-
-void GlobalEventGroup::SetEvent(const string& event_name, int32 event_value) {
-	map<string, int32>::iterator event_iter = _events.find(event_name);
-	if (event_iter == _events.end()) {
-		IF_PRINT_WARNING(GLOBAL_DEBUG) << "the event with the specified name \"" << event_name << "\" did not exist in this group: "
-			<< _group_name << endl;
-		return;
-	}
-	event_iter->second = event_value;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // GameGlobal class - Initialization and Destruction
@@ -119,11 +84,11 @@ void GameGlobal::ClearAllData() {
 	_character_order.clear();
 	_active_party.RemoveAllActors();
 
-	// Delete all event groups
-	for (map<string, GlobalEventGroup*>::iterator i = _event_groups.begin(); i != _event_groups.end(); i++) {
+	// Delete all record groups
+	for (map<string, CommonRecordGroup*>::iterator i = _record_groups.begin(); i != _record_groups.end(); i++) {
 		delete (i->second);
 	}
-	_event_groups.clear();
+	_record_groups.clear();
 
 	// Reset the play time
 	SystemManager->SetPlayTime(0, 0, 0);
@@ -632,16 +597,16 @@ void GameGlobal::DecrementObjectCount(uint32 obj_id, uint32 count) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// GameGlobal class - Event Group Functions
+// GameGlobal class - Record Group Functions
 ////////////////////////////////////////////////////////////////////////////////
 
-bool GameGlobal::DoesEventExist(const string& group_name, const string& event_name) const {
-	map<string, GlobalEventGroup*>::const_iterator group_iter = _event_groups.find(group_name);
-	if (group_iter == _event_groups.end())
+bool GameGlobal::DoesRecordExist(const string& group_name, const string& record_name) const {
+	map<string, CommonRecordGroup*>::const_iterator group_iter = _record_groups.find(group_name);
+	if (group_iter == _record_groups.end())
 		return false;
 
-	map<string, int32>::const_iterator event_iter = group_iter->second->GetEvents().find(event_name);
-	if (event_iter == group_iter->second->GetEvents().end())
+	map<string, int32>::const_iterator record_iter = group_iter->second->GetRecords().find(record_name);
+	if (record_iter == group_iter->second->GetRecords().end())
 		return false;
 
 	return true;
@@ -649,23 +614,23 @@ bool GameGlobal::DoesEventExist(const string& group_name, const string& event_na
 
 
 
-void GameGlobal::AddNewEventGroup(const string& group_name) {
-	if (DoesEventGroupExist(group_name) == true) {
-		IF_PRINT_WARNING(GLOBAL_DEBUG) << "failed because there was already an event group that existed for "
+void GameGlobal::AddNewRecordGroup(const string& group_name) {
+	if (DoesRecordGroupExist(group_name) == true) {
+		IF_PRINT_WARNING(GLOBAL_DEBUG) << "failed because there was already a record group that existed for "
 			<< "the requested group name: " << group_name << endl;
 		return;
 	}
 
-	GlobalEventGroup* geg = new GlobalEventGroup(group_name);
-	_event_groups.insert(make_pair(group_name, geg));
+	CommonRecordGroup* group = new CommonRecordGroup(group_name);
+	_record_groups.insert(make_pair(group_name, group));
 }
 
 
 
-GlobalEventGroup* GameGlobal::GetEventGroup(const string& group_name) const {
-	map<string, GlobalEventGroup*>::const_iterator group_iter = _event_groups.find(group_name);
-	if (group_iter == _event_groups.end()) {
-		IF_PRINT_WARNING(GLOBAL_DEBUG) << "could not find any event group by the requested name: " << group_name << endl;
+CommonRecordGroup* GameGlobal::GetRecordGroup(const string& group_name) const {
+	map<string, CommonRecordGroup*>::const_iterator group_iter = _record_groups.find(group_name);
+	if (group_iter == _record_groups.end()) {
+		IF_PRINT_WARNING(GLOBAL_DEBUG) << "could not find any record group by the name: " << group_name << endl;
 		return NULL;
 	}
 	return (group_iter->second);
@@ -673,18 +638,18 @@ GlobalEventGroup* GameGlobal::GetEventGroup(const string& group_name) const {
 
 
 
-int32 GameGlobal::GetEventValue(const string& group_name, const string& event_name) const {
-	map<string, GlobalEventGroup*>::const_iterator group_iter = _event_groups.find(group_name);
-	if (group_iter == _event_groups.end()) {
-		IF_PRINT_WARNING(GLOBAL_DEBUG) << "event group \"" << group_name << "\" did not exist" << endl;
-		return GLOBAL_BAD_EVENT;
+int32 GameGlobal::GetRecordValue(const string& group_name, const string& record_name) const {
+	map<string, CommonRecordGroup*>::const_iterator group_iter = _record_groups.find(group_name);
+	if (group_iter == _record_groups.end()) {
+		IF_PRINT_WARNING(GLOBAL_DEBUG) << "record group \"" << group_name << "\" did not exist" << endl;
+		return CommonRecordGroup::BAD_RECORD;
 	}
 
-	int32 value = group_iter->second->GetEvent(event_name);
-	if (value == GLOBAL_BAD_EVENT) {
-		IF_PRINT_WARNING(GLOBAL_DEBUG) << "event name \"" << event_name << "\" did not exist in group: "
+	int32 value = group_iter->second->GetRecord(record_name);
+	if (value == CommonRecordGroup::BAD_RECORD) {
+		IF_PRINT_WARNING(GLOBAL_DEBUG) << "record name \"" << record_name << "\" did not exist in group: "
 			<< group_name << endl;
-		return GLOBAL_BAD_EVENT;
+		return CommonRecordGroup::BAD_RECORD;
 	}
 
 	return value;
@@ -692,32 +657,25 @@ int32 GameGlobal::GetEventValue(const string& group_name, const string& event_na
 
 
 
-void GameGlobal::SetEventValue(const string& group_name, const string& event_name, int32 event_value) {
-	map<string, GlobalEventGroup*>::iterator group_iter = _event_groups.find(group_name);
-	if (group_iter == _event_groups.end()) {
-		IF_PRINT_WARNING(GLOBAL_DEBUG) << "event group \"" << group_name << "\" did not exist" << endl;
+void GameGlobal::SetRecordValue(const string& group_name, const string& record_name, int32 record_value) {
+	map<string, CommonRecordGroup*>::iterator group_iter = _record_groups.find(group_name);
+	if (group_iter == _record_groups.end()) {
+		IF_PRINT_WARNING(GLOBAL_DEBUG) << "record group \"" << group_name << "\" did not exist" << endl;
 		return;
 	}
 
-	int32 value = group_iter->second->GetEvent(event_name);
-	if (value == GLOBAL_BAD_EVENT) {
-		IF_PRINT_WARNING(GLOBAL_DEBUG) << "event name \"" << event_name << "\" did not exist in group: "
-			<< group_name << endl;
-		return;
-	}
-
-	group_iter->second->SetEvent(event_name, event_value);
+	group_iter->second->SetRecord(record_name, record_value);
 }
 
 
 
-uint32 GameGlobal::GetNumberEvents(const string& group_name) const {
-	map<string, GlobalEventGroup*>::const_iterator group_iter = _event_groups.find(group_name);
-	if (group_iter == _event_groups.end()) {
-		IF_PRINT_WARNING(GLOBAL_DEBUG) << "could not find any event group by the requested name: " << group_name << endl;
+uint32 GameGlobal::GetNumberRecords(const string& group_name) const {
+	map<string, CommonRecordGroup*>::const_iterator group_iter = _record_groups.find(group_name);
+	if (group_iter == _record_groups.end()) {
+		IF_PRINT_WARNING(GLOBAL_DEBUG) << "could not find any record group by the requested name: " << group_name << endl;
 		return 0;
 	}
-	return group_iter->second->GetNumberEvents();
+	return group_iter->second->GetNumberRecords();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -794,11 +752,11 @@ bool GameGlobal::SaveGame(const string& filename, uint32 slot_used, uint32 x_pos
 	}
 	file.WriteLine("}");
 
-	// ----- (6) Save event data
+	// ----- (6) Save record data
 	file.InsertNewLine();
-	file.WriteLine("event_groups = {");
-	for (map<string, GlobalEventGroup*>::iterator i = _event_groups.begin(); i != _event_groups.end(); i++) {
-		_SaveEvents(file, i->second);
+	file.WriteLine("record_groups = {");
+	for (map<string, CommonRecordGroup*>::iterator i = _record_groups.begin(); i != _record_groups.end(); i++) {
+		_SaveRecords(file, i->second);
 	}
 	file.WriteLine("}");
 
@@ -864,12 +822,12 @@ bool GameGlobal::LoadGame(const string& filename, uint32 slot_used) {
 	}
 	file.CloseTable();
 
-	// ----- (5) Load event data
+	// ----- (5) Load record data
 	vector<string> group_names;
-	file.OpenTable("event_groups");
+	file.OpenTable("record_groups");
 	file.ReadTableKeys(group_names);
 	for (uint32 i = 0; i < group_names.size(); i++)
-		_LoadEvents(file, group_names[i]);
+		_LoadRecords(file, group_names[i]);
 	file.CloseTable();
 
 	// ----- (6) Report any errors detected from the previous read operations
@@ -1137,20 +1095,20 @@ void GameGlobal::_SaveCharacter(WriteScriptDescriptor& file, GlobalCharacter* ch
 
 
 
-void GameGlobal::_SaveEvents(WriteScriptDescriptor& file, GlobalEventGroup* event_group) {
+void GameGlobal::_SaveRecords(WriteScriptDescriptor& file, CommonRecordGroup* record_group) {
 	if (file.IsFileOpen() == false) {
 		IF_PRINT_WARNING(GLOBAL_DEBUG) << "the file provided in the function argument was not open" << endl;
 		return;
 	}
-	if (event_group == NULL) {
-		IF_PRINT_WARNING(GLOBAL_DEBUG) << "function received a NULL event group pointer argument" << endl;
+	if (record_group == NULL) {
+		IF_PRINT_WARNING(GLOBAL_DEBUG) << "function received a NULL record group pointer argument" << endl;
 		return;
 	}
 
-	file.WriteLine("\t" + event_group->GetGroupName() + " = {");
+	file.WriteLine("\t" + record_group->GetGroupName() + " = {");
 
-	for (map<string, int32>::const_iterator i = event_group->GetEvents().begin(); i != event_group->GetEvents().end(); i++) {
-		if (i == event_group->GetEvents().begin())
+	for (map<string, int32>::const_iterator i = record_group->GetRecords().begin(); i != record_group->GetRecords().end(); i++) {
+		if (i == record_group->GetRecords().begin())
 			file.WriteLine("\t\t", false);
 		else
 			file.WriteLine(", ", false);
@@ -1375,21 +1333,21 @@ void GameGlobal::_LoadCharacter(ReadScriptDescriptor& file, uint32 id) {
 
 
 
-void GameGlobal::_LoadEvents(ReadScriptDescriptor& file, const string& group_name) {
+void GameGlobal::_LoadRecords(ReadScriptDescriptor& file, const string& group_name) {
 	if (file.IsFileOpen() == false) {
 		IF_PRINT_WARNING(GLOBAL_DEBUG) << "the file provided in the function argument was not open" << endl;
 		return;
 	}
 
-	AddNewEventGroup(group_name);
-	GlobalEventGroup* new_group = GetEventGroup(group_name); // new_group is guaranteed not to be NULL
+	AddNewRecordGroup(group_name);
+	CommonRecordGroup* new_group = GetRecordGroup(group_name); // new_group is guaranteed to be non-NULL
 
-	vector<string> event_names;
+	vector<string> record_names;
 
 	file.OpenTable(group_name);
-	file.ReadTableKeys(event_names);
-	for (uint32 i = 0; i < event_names.size(); i++) {
-		new_group->AddNewEvent(event_names[i], file.ReadInt(event_names[i]));
+	file.ReadTableKeys(record_names);
+	for (uint32 i = 0; i < record_names.size(); i++) {
+		new_group->AddNewRecord(record_names[i], file.ReadInt(record_names[i]));
 	}
 	file.CloseTable();
 }
