@@ -94,6 +94,10 @@ public:
 *** functions. _Start() is called only one when the event begins. _Update() is called
 *** once for every iteration of the main game loop until this function returns a true
 *** value, indicating that the event is finished.
+***
+*** Events can also store any number of changes to make to either the global or local record
+*** groups for the map. These changes are applied every time the event's _Start() function is
+*** called.
 *** ***************************************************************************/
 class MapEvent {
 	friend class EventSupervisor;
@@ -130,13 +134,27 @@ public:
 	void AddEventLinkAtEnd(uint32 child_event_id, uint32 launch_time)
 		{ _AddEventLink(child_event_id, false, launch_time); }
 
+	/** \brief Adds a record to be set on the global record group once the event starts
+	*** \param record_name The name of the record to set
+	*** \param record_value The value of the record to set
+	**/
+	void AddGlobalRecord(const std::string& record_name, int32 record_value)
+		{ _AddRecord(record_name, record_value, true); }
+
+	/** \brief Adds a record to be set on the local record group once the event starts
+	*** \param record_name The name of the record to set
+	*** \param record_value The value of the record to set
+	**/
+	void AddLocalRecord(const std::string& record_name, int32 record_value)
+		{ _AddRecord(record_name, record_value, true); }
+
 protected:
 	//! \param id The ID for the map event (a zero value is invalid)
 	MapEvent(uint32 id, EVENT_TYPE type) :
-		_event_id(id), _event_type(type) {}
+		_event_id(id), _event_type(type), _event_records(NULL) {}
 
 	virtual ~MapEvent()
-		{}
+		{ if (_event_records != NULL) delete _event_records; }
 
 	/** \brief Starts the event
 	*** This function is only called once per event execution
@@ -151,14 +169,6 @@ protected:
 	**/
 	virtual bool _Update() = 0;
 
-	/** \brief Declares a child event to be linked to this event
-	*** \param child_event_id The event id of the child event
-	*** \param launch_at_start The child starts relative to the start of the event if true, its finish if false
-	*** \param launch_time The number of milliseconds to wait before launching the child event
-	**/
-	void _AddEventLink(uint32 child_event_id, bool launch_at_start, uint32 launch_time)
-		{ _event_links.push_back(EventLink(child_event_id, launch_at_start, launch_time)); }
-
 private:
 	//! \brief A unique ID number for the event. A value of zero is invalid
 	uint32 _event_id;
@@ -168,6 +178,29 @@ private:
 
 	//! \brief All child events of this class, represented by EventLink objects
 	std::vector<EventLink> _event_links;
+
+	//! \brief Holds changes to the local or global map records that may take place when the event is started
+	MapRecordData* _event_records;
+
+	/** \brief Declares a child event to be linked to this event
+	*** \param child_event_id The event id of the child event
+	*** \param launch_at_start The child starts relative to the start of the event if true, its finish if false
+	*** \param launch_time The number of milliseconds to wait before launching the child event
+	**/
+	void _AddEventLink(uint32 child_event_id, bool launch_at_start, uint32 launch_time)
+		{ _event_links.push_back(EventLink(child_event_id, launch_at_start, launch_time)); }
+
+	/** \brief Adds a record to set when the event starts
+	*** \param record_name The name of the record to set
+	*** \param record_value The value of the record to set
+	*** \param is_global If true, the record will be set to the global record group. Otherwise the local record group will be used.
+	**/
+	void _AddRecord(const std::string& record_name, int32 record_value, bool is_global);
+
+	//! \brief Commits any stored records to the correct record group. Should only be called when _Start() is invoked
+	void _CommitRecords()
+		{ if (_event_records != NULL) _event_records->CommitRecords(); }
+
 }; // class MapEvent
 
 
@@ -508,10 +541,10 @@ protected:
 	//! \brief Filename for battle background
 	std::string _battle_background;
 
-	//! \brief Starts the battle
+	//! \brief Begins the transition to the battle
 	void _Start();
 
-	//! \brief Currently does nothing
+	//! \brief Returns true once the map is no longer in the transition state
 	bool _Update();
 }; // class BattleEncounterEvent : public MapEvent
 
@@ -610,52 +643,155 @@ protected:
 
 
 /** ****************************************************************************
-*** \brief A simple event used to set the direction of a sprite
+*** \brief A simple event used to modify various properties of one or more sprites
 ***
-*** This event finishes immediately after it starts, as all that it performs is
-*** to set the direction of a sprite in a particular orientation. Normally such
-*** a minor event would be better suited as a CustomEvent with no update function,
-*** but because a set direction operation is so common, it makes sense to create a
-*** specific event for it for convenience.
+*** During event sequences, it is frequently the case that we desire a change in the
+*** properties of a sprite. For example, changing their direction to face a sound,
+*** or to stop movement. This class serves as a means to make those instant changes
+*** to a sprite's properties.
 ***
-*** \note The only directions you should set in the class constructor are: NORTH,
-*** SOUTH, EAST, and WEST. This event is used when a sprite is stationary, so
-*** the other types of directions (which also infer movement) are unnecessary.
-*** Using a direction other than these four will result in a warning being printed.
+*** One unique aspect of this class is that it allows you to add more than one sprite,
+*** and all sprites will be affected by the same property changes at the same time. This
+*** means that you don't need to create a single event for each sprite, although if you want
+*** the same properties to change but at different times, you'll need to create several to
+***
+*** \note Some of the properties you can change with this event only affect MapSprite objects,
+*** or those that derive from MapSprite. Check the methods for a note to see if the property
+*** applies to all sprites, or only MapSprite and MapSprite-derived objects.
 *** ***************************************************************************/
-class ChangeDirectionSpriteEvent : public SpriteEvent {
+class ChangePropertySpriteEvent : public SpriteEvent {
+protected:
+	//! \brief Represent indexes into a bit vector of properties that are set to change
+	enum PROPERTY_NAME {
+		UPDATABLE           =  0,
+		VISIBLE             =  1,
+		COLLIDABLE          =  2,
+		CONTEXT             =  3,
+		POSITION            =  4,
+		DIRECTION           =  5,
+		MOVEMENTSPEED       =  6,
+		MOVING              =  7,
+		RUNNING             =  8,
+		STATIONARYMOVEMENT  =  9,
+		REVERSEMOVEMENT     = 10,
+	};
+
 public:
 	/** \brief Creates an instance of the class and registers it with the event supervisor
 	*** \param event_id The ID of this event
 	*** \param sprite A pointer to the sprite to enact the event on
-	*** \param direction The direction in which to turn the sprite
 	*** \return A pointer to the instance of the event created
 	**/
-	static ChangeDirectionSpriteEvent* Create(uint32 event_id, VirtualSprite* sprite, uint16 direction);
+	static ChangePropertySpriteEvent* Create(uint32 event_id, VirtualSprite* sprite);
 
 	/** \brief Creates an instance of the class and registers it with the event supervisor
 	*** \param event_id The ID of this event
 	*** \param sprite_id The ID of the sprite to enact the event on
-	*** \param direction The direction in which to turn the sprite
 	*** \return A pointer to the instance of the event created
 	**/
-	static ChangeDirectionSpriteEvent* Create(uint32 event_id, uint16 sprite_id, uint16 direction);
+	static ChangePropertySpriteEvent* Create(uint32 event_id, uint16 sprite_id);
+
+	/** \brief Adds another sprite to have its properties modified by this event
+	*** \param sprite A pointer to the sprite to update
+	**/
+	void AddSprite(VirtualSprite* sprite);
+
+	/** \brief Indicates that position changes are relative to the sprite's current position
+	*** By default, all position changes are in absolute coordinates on the map. Calling this function indicates that position changes
+	*** are instead relative to the sprite's current position. You should call this function before calling Position(), otherwise
+	***
+	**/
+	void PositionChangeRelative()
+		{ _relative_position_change = true;}
+
+	/** \brief Functions that set the property of the same name as the function.
+	*** Once you call these functions, there's no way to "cancel" the change from occuring to that property.
+	**/
+	//@{
+	void Updatable(bool updatable)
+		{ _properties.set(UPDATABLE); _updatable = updatable; }
+
+	void Visible(bool visible)
+		{ _properties.set(VISIBLE); _visible = visible; }
+
+	void Collidable(bool collidable)
+		{ _properties.set(COLLIDABLE); _collidable = collidable; }
+
+	void Context(MAP_CONTEXT context)
+		{ _properties.set(CONTEXT); _context = context; }
+
+	/** \note If you pass in a negative value to this function before PositionChangeRelative() is called, a warning will be printed
+	*** and the negative values will be converted to be positive. This function also sets the x/y offsets to 0.0f.
+	**/
+	void Position(int16 x_position, int16 y_position)
+		{ Position(x_position, 0.0f, y_position, 0.0f); }
+
+	/** \note If you pass in a negative value to this function before PositionChangeRelative() is called, a warning will be printed
+	*** and the negative values will be converted to be positive.
+	**/
+	void Position(int16 x_position, float x_offset, int16 y_position, float y_offset);
+
+	void Direction(uint16 direction)
+		{ _properties.set(DIRECTION); _direction = direction; }
+
+	void MovementSpeed(float movement_speed)
+		{ _properties.set(MOVEMENTSPEED); _movement_speed = movement_speed; }
+
+	void Moving(bool moving)
+		{ _properties.set(MOVING); _moving = moving; }
+
+	void Running(bool running)
+		{ _properties.set(RUNNING); _running = running; }
+
+	//! \note This function will only apply to sprites that are not VirtualSprite types
+	void StationaryMovement(bool stationary_movement)
+		{ _properties.set(STATIONARYMOVEMENT); _stationary_movement = stationary_movement; }
+
+	//! \note This function will only apply to sprites that are not VirtualSprite types
+	void ReverseMovement(bool reverse_movement)
+		{ _properties.set(REVERSEMOVEMENT); _reverse_movement = reverse_movement; }
+	//@}
+
 
 protected:
-	ChangeDirectionSpriteEvent(uint32 event_id, VirtualSprite* sprite, uint16 direction);
+	ChangePropertySpriteEvent(uint32 event_id, VirtualSprite* sprite);
 
-	~ChangeDirectionSpriteEvent()
+	~ChangePropertySpriteEvent()
 		{}
 
-	//! \brief Retains the direction to move the sprite when the event starts
-	uint16 _direction;
+	//! \brief The list of sprites that will be modified. Guaranteed to contain at least one sprite.
+	std::vector<VirtualSprite*> _sprite_list;
 
-	//! \brief Immediately changes the sprite's direction
+	//! \brief A bit-mask used to identify which properties of a sprite should be updated
+	std::bitset<16> _properties;
+
+	//! \brief When true, positional changes will be relative to the sprite's current position
+	bool _relative_position_change;
+
+	//! \brief Idenitcally named to the properties found in the following classes: MapObject, VirtualSprite, MapSprite
+	//@{
+	bool _updatable;
+	bool _visible;
+	bool _collidable;
+	MAP_CONTEXT _context;
+	//! \note X/Y position are stored as signed integers here because they can be used for relative movement.
+	int16 _x_position, _y_position;
+	float _x_offset, _y_offset;
+	uint16 _direction;
+	float _movement_speed;
+	bool _moving;
+	bool _running;
+	bool _stationary_movement;
+	bool _reverse_movement;
+	//@}
+
+	//! \brief Sets the desired properties for all sprites
 	void _Start();
 
-	//! \brief Always returns true immediately, terminating the event
-	bool _Update();
-}; // class ChangeDirectionSpriteEvent : public SpriteEvent
+	//! \brief Always returns true, immediately terminating the event
+	bool _Update()
+		{ return true; }
+}; // class ChangePropertySpriteEvent : public SpriteEvent
 
 
 /** ****************************************************************************
@@ -1000,6 +1136,13 @@ protected:
 *** \todo What about the case when the same event is begun when the event is already
 *** active? Should we prevent the case where an event is activated twice, print a
 *** warning, or allow this situation and hope the programmer knows what they are doing?
+***
+*** In addition to supervisor events, this class also maintains a data log to track
+*** various types of conditions that have occurred on the map. The data log is completely
+*** separate from all event functionality, but is often used in combination with it. For example,
+*** if the player has activated a switch three times, an event may be started. The data log
+*** is a simple map container of string/integer pairs, and all stored data is permanently deleted
+*** when the corresponding MapMode instance is destroyed.
 *** ***************************************************************************/
 class EventSupervisor {
 public:

@@ -250,7 +250,13 @@ public:
 	**/
 	void SetTarget(VIDEO_TARGET target);
 
-	/** \brief Sets one to multiple flags which control drawing orientation (flip, align, blending, etc). Simply pass
+	/** \brief Sets a single flag which control drawing orientation (flip, align, blending, etc)
+	*** \param flag The value of the draw flag to set
+	*** \note Refer to the VIDEO_DRAW_FLAGS enum for a list of valid flags that this function will accept
+	**/
+	void SetDrawFlag(int32 flag);
+
+	/** \brief Sets one to multiple flags which control drawing orientation (flip, align, blending, etc)
 	*** \param first_flag The first (and possibly only) draw flag to set
 	*** \param ... Additional draw flags. The list must terminate with a 0.
 	*** \note Refer to the VIDEO_DRAW_FLAGS enum for a list of valid flags that this function will accept
@@ -478,7 +484,7 @@ public:
 	void PushState();
 
 	//! \brief Restores the most recently pushed video engine state
-	void PopState ();
+	void PopState();
 
 	/** \brief Rotates images counterclockwise by the specified number of radians
 	*** \param angle How many radians to perform the rotation by

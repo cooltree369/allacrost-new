@@ -20,6 +20,9 @@
 #include "utils.h"
 #include "defs.h"
 
+// Allacrost engines
+#include "notification.h"
+
 namespace hoa_map {
 
 //! Determines whether the code in the hoa_map namespace should print debug statements or not.
@@ -264,11 +267,12 @@ enum EVENT_TYPE {
 	BATTLE_ENCOUNTER_EVENT          = 8,
 	SCRIPTED_EVENT                  = 9,
 	SCRIPTED_SPRITE_EVENT           = 10,
-	CHANGE_DIRECTION_SPRITE_EVENT   = 11,
-	PATH_MOVE_SPRITE_EVENT          = 12,
-	RANDOM_MOVE_SPRITE_EVENT        = 13,
-	ANIMATE_SPRITE_EVENT            = 14,
-	TOTAL_EVENT                     = 15
+	CHANGE_PROPERTY_SPRITE_EVENT    = 11,
+	CHANGE_DIRECTION_SPRITE_EVENT   = 12,
+	PATH_MOVE_SPRITE_EVENT          = 13,
+	RANDOM_MOVE_SPRITE_EVENT        = 14,
+	ANIMATE_SPRITE_EVENT            = 15,
+	TOTAL_EVENT                     = 16
 };
 
 
@@ -447,6 +451,143 @@ public:
 	bool operator<(const PathNode& that) const
 		{ return this->f_score > that.f_score; }
 }; // class PathNode
+
+
+/** ****************************************************************************
+*** \brief A simple class used for holding data to be set into either the global or local map records
+***
+*** This class is used by code that wants to set records only after a certain action occurs. For example,
+*** when the player chooses a particular option in a dialogue, or a map event is started.
+*** \note The CommonRecordGroups that are modified by this data are members of the current MapMode instance,
+*** named _global_record_group and _local_record_group.
+*** ***************************************************************************/
+class MapRecordData {
+public:
+	MapRecordData() :
+		_global_records(), _local_records() {}
+
+	/** \brief Adds a new record to set for the global map record group
+	*** \param record_name The name of the record to set
+	*** \param record_value The value to set for the record
+	**/
+	void AddGlobalRecord(const std::string& record_name, int32 record_value)
+		{ _global_records.push_back(std::make_pair(record_name, record_value)); }
+
+	/** \brief Adds a new record to set for the local map record group
+	*** \param record_name The name of the record to set
+	*** \param record_value The value to set for the record
+	**/
+	void AddLocalRecord(const std::string& record_name, int32 record_value)
+		{ _local_records.push_back(std::make_pair(record_name, record_value)); }
+
+	//! \brief Sets the global and/or local records into their corresponding map record groups
+	void CommitRecords();
+
+private:
+	//! \brief A list of string/integer pairs to set for the map's global record
+	std::vector<std::pair<std::string, int32> > _global_records;
+
+	//! \brief A list of string/integer pairs to set for the map's local record
+	std::vector<std::pair<std::string, int32> > _local_records;
+}; // class MapRecordData
+
+
+/** ****************************************************************************
+*** \brief A simple class used for holding data related to launching map events
+***
+*** This class stores a list of events to start and any time delay to wait before actually starting
+*** the event. Additionally, a boolean is provided to mimic the fact that events started by other
+*** events can be started at the same time as the parent event, or after the parent event completes.
+*** So if there is a code construct with a beginning and an end point (say, displaying a line of dialogue),
+*** then this boolean can be used to start the event at the same time as the dialogue, or when the dialogue
+*** ends.
+*** ***************************************************************************/
+class MapEventData {
+public:
+	MapEventData()
+		{}
+
+	/** \brief Adds a new set of event data to the class
+	*** \param event_id The ID of the event to add (must be non-zero)
+	*** \param start_timing The number of milliseconds to wait before starting the event. Default value is zero.
+	*** \param launch_at_start Sets the launch boolean for determining under which conditions the event should be started. Default value is true.
+	**/
+	void AddEvent(uint32 event_id, uint32 start_timing = 0, bool launch_at_start = true);
+
+	/** \brief Instructs the event supervisor to start the events referenced by the data
+	*** \param launch_start Only events with the _launch_start property matching this value will be started
+	**/
+	void StartEvents(bool launch_start) const;
+
+	/** \brief Examines all event ids to check that a corresponding event has already been constructed and registered with the event manager
+	*** \return True if no invalid events were found
+	**/
+	bool ValidateEvents() const;
+
+private:
+	//! \brief The ids for each MapEvent referenced by the data
+	std::vector<uint32> _event_ids;
+
+	/** \brief The number of milliseconds to delay before the event actually starts (handled by the EventSupervisor call).
+	*** A zero value will start the event immediately.
+	**/
+	std::vector<uint32> _start_timings;
+
+	//! \brief Used in conjunction with the StartEvents() method to only start events that matching a boolean value
+	std::vector<bool> _launch_start;
+}; // class MapEventData
+
+
+/** ****************************************************************************
+*** \brief A notification event class describing sprite collisions
+***
+*** Whenever a sprite of any type moves on the map and has a collision, one of these
+*** notification events is generated to describe the type and particulars about the
+*** collision. This can be used by a map script to determine whether to play a sound,
+*** switch the context of the sprite, or take some other action.
+***
+*** \note Because collision resolution changes the position of the sprite, you can
+*** not rely on the position of the sprite when the notification event is being processed.
+*** This is why this class has members that retain the position of the sprite as the collision
+*** happened.
+*** ***************************************************************************/
+class MapCollisionNotificationEvent : public hoa_notification::NotificationEvent {
+public:
+	/** \param type The type of collision that occurred
+	*** \param sprite The sprite that had the collision
+	*** \note You should \b not use this constructor for object-type collisions
+	**/
+	MapCollisionNotificationEvent(COLLISION_TYPE type, VirtualSprite* sprite) :
+		NotificationEvent("map", "collision"), collision_type(type), sprite(sprite), object(NULL) { _CopySpritePosition(); }
+
+	/** \param type The type of collision that occurred (should be COLLISION_OBJECT)
+	*** \param sprite The sprite that had the collision
+	*** \param object The object that the sprite collided with
+	*** \note You should \b only use this constructor for object-type collisions
+	**/
+	MapCollisionNotificationEvent(COLLISION_TYPE type, VirtualSprite* sprite, MapObject* object) :
+		NotificationEvent("map", "collision"), collision_type(type), sprite(sprite), object(object) { _CopySpritePosition(); }
+
+	//! \brief Returns a string representation of the collision data stored in this object
+	const std::string DEBUG_PrintInfo();
+
+	//! \brief The type of collision that caused the notification to be generated
+	COLLISION_TYPE collision_type;
+
+	//! \brief The sprite that had the collision
+	VirtualSprite* sprite;
+
+	//! \brief Saved position data from the sprite at the time of the collision
+	uint16 x_position, y_position;
+	float x_offset, y_offset;
+
+	//! \brief The object that the sprite collided with, if it was an object type collision. Otherwise will be NULL
+	MapObject* object;
+
+private:
+	//! \brief Retains the state of the sprite's position data in the class members
+	void _CopySpritePosition();
+}; // class MapCollisionNotificationEvent : public hoa_notification::NotificationEvent
 
 } // namespace private_map
 

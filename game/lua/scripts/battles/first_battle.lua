@@ -3,20 +3,20 @@
 -- a brief explanation of the battle system.
 --
 -- This script is only used by the river cave access map. All battles on that map load this script,
--- but we only want the script to execute for the first battle. So the "global_events" event group is
+-- but we only want the script to execute for the first battle. So the "global_records" record group is
 -- used to record when the first battle occurs. If it has already occurred, this script effectively does
 -- nothing
 
 function Initialize(battle_instance)
 	stop_script = false;
 
-	if (GlobalManager:DoesEventGroupExist("global_events") == false) then
-		GlobalManager:AddNewEventGroup("global_events");
+	if (GlobalManager:DoesRecordGroupExist("global_records") == false) then
+		GlobalManager:AddNewRecordGroup("global_records");
 	end
 
-	local event_group = GlobalManager:GetEventGroup("global_events");
-	if (event_group:DoesEventExist("first_battle") == false) then
-		event_group:AddNewEvent("first_battle", 1);
+	local record_group = GlobalManager:GetRecordGroup("global_records");
+	if (record_group:DoesRecordExist("first_battle") == false) then
+		record_group:AddNewRecord("first_battle", 1);
 		stop_script = false;
 	else
 		stop_script = true;

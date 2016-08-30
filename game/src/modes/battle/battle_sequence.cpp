@@ -281,9 +281,6 @@ void SequenceSupervisor::_UpdateEndingSequence() {
         // Iterate through every character and enemy to check if they are performing an action
         // or are dying
         for (uint32 i = 0; i < _battle->_character_actors.size(); i++) {
-
-            uint32 state = _battle->_character_actors[i]->GetState();
-
             if(_battle->_character_actors[i]->GetState() == ACTOR_STATE_ACTING) {
                 characters_done_acting = false;
             }
@@ -295,9 +292,6 @@ void SequenceSupervisor::_UpdateEndingSequence() {
             if(_battle->_enemy_actors[i]->GetState() == ACTOR_STATE_ACTING) {
                 enemies_done_acting = false;
             }
-
-            ENEMY_SPRITE_TYPE type = _battle->_enemy_actors[i]->GetSpriteType();
-
             if(_battle->_enemy_actors[i]->GetSpriteType() != ENEMY_SPRITE_0DEAD) {
                 enemies_done_dying = false;
             }

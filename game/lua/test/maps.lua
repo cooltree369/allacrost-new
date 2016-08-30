@@ -43,7 +43,7 @@ tests[1] = {
 		GlobalManager:AddCharacter(LUKAR);
 		GlobalManager:AddCharacter(MARK);
 		GlobalManager:AddCharacter(CLAUDIUS);
-		GlobalManager:AddNewEventGroup("global_events");
+		GlobalManager:AddNewRecordGroup("global_records");
 		GlobalManager:SetDrunes(100);
 		GlobalManager:AddToInventory(1, 4);
 
@@ -62,7 +62,7 @@ tests[2] = {
 		GlobalManager:AddCharacter(LUKAR);
 		GlobalManager:AddCharacter(MARK);
 		GlobalManager:AddCharacter(CLAUDIUS);
-		GlobalManager:AddNewEventGroup("global_events");
+		GlobalManager:AddNewRecordGroup("global_records");
 		GlobalManager:SetDrunes(100);
 		GlobalManager:AddToInventory(1, 4);
 
@@ -81,7 +81,7 @@ tests[4] = {
 		GlobalManager:AddCharacter(LUKAR);
 		GlobalManager:AddCharacter(MARK);
 		GlobalManager:AddCharacter(CLAUDIUS);
-		GlobalManager:AddNewEventGroup("global_events");
+		GlobalManager:AddNewRecordGroup("global_records");
 		GlobalManager:SetDrunes(200);
 		GlobalManager:AddToInventory(1, 5);
 
@@ -100,7 +100,7 @@ tests[5] = {
 		GlobalManager:AddCharacter(LUKAR);
 		GlobalManager:AddCharacter(MARK);
 		GlobalManager:AddCharacter(CLAUDIUS);
-		GlobalManager:AddNewEventGroup("global_events");
+		GlobalManager:AddNewRecordGroup("global_records");
 		GlobalManager:SetDrunes(200);
 		GlobalManager:AddToInventory(1, 5);
 
@@ -118,7 +118,7 @@ tests[6] = {
 		GlobalManager:AddCharacter(LUKAR);
 		GlobalManager:AddCharacter(MARK);
 		GlobalManager:AddCharacter(CLAUDIUS);
-		GlobalManager:AddNewEventGroup("global_events");
+		GlobalManager:AddNewRecordGroup("global_records");
 		GlobalManager:SetDrunes(200);
 		GlobalManager:AddToInventory(1, 5);
 
@@ -133,7 +133,7 @@ tests[7] = {
 
 	ExecuteTest = function()
 		GlobalManager:AddCharacter(CLAUDIUS);
-		GlobalManager:AddNewEventGroup("global_events");
+		GlobalManager:AddNewRecordGroup("global_records");
 		GlobalManager:SetDrunes(200);
 		GlobalManager:AddToInventory(1, 5);
 

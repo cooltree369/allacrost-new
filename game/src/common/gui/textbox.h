@@ -88,7 +88,7 @@ public:
 	void Update(uint32 frame_time = hoa_system::SystemManager->GetUpdateTime());
 
 	/** \brief Renders the textbox to the screen back buffer.
-	*** Note that the rendering is not affected by any draw flags or coordinate system settings,.
+	*** Note that the rendering is not affected by any draw flags or coordinate system settings.
 	*** This function will use whatever has been set for it using the Set*() calls
 	**/
 	void Draw();

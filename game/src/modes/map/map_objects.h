@@ -133,8 +133,8 @@ public:
 	//! \brief When false, the Draw() function will do nothing (default == true).
 	bool visible;
 
-	//! \brief When true, the object will not be examined for collision detection (default == false).
-	bool no_collision;
+	//! \brief When false, the object will not be examined for collision detection (default == true).
+	bool collidable;
 	//@}
 
 	// ---------- Methods
@@ -255,9 +255,11 @@ public:
 	void SetContext(MAP_CONTEXT ctxt)
 		{ context = ctxt; }
 
-	// TODO: add x/y offsets as arguments
 	void SetPosition(uint16 x, uint16 y)
 		{ x_position = x; x_offset = 0.0f; y_position = y; y_offset = 0.0f; }
+
+	void SetPosition(uint16 x, float x_offset, uint16 y, float y_offset)
+		{ x_position = x; x_offset = x_offset; y_position = y; y_offset = y_offset; CheckPositionOffsets(); }
 
 	void SetXPosition(uint16 x, float offset)
 		{ x_position = x; x_offset = offset; }
@@ -276,15 +278,6 @@ public:
 
 	void SetCollHeight(float collision)
 		{ coll_height = collision; }
-
-	void SetUpdatable(bool update)
-		{ updatable = update; }
-
-	void SetVisible(bool vis)
-		{ visible = vis; }
-
-	void SetNoCollision(bool coll)
-		{ no_collision = coll; }
 
 	//! \note Should be called only by ObjectSupervisor class
 	void SetObjectLayerID(uint32 layer)
@@ -313,15 +306,6 @@ public:
 
 	float GetCollHeight() const
 		{ return coll_height; }
-
-	bool IsUpdatable() const
-		{ return updatable; }
-
-	bool IsVisible() const
-		{ return visible; }
-
-	bool IsNoCollision() const
-		{ return no_collision; }
 
 	uint32 GetObjectLayerID() const
 		{ return _object_layer_id; }
@@ -698,7 +682,7 @@ public:
 	*** \param obj A pointer to a map object
 	*** \return True if the objects collide with one another
 	*** \note This test is "absolute", and does not factor in things such as map contexts or whether or
-	*** not the no_collision property is enabled on the MapObject.
+	*** not the collidable property is disabled on the MapObject.
 	**/
 	bool CheckObjectCollision(const MapRectangle& rect, const private_map::MapObject* const obj);
 
@@ -733,6 +717,7 @@ public:
 	*** \param collision_object A pointer to a pointer to the object that collides with the sprite.
 	*** This member may be set to NULL if this information is not required by the callee. Otherwise, the callee
 	*** should declare a pointer member of type MapObject and pass the address of that pointer to this parameter.
+	*** \param ignore_sprites If true, collisions with any type of sprite object will be disregarded (default == false)
 	*** \return The type of collision detected, which may include NO_COLLISION if none was detected
 	***
 	*** This method is invoked by a map sprite who wishes to check for its own collision.
@@ -743,7 +728,7 @@ public:
 	*** -# Object collision: where the sprite's collision rectangle overlaps that of another object's,
 	***    where the object is in the same draw layer and context as the original sprite.
 	**/
-	COLLISION_TYPE DetectCollision(private_map::VirtualSprite* sprite, private_map::MapObject** collision_object);
+	COLLISION_TYPE DetectCollision(private_map::VirtualSprite* sprite, private_map::MapObject** collision_object, bool ignore_sprites = false);
 
 	/** \brief Attempts to modify a sprite's position in response to an obstruction that it has collided with
 	*** \param coll_type The type of collision that has occurred

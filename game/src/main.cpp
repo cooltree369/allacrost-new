@@ -366,7 +366,7 @@ int main(int argc, char *argv[]) {
 			chdir(path.c_str());
 		#elif (defined(__linux__) || defined(__FreeBSD__)) && !defined(RELEASE_BUILD)
 			// Look for data files in DATADIR only if they are not available in the current directory.
-			if (ifstream("lua/data/config/settings.lua") == NULL) {
+			if (!ifstream("lua/data/config/settings.lua")) {
 				if (chdir(DATADIR) != 0) {
 					throw Exception("ERROR: failed to change directory to data location", __FILE__, __LINE__, __FUNCTION__);
 				}

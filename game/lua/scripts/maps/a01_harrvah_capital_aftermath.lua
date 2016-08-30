@@ -28,7 +28,7 @@ ObjectManager = {};
 DialogueManager = {};
 EventManager = {};
 TreasureManager = {};
-GlobalEvents = {};
+GlobalRecords = {};
 
 enemy_ids = { }
 
@@ -60,7 +60,7 @@ function Load(m)
 	DialogueManager = Map.dialogue_supervisor;
 	EventManager = Map.event_supervisor;
 	TreasureManager = Map.treasure_supervisor;
-	GlobalEvents = Map.map_event_group;
+	GlobalRecords = Map.global_record_group;
 
 	-- Setup the order in which we wish to draw the tile and object layers
 	Map:ClearLayerOrder();
@@ -90,9 +90,9 @@ function Load(m)
 
 	-- All character sprites are initially uncollidable, since they will "merge" into one sprite at the end of the opening scene
 	Map:SetCamera(sprites["claudius"]);
-	sprites["claudius"]:SetNoCollision(true);
-	sprites["mark"]:SetNoCollision(true);
-	sprites["lukar"]:SetNoCollision(true);
+	sprites["claudius"].collidable = false;
+	sprites["mark"].collidable = false;
+	sprites["lukar"].collidable = false;
 
 	EventManager:StartEvent(event_chains["intro_scene"]);
 	IfPrintDebug(DEBUG, "Map loading complete");
@@ -189,17 +189,14 @@ function CreateSprites()
 
 	sprites["claudius"] = ConstructSprite("Claudius", 1, entrance_x - 2, entrance_y - 2);
 	sprites["claudius"]:SetDirection(hoa_map.MapMode.NORTH);
-	ObjectManager:AddObject(sprites["claudius"]);
 
 	sprites["mark"] = ConstructSprite("Knight01", 2, entrance_x + 2, entrance_y - 2);
 	sprites["mark"]:SetDirection(hoa_map.MapMode.NORTH);
 	sprites["mark"]:SetName(hoa_system.Translate("Mark"));
-	ObjectManager:AddObject(sprites["mark"]);
 
 	sprites["lukar"] = ConstructSprite("Knight01", 3, entrance_x, entrance_y - 4);
 	sprites["lukar"]:SetDirection(hoa_map.MapMode.NORTH);
 	sprites["lukar"]:SetName(hoa_system.Translate("Lukar"));
-	ObjectManager:AddObject(sprites["lukar"]);
 
 	-- Create the captain and the NPCs fighting the battle straight ahead of the city entrance
 	-- Coordinates for NPC battle that lies straight ahead on the road after entering the town
@@ -209,15 +206,12 @@ function CreateSprites()
 	sprites["captain"] = ConstructSprite("Knight06", 10, straight_battle_x, straight_battle_y + 4);
 	sprites["captain"]:SetDirection(hoa_map.MapMode.NORTH);
 	sprites["captain"]:SetName(hoa_system.Translate("Captain Bravis"));
-	ObjectManager:AddObject(sprites["captain"]);
 
 	sprites["knight01"] = ConstructSprite("Knight01", 11, straight_battle_x - 3, straight_battle_y);
 	sprites["knight01"]:SetDirection(hoa_map.MapMode.NORTH);
-	ObjectManager:AddObject(sprites["knight01"]);
 
 	sprites["knight02"] = ConstructSprite("Knight02", 12, straight_battle_x + 4, straight_battle_y - 2);
 	sprites["knight02"]:SetDirection(hoa_map.MapMode.NORTH);
-	ObjectManager:AddObject(sprites["knight02"]);
 
 	-- Create the senior knight and others fighting near the inn
 	-- Coordinates for NPC battle that lies near the entrance to the inn
@@ -226,15 +220,12 @@ function CreateSprites()
 
 	sprites["senior_knight"] = ConstructSprite("Knight04", 12, inn_battle_x - 1, inn_battle_y);
 	sprites["senior_knight"]:SetDirection(hoa_map.MapMode.EAST);
-	ObjectManager:AddObject(sprites["senior_knight"]);
 
 	sprites["knight03"] = ConstructSprite("Knight03", 15, inn_battle_x, inn_battle_y + 2);
 	sprites["knight03"]:SetDirection(hoa_map.MapMode.EAST);
-	ObjectManager:AddObject(sprites["knight03"]);
 
 	sprites["knight04"] = ConstructSprite("Knight01", 16, inn_battle_x + 2, inn_battle_y - 2);
 	sprites["knight04"]:SetDirection(hoa_map.MapMode.EAST);
-	ObjectManager:AddObject(sprites["knight04"]);
 
 	-- Create the sergeant and others fighting near the item shop entrance
 	-- Coordinates for NPC battle that takes place near the entrance to the item shop
@@ -243,43 +234,35 @@ function CreateSprites()
 	sprites["sergeant"] = ConstructSprite("Knight05", 11, item_shop_battle_x + 3, item_shop_battle_y - 2);
 	sprites["sergeant"]:SetDirection(hoa_map.MapMode.WEST);
 	sprites["sergeant"]:SetName(hoa_system.Translate("Sergeant Methus"));
-	ObjectManager:AddObject(sprites["sergeant"]);
 
 	-- TEMP: townspeople that should eventually be moved to the map script for the attack aftermath
 	sprites["laila"] = ConstructSprite("Laila", 500, 180, 118);
 	sprites["laila"]:SetDirection(hoa_map.MapMode.SOUTH);
 	sprites["laila"]:SetContext(contexts["interior"]);
-	ObjectManager:AddObject(sprites["laila"]);
 
 	sprites["marcus"] = ConstructSprite("Marcus", 501, 186, 112);
 	sprites["marcus"]:SetDirection(hoa_map.MapMode.NORTH);
 	sprites["marcus"]:SetContext(contexts["interior"]);
-	ObjectManager:AddObject(sprites["marcus"]);
 
 	sprites["vanica"] = ConstructSprite("Vanica", 502, 166, 112);
 	sprites["vanica"]:SetDirection(hoa_map.MapMode.NORTH);
 	sprites["vanica"]:SetContext(contexts["interior"]);
-	ObjectManager:AddObject(sprites["vanica"]);
 
 	sprites["weapon_merchant"] = ConstructSprite("Alexander", 510, 144, 140);
 	sprites["weapon_merchant"]:SetDirection(hoa_map.MapMode.SOUTH);
 	sprites["weapon_merchant"]:SetContext(contexts["interior"]);
-	ObjectManager:AddObject(sprites["weapon_merchant"]);
 
 	sprites["item_merchant"] = ConstructSprite("Female Merchant", 520, 73, 173);
 	sprites["item_merchant"]:SetDirection(hoa_map.MapMode.EAST);
 	sprites["item_merchant"]:SetContext(contexts["interior"]);
-	ObjectManager:AddObject(sprites["item_merchant"]);
 
 	sprites["inn_keeper"] = ConstructSprite("Octavia", 530, 118, 168);
 	sprites["inn_keeper"]:SetDirection(hoa_map.MapMode.SOUTH);
 	sprites["inn_keeper"]:SetContext(contexts["interior"]);
-	ObjectManager:AddObject(sprites["inn_keeper"]);
 
 	sprites["inn_worker"] = ConstructSprite("Livia", 531, 113, 174);
 	sprites["inn_worker"]:SetDirection(hoa_map.MapMode.EAST);
 	sprites["inn_worker"]:SetContext(contexts["interior"]);
-	ObjectManager:AddObject(sprites["inn_worker"]);
 end -- function CreateSprites()
 
 
@@ -434,9 +417,9 @@ functions["EndIntroScene"] = function()
 		return false;
 	end
 
-	sprites["mark"]:SetVisible(false);
-	sprites["lukar"]:SetVisible(false);
-	sprites["claudius"]:SetNoCollision(false);
+	sprites["mark"].visible = false;
+	sprites["lukar"].visible = false;
+	sprites["claudius"].collidable = true;
 	sprites["claudius"]:SetDirection(hoa_map.MapMode.NORTH);
 	Map:SetCamera(sprites["claudius"], 500);
 	Map:PopState();

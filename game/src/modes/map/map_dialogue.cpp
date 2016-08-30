@@ -56,51 +56,21 @@ namespace private_map {
 const uint32 NO_DIALOGUE_EVENT = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
-// MapDialogueEventData Class Functions
-///////////////////////////////////////////////////////////////////////////////
-
-void MapDialogueEventData::AddEvent(uint32 event_id, bool launch_at_start, uint32 launch_timing) {
-	if (event_id == 0) {
-		IF_PRINT_WARNING(MAP_DEBUG) << "attempted to add an event with an invalid ID (0). The event was not added" << endl;
-		return;
-	}
-
-	_event_ids.push_back(event_id);
-	_launches_at_start.push_back(launch_at_start);
-	_launch_timings.push_back(launch_timing);
-}
-
-
-void MapDialogueEventData::ProcessEvents(bool at_start) const {
-	for (uint32 i = 0; i < _event_ids.size(); ++i) {
-		if (_launches_at_start[i] == at_start) {
-			if (_launch_timings[i] == 0) {
-				MapMode::CurrentInstance()->GetEventSupervisor()->StartEvent(_event_ids[i]);
-			}
-			else {
-				MapMode::CurrentInstance()->GetEventSupervisor()->StartEvent(_event_ids[i], _launch_timings[i]);
-			}
-		}
-	}
-}
-
-
-bool MapDialogueEventData::ValidateEvents() const {
-	bool return_value = true;
-
-	for (uint32 i = 0; i < _event_ids.size(); ++i) {
-		if (MapMode::CurrentInstance()->GetEventSupervisor()->GetEvent(_event_ids[i]) == NULL) {
-			return_value = false;
-			IF_PRINT_WARNING(MAP_DEBUG) << "no event was registered for the event ID: " << _event_ids[i] << endl;
-		}
-	}
-
-	return return_value;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // MapDialogue Class Functions
 ///////////////////////////////////////////////////////////////////////////////
+
+MapDialogue::~MapDialogue() {
+	for (uint32 i = 0; i < _line_records.size(); ++i) {
+		if (_line_records[i] != NULL)
+			delete _line_records[i];
+	}
+
+	for (uint32 i = 0; i < _line_events.size(); ++i) {
+		if (_line_events[i] != NULL)
+			delete _line_events[i];
+	}
+}
+
 
 MapDialogue::MapDialogue(uint32 id) :
 	CommonDialogue(id),
@@ -119,22 +89,11 @@ MapDialogue* MapDialogue::Create(uint32 id) {
 
 
 
-void MapDialogue::AddLine(string text, uint32 speaker) {
-	AddLine(text, speaker, COMMON_DIALOGUE_NEXT_LINE);
-}
-
-
-
 void MapDialogue::AddLine(string text, uint32 speaker, int32 next_line) {
 	CommonDialogue::AddLine(text, next_line);
 	_speakers.push_back(speaker);
-	_line_events.push_back(MapDialogueEventData());
-}
-
-
-
-void MapDialogue::AddLine(string text){
-	AddLine(text,NO_SPRITE, COMMON_DIALOGUE_NEXT_LINE);
+	_line_records.push_back(NULL);
+	_line_events.push_back(NULL);
 }
 
 
@@ -166,41 +125,6 @@ void MapDialogue::AddLineTiming(uint32 display_time, uint32 line) {
 
 
 
-void MapDialogue::AddLineEventAtStart(uint32 event_id) {
-	AddLineEventAtStart(event_id, 0);
-}
-
-
-
-void MapDialogue::AddLineEventAtStart(uint32 event_id, uint32 delay_ms) {
-	if (_line_count == 0) {
-		IF_PRINT_WARNING(MAP_DEBUG) << "function called when dialogue contained no lines" << endl;
-		return;
-	}
-
-	_line_events[_line_count - 1].AddEvent(event_id, true, delay_ms);
-}
-
-
-
-void MapDialogue::AddLineEventAtEnd(uint32 event_id) {
-	AddLineEventAtEnd(event_id, 0);
-}
-
-
-
-void MapDialogue::AddLineEventAtEnd(uint32 event_id, uint32 delay_ms) {
-	if (_line_count == 0) {
-		IF_PRINT_WARNING(MAP_DEBUG) << "function called when dialogue contained no lines" << endl;
-		return;
-	}
-
-	_line_events[_line_count - 1].AddEvent(event_id, false, delay_ms);
-}
-
-
-
-
 void MapDialogue::AddOption(string text) {
 	AddOption(text, COMMON_DIALOGUE_NEXT_LINE);
 }
@@ -226,15 +150,9 @@ void MapDialogue::AddOption(string text, int32 next_line) {
 
 
 
-void MapDialogue::AddOptionEvent(uint32 event_id) {
-	AddOptionEvent(event_id, 0);
-}
-
-
-
 void MapDialogue::AddOptionEvent(uint32 event_id, uint32 delay_ms) {
 	if (_line_count == 0) {
-		IF_PRINT_WARNING(MAP_DEBUG) << "Attempted to add an option to a dialogue with no lines" << endl;
+		IF_PRINT_WARNING(MAP_DEBUG) << "Attempted to add an option event to a dialogue with no lines" << endl;
 		return;
 	}
 
@@ -245,6 +163,24 @@ void MapDialogue::AddOptionEvent(uint32 event_id, uint32 delay_ms) {
 
 	MapDialogueOptions* options = dynamic_cast<MapDialogueOptions*>(_options[_line_count - 1]);
 	options->AddOptionEvent(event_id, delay_ms);
+}
+
+
+
+void MapDialogue::ProcessLineActions(uint32 current_line, bool begin_or_end) {
+	if (current_line >= _line_count) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "Attempted to process actions for a line that didn't exist: " << current_line << endl;
+		return;
+	}
+
+	MapRecordData* record_data = _line_records[current_line];
+	MapEventData* event_data = _line_events[current_line];
+	if (record_data != NULL && begin_or_end == true) {
+		record_data->CommitRecords();
+	}
+	if (event_data != NULL) {
+		event_data->StartEvents(begin_or_end);
+	}
 }
 
 
@@ -272,7 +208,7 @@ bool MapDialogue::Validate() {
 	}
 
 	for (uint32 i = 0; i < _line_events.size(); i++) {
-		if (_line_events[i].ValidateEvents() == false) {
+		if (_line_events[i] != NULL && _line_events[i]->ValidateEvents() == false) {
 			return false;
 		}
 	}
@@ -280,9 +216,80 @@ bool MapDialogue::Validate() {
 	return true;
 }
 
+
+
+void MapDialogue::_AddLineRecord(const std::string& record_name, int32 record_value, bool is_global) {
+	if (_line_count == 0) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "Attempted to add a line record to a dialogue with no lines" << endl;
+		return;
+	}
+
+	MapRecordData* record_data = _line_records[_line_count - 1];
+	// If no record data exists for this line, we have to construct a new object to hold it
+	if (record_data == NULL) {
+		record_data = new MapRecordData();
+		_line_records[_line_count - 1] = record_data;
+	}
+
+	if (is_global == true)
+		record_data->AddGlobalRecord(record_name, record_value);
+	else
+		record_data->AddLocalRecord(record_name, record_value);
+}
+
+
+
+void MapDialogue::_AddLineEvent(uint32 event_id, uint32 start_timing, bool launch_at_start) {
+	if (_line_count == 0) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "Attempted to add a line event to a dialogue with no lines" << endl;
+		return;
+	}
+
+	MapEventData* event_data = _line_events[_line_count -1];
+	// If no event data exists for this line, we have to construct a new object to hold it
+	if (event_data == NULL) {
+		event_data = new MapEventData();
+		_line_events[_line_count - 1] = event_data;
+	}
+
+	event_data->AddEvent(event_id, start_timing, launch_at_start);
+}
+
+
+
+void MapDialogue::_AddOptionRecord(const std::string& record_name, int32 record_value, bool is_global) {
+	if (_line_count == 0) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "Attempted to add an option record to a dialogue with no lines" << endl;
+		return;
+	}
+
+	if (_options[_line_count - 1] == NULL) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "Attempted to add an option record to a line that contained no options" << endl;
+		return;
+	}
+
+
+	MapDialogueOptions* options = dynamic_cast<MapDialogueOptions*>(_options[_line_count - 1]);
+	options->AddOptionRecord(record_name, record_value, is_global);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // MapDialogueOptions Class Functions
 ///////////////////////////////////////////////////////////////////////////////
+
+MapDialogueOptions::~MapDialogueOptions() {
+	for (uint32 i = 0; i < _option_records.size(); ++i) {
+		if (_option_records[i] != NULL)
+			delete _option_records[i];
+	}
+
+	for (uint32 i = 0; i < _option_events.size(); ++i) {
+		if (_option_events[i] != NULL)
+			delete _option_events[i];
+	}
+}
+
+
 
 void MapDialogueOptions::AddOption(string text) {
 	AddOption(text, COMMON_DIALOGUE_NEXT_LINE);
@@ -292,24 +299,67 @@ void MapDialogueOptions::AddOption(string text) {
 
 void MapDialogueOptions::AddOption(string text, int32 next_line) {
 	CommonDialogueOptions::AddOption(text, next_line);
-	_option_events.push_back(MapDialogueEventData());
+	_option_records.push_back(NULL);
+	_option_events.push_back(NULL);
 }
 
 
 
-void MapDialogueOptions::AddOptionEvent(uint32 event_id) {
-	AddOptionEvent(event_id, 0);
-}
-
-
-
-void MapDialogueOptions::AddOptionEvent(uint32 event_id, uint32 delay_ms) {
-	if (_text.empty() == true) {
+void MapDialogueOptions::AddOptionRecord(const std::string& record_name, int32 record_value, bool is_global) {
+	if (GetNumberOptions() == 0) {
 		IF_PRINT_WARNING(MAP_DEBUG) << "Attempted to add an option event when no options were available" << endl;
 		return;
 	}
 
-	_option_events[_option_events.size() - 1].AddEvent(event_id, false, delay_ms);
+	MapRecordData* record_data = _option_records.back();
+	// If no record data exists for this option, we have to construct a new object to hold it
+	if (record_data == NULL) {
+		record_data = new MapRecordData();
+		_option_records[_option_records.size() - 1] = record_data;
+	}
+
+	if (is_global == true) {
+		record_data->AddGlobalRecord(record_name, record_value);
+	}
+	else {
+		record_data->AddLocalRecord(record_name, record_value);
+	}
+}
+
+
+
+void MapDialogueOptions::AddOptionEvent(uint32 event_id, uint32 start_timing) {
+	if (GetNumberOptions() == 0) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "Attempted to add an option event when no options were available" << endl;
+		return;
+	}
+
+	MapEventData* event_data = _option_events.back();
+	// If no event data exists for this option, we have to construct a new object to hold it
+	if (event_data == NULL) {
+		event_data = new MapEventData();
+		_option_events[_option_events.size() - 1] = event_data;
+	}
+
+	// Note that all event data added uses launch_at_start set to true.
+	event_data->AddEvent(event_id, start_timing, true);
+}
+
+
+
+void MapDialogueOptions::ProcessOptionActions(uint32 option) {
+	if (option > GetNumberOptions()) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "invalid option argument: " << option << endl;
+		return;
+	}
+
+	MapRecordData* record_data = _option_records[option];
+	if (record_data != NULL)
+		record_data->CommitRecords();
+
+	MapEventData* event_data = _option_events[option];
+	if (event_data != NULL)
+		event_data->StartEvents(true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -319,9 +369,9 @@ void MapDialogueOptions::AddOptionEvent(uint32 event_id, uint32 delay_ms) {
 DialogueSupervisor::DialogueSupervisor() :
 	_state(DIALOGUE_STATE_INACTIVE),
 	_current_dialogue(NULL),
+	_current_line(0),
 	_current_options(NULL),
 	_line_timer(),
-	_line_counter(0),
 	_dialogue_window()
 {
 	_dialogue_window.SetPosition(512.0f, 760.0f);
@@ -381,7 +431,6 @@ void DialogueSupervisor::RegisterDialogue(MapDialogue* dialogue) {
 	if (GetDialogue(dialogue->GetDialogueID()) != NULL) {
 		IF_PRINT_WARNING(MAP_DEBUG) << "a dialogue was already registered with this ID: " << dialogue->GetDialogueID() << endl;
 		delete dialogue;
-		return;
 	}
 	else {
 		_dialogues.insert(make_pair(dialogue->GetDialogueID(), dialogue));
@@ -402,7 +451,7 @@ void DialogueSupervisor::BeginDialogue(uint32 dialogue_id) {
 		IF_PRINT_WARNING(COMMON_DEBUG) << "beginning a new dialogue while another dialogue is still active" << endl;
 	}
 
-	_line_counter = 0;
+	_current_line = 0;
 	_current_dialogue = dialogue;
 	_BeginLine();
 	MapMode::CurrentInstance()->PushState(STATE_DIALOGUE);
@@ -417,11 +466,11 @@ void DialogueSupervisor::EndDialogue() {
 	}
 
 	_current_dialogue->IncrementTimesSeen();
-	if (MapMode::CurrentInstance()->GetMapEventGroup()->DoesEventExist(_current_dialogue->GetDialogueName()) == false) {
-		MapMode::CurrentInstance()->GetMapEventGroup()->AddNewEvent(_current_dialogue->GetDialogueName(), _current_dialogue->GetTimesSeen());
+	if (MapMode::CurrentInstance()->GetGlobalRecordGroup()->DoesRecordExist(_current_dialogue->GetDialogueName()) == false) {
+		MapMode::CurrentInstance()->GetGlobalRecordGroup()->AddNewRecord(_current_dialogue->GetDialogueName(), _current_dialogue->GetTimesSeen());
 	}
 	else {
-		MapMode::CurrentInstance()->GetMapEventGroup()->SetEvent(_current_dialogue->GetDialogueName(), _current_dialogue->GetTimesSeen());
+		MapMode::CurrentInstance()->GetGlobalRecordGroup()->SetRecord(_current_dialogue->GetDialogueName(), _current_dialogue->GetTimesSeen());
 	}
 
 	// We only want to call the RestoreState function *once* for each speaker, so first we have to construct a list of pointers
@@ -430,16 +479,17 @@ void DialogueSupervisor::EndDialogue() {
 	// Get a unique set of all sprites that participated in the dialogue
 	set<MapSprite*> speakers;
 	for (uint32 i = 0; i < _current_dialogue->GetLineCount(); i++) {
-		if(_current_dialogue->GetLineSpeaker(i) != NO_SPRITE) {
+		if (_current_dialogue->GetLineSpeaker(i) != NO_SPRITE) {
 			speakers.insert(dynamic_cast<MapSprite*>(MapMode::CurrentInstance()->GetObjectSupervisor()->GetObject(_current_dialogue->GetLineSpeaker(i))));
-		}else {
+		}
+		else {
 			speakers.insert(NULL);
 		}
-			}
+	}
 
 	for (set<MapSprite*>::iterator i = speakers.begin(); i != speakers.end(); i++) {
 		// Each sprite needs to know that this dialogue completed so that they can update their data accordingly
-		if(*i != NULL) {
+		if (*i != NULL) {
 			(*i)->UpdateDialogueStatus();
 
 			// Restore the state (orientation, animation, etc.) of all speaker sprites if necessary
@@ -482,7 +532,7 @@ void DialogueSupervisor::_UpdateLine() {
 	if (_current_dialogue->IsInputBlocked() || _current_options != NULL || _dialogue_window.GetDisplayTextBox().IsFinished() == false) {
 		_dialogue_window.SetIndicator(COMMON_DIALOGUE_NO_INDICATOR);
 	}
-	else if (_line_counter == _current_dialogue->GetLineCount()-1) {
+	else if (_current_line == _current_dialogue->GetLineCount()-1) {
 		_dialogue_window.SetIndicator(COMMON_DIALOGUE_LAST_INDICATOR);
 	}
 	else {
@@ -494,14 +544,18 @@ void DialogueSupervisor::_UpdateLine() {
 		return;
 	}
 
+	if (_dialogue_window.GetDisplayTextBox().IsFinished() == true && _current_options != NULL) {
+		_state = DIALOGUE_STATE_OPTION;
+	}
+
 	if (InputManager->ConfirmPress()) {
 		// If the line is not yet finished displaying, display the rest of the text
 		if (_dialogue_window.GetDisplayTextBox().IsFinished() == false) {
 			_dialogue_window.GetDisplayTextBox().ForceFinish();
-		}
-		// Proceed to option selection if the line has options
-		else if (_current_options != NULL) {
-			_state = DIALOGUE_STATE_OPTION;
+			// Proceed to option selection if the line has options
+			if (_current_options != NULL) {
+				_state = DIALOGUE_STATE_OPTION;
+			}
 		}
 		else {
 			_EndLine();
@@ -512,16 +566,18 @@ void DialogueSupervisor::_UpdateLine() {
 
 
 void DialogueSupervisor::_UpdateOptions() {
+	_dialogue_window.GetDisplayOptionBox().Update();
+
 	if (InputManager->ConfirmPress()) {
 		_dialogue_window.GetDisplayOptionBox().InputConfirm();
 		_EndLine();
 	}
 
-	else if (InputManager->UpPress()) {
+	if (InputManager->UpPress()) {
 		_dialogue_window.GetDisplayOptionBox().InputUp();
 	}
 
-	else if (InputManager->DownPress()) {
+	if (InputManager->DownPress()) {
 		_dialogue_window.GetDisplayOptionBox().InputDown();
 	}
 }
@@ -530,17 +586,14 @@ void DialogueSupervisor::_UpdateOptions() {
 
 void DialogueSupervisor::_BeginLine() {
 	_state = DIALOGUE_STATE_LINE;
-	_current_options = dynamic_cast<MapDialogueOptions*>(_current_dialogue->GetLineOptions(_line_counter));
+	_current_options = dynamic_cast<MapDialogueOptions*>(_current_dialogue->GetLineOptions(_current_line));
 
-	// Execute any map events that should occur when this line of dialogue has started
-	MapDialogueEventData* events = _current_dialogue->GetLineEventData(_line_counter);
-	if (events != NULL) {
-		events->ProcessEvents(true);
-	}
+	// Execute any actions that should occur when this line begins
+	_current_dialogue->ProcessLineActions(_current_line, true);
 
 	// Initialize the line timer
-	if (_current_dialogue->GetLineDisplayTime(_line_counter) >= 0) {
-		_line_timer.Initialize(_current_dialogue->GetLineDisplayTime(_line_counter));
+	if (_current_dialogue->GetLineDisplayTime(_current_line) >= 0) {
+		_line_timer.Initialize(_current_dialogue->GetLineDisplayTime(_current_line));
 		_line_timer.Run();
 	}
 	// If the line has no timer specified, set the line time to zero and put the timer in the finished state
@@ -551,7 +604,7 @@ void DialogueSupervisor::_BeginLine() {
 
 	// Setup the text and graphics for the dialogue window
 	_dialogue_window.Clear();
-	_dialogue_window.GetDisplayTextBox().SetDisplayText(_current_dialogue->GetLineText(_line_counter));
+	_dialogue_window.GetDisplayTextBox().SetDisplayText(_current_dialogue->GetLineText(_current_line));
 
 	if (_current_options != NULL) {
 		for (uint32 i = 0; i < _current_options->GetNumberOptions(); i++) {
@@ -562,16 +615,16 @@ void DialogueSupervisor::_BeginLine() {
 	}
 
 	// Executes normal code if the speaker is an actual sprite i.e speaker id is not NO_SPRITE
-	if(_current_dialogue->GetLineSpeaker(_line_counter) != NO_SPRITE) {
-		MapObject* object = MapMode::CurrentInstance()->GetObjectSupervisor()->GetObject(_current_dialogue->GetLineSpeaker(_line_counter));
+	if (_current_dialogue->GetLineSpeaker(_current_line) != NO_SPRITE) {
+		MapObject* object = MapMode::CurrentInstance()->GetObjectSupervisor()->GetObject(_current_dialogue->GetLineSpeaker(_current_line));
 		if (object == NULL) {
 			IF_PRINT_WARNING(MAP_DEBUG) << "dialogue #" << _current_dialogue->GetDialogueID()
-				<< " referenced a sprite that did not exist with id: " << _current_dialogue->GetLineSpeaker(_line_counter) << endl;
+				<< " referenced a sprite that did not exist with id: " << _current_dialogue->GetLineSpeaker(_current_line) << endl;
 			return;
 		}
 		else if (object->GetType() != SPRITE_TYPE) {
 			IF_PRINT_WARNING(MAP_DEBUG) << "dialogue #" << _current_dialogue->GetDialogueID()
-				<< " referenced a map object which was not a sprite with id: " << _current_dialogue->GetLineSpeaker(_line_counter) << endl;
+				<< " referenced a map object which was not a sprite with id: " << _current_dialogue->GetLineSpeaker(_current_line) << endl;
 			return;
 		}
 		else {
@@ -579,7 +632,8 @@ void DialogueSupervisor::_BeginLine() {
 			_dialogue_window.GetNameText().SetText(speaker->GetName());
 			_dialogue_window.SetPortraitImage(speaker->GetFacePortrait());
 		}
-	}else {
+	}
+	else {
 		_dialogue_window.GetNameText().SetText("");
 		_dialogue_window.SetPortraitImage(NULL);
 	}
@@ -590,23 +644,15 @@ void DialogueSupervisor::_BeginLine() {
 
 
 void DialogueSupervisor::_EndLine() {
-	// Execute any map events that should occur after this line of dialogue has finished
-	MapDialogueEventData* line_events = _current_dialogue->GetLineEventData(_line_counter);
-	if (line_events != NULL) {
-		line_events->ProcessEvents(false);
-	}
-
-	// Execute any map events that were tied to the selected dialogue option
+	// Execute any actions that should occur when this line ends, or actions based on the selected option if the line had options
+	_current_dialogue->ProcessLineActions(_current_line, false);
 	if (_current_options != NULL) {
 		uint32 selected_option = _dialogue_window.GetDisplayOptionBox().GetSelection();
-		MapDialogueEventData* option_events = _current_options->GetOptionEventData(selected_option);
-		if (option_events != NULL) {
-			option_events->ProcessEvents(false);
-		}
+		_current_options->ProcessOptionActions(selected_option);
 	}
 
 	// Determine the next line to read
-	int32 next_line = _current_dialogue->GetLineNextLine(_line_counter);
+	int32 next_line = _current_dialogue->GetLineNextLine(_current_line);
 	// If this line had options, the selected option next line overrides the line's next line that we set above
 	if (_current_options != NULL) {
 		uint32 selected_option = _dialogue_window.GetDisplayOptionBox().GetSelection();
@@ -617,16 +663,17 @@ void DialogueSupervisor::_EndLine() {
 	if (next_line >= 0) {
 		if (static_cast<uint32>(next_line) >= _current_dialogue->GetLineCount()) {
 			IF_PRINT_WARNING(MAP_DEBUG) << "dialogue #" << _current_dialogue->GetDialogueID()
-				<< " tried to set dialogue to invalid line. Current/next line values: {" << _line_counter
+				<< " tried to set dialogue to invalid line. Current/next line values: {" << _current_line
 				<< ", " << next_line << "}" << endl;
 			next_line = COMMON_DIALOGUE_END;
 		}
 	}
 	// --- Case 2: Request to incrementing the current line. If we're incrementing past the last line, end the dialogue
 	else if (next_line == COMMON_DIALOGUE_NEXT_LINE) {
-		next_line = _line_counter + 1;
-		if (static_cast<uint32>(next_line) >= _current_dialogue->GetLineCount())
+		next_line = _current_line + 1;
+		if (static_cast<uint32>(next_line) >= _current_dialogue->GetLineCount()) {
 			next_line = COMMON_DIALOGUE_END;
+		}
 	}
 	// --- Case 3: Request to end the current dialogue
 	else if (next_line == COMMON_DIALOGUE_END) {
@@ -644,7 +691,7 @@ void DialogueSupervisor::_EndLine() {
 		EndDialogue();
 	}
 	else {
-		_line_counter = next_line;
+		_current_line = next_line;
 		_BeginLine();
 	}
 }

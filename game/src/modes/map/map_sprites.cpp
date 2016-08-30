@@ -53,45 +53,39 @@ namespace private_map {
 // ****************************************************************************
 
 VirtualSprite::VirtualSprite() :
-	direction(SOUTH),
-	movement_speed(NORMAL_SPEED),
-	moving(false),
-	moved_position(false),
-	is_running(false),
-	control_event(NULL),
+	_direction(SOUTH),
+	_movement_speed(NORMAL_SPEED),
+	_moving(false),
+	_running(false),
+	_control_event(NULL),
 	_state_saved(false),
 	_saved_direction(0),
 	_saved_movement_speed(0.0f),
 	_saved_moving(false)
 {
 	MapObject::_object_type = VIRTUAL_TYPE;
+	visible = false;
+	collidable = false;
 }
 
 
 
-VirtualSprite::~VirtualSprite()
-{}
-
-
-
 void VirtualSprite::Update() {
-	moved_position = false;
-
 	if (!updatable) {
 		return;
 	}
 
 	// Determine if a movement event is controlling the sprite.
-	if (moving == false) {
+	if (_moving == false) {
 		return;
-// 		if (control_event != NULL) {
-// 			EVENT_TYPE event_type = control_event->GetEventType();
+// 		if (_control_event != NULL) {
+// 			EVENT_TYPE event_type = _control_event->GetEventType();
 // 			if (event_type == PATH_MOVE_SPRITE_EVENT || event_type == RANDOM_MOVE_SPRITE_EVENT) {
-// 				moving = true;
+// 				_moving = true;
 // 			}
 // 		}
-// 		// If the sprite still isn't moving, there's nothing more to update here
-// 		if (moving == false) {
+// 		// If the sprite still isn't _moving, there's nothing more to update here
+// 		if (_moving == false) {
 // 			return;
 // 		}
 	}
@@ -103,13 +97,13 @@ void VirtualSprite::Update() {
 	float distance_moved = CalculateDistanceMoved();
 
 	// Move the sprite the appropriate distance in the appropriate Y and X direction
-	if (direction & (NORTH | MOVING_NORTHWEST | MOVING_NORTHEAST))
+	if (_direction & (NORTH | MOVING_NORTHWEST | MOVING_NORTHEAST))
 		y_offset -= distance_moved;
-	else if (direction & (SOUTH | MOVING_SOUTHWEST | MOVING_SOUTHEAST))
+	else if (_direction & (SOUTH | MOVING_SOUTHWEST | MOVING_SOUTHEAST))
 		y_offset += distance_moved;
-	if (direction & (WEST | MOVING_NORTHWEST | MOVING_SOUTHWEST))
+	if (_direction & (WEST | MOVING_NORTHWEST | MOVING_SOUTHWEST))
 		x_offset -= distance_moved;
-	else if (direction & (EAST | MOVING_NORTHEAST | MOVING_SOUTHEAST))
+	else if (_direction & (EAST | MOVING_NORTHEAST | MOVING_SOUTHEAST))
 		x_offset += distance_moved;
 
 	MapObject* collision_object = NULL;
@@ -118,7 +112,6 @@ void VirtualSprite::Update() {
 
 	if (collision_type == NO_COLLISION) {
 		CheckPositionOffsets();
-		moved_position = true;
 	}
 	else {
 		// Restore the sprite's position. The _ResolveCollision() call that follows may find an alternative
@@ -128,66 +121,25 @@ void VirtualSprite::Update() {
 
 		_ResolveCollision(collision_type, collision_object);
 	}
-} // void VirtualSprite::Update()
-
-
-
-bool VirtualSprite::IsFacingDirection(uint16 check_direction) const {
-	switch (check_direction) {
-		case NORTH:
-			return (direction & FACING_NORTH);
-			break;
-		case SOUTH:
-			return (direction & FACING_SOUTH);
-			break;
-		case EAST:
-			return (direction & FACING_EAST);
-			break;
-		case WEST:
-			return (direction & FACING_WEST);
-			break;
-		default:
-			IF_PRINT_WARNING(MAP_DEBUG) << "function received invalid argument: " << check_direction << endl;
-			return false;
-	}
 }
 
 
 
-void VirtualSprite::SetDirection(uint16 dir) {
-	// Nothing complicated needed for lateral directions
-	if (dir & (NORTH | SOUTH | EAST | WEST)) {
-		direction = dir;
+bool VirtualSprite::IsFacingDirection(uint16 direction) const {
+	switch (direction) {
+		case NORTH:
+			return (_direction & FACING_NORTH);
+		case SOUTH:
+			return (_direction & FACING_SOUTH);
+		case EAST:
+			return (_direction & FACING_EAST);
+		case WEST:
+			return (_direction & FACING_WEST);
+		default:
+			IF_PRINT_WARNING(MAP_DEBUG) << "function received invalid argument: " << direction << endl;
+			return false;
 	}
-	// Otherwise if the direction is diagonal we must figure out which way the sprite should face.
-	else if (dir & MOVING_NORTHWEST) {
-		if (direction & (FACING_NORTH | FACING_EAST))
-			direction = NW_NORTH;
-		else
-			direction = NW_WEST;
-	}
-	else if (dir & MOVING_SOUTHWEST) {
-		if (direction & (FACING_SOUTH | FACING_EAST))
-			direction = SW_SOUTH;
-		else
-			direction = SW_WEST;
-	}
-	else if (dir & MOVING_NORTHEAST) {
-		if (direction & (FACING_NORTH | FACING_WEST))
-			direction = NE_NORTH;
-		else
-			direction = NE_EAST;
-	}
-	else if (dir & MOVING_SOUTHEAST) {
-		if (direction & (FACING_SOUTH | FACING_WEST))
-			direction = SE_SOUTH;
-		else
-			direction = SE_EAST;
-	}
-	else {
-		IF_PRINT_WARNING(MAP_DEBUG) << "attempted to set an invalid direction: " << dir << endl;
-	}
-} // void VirtualSprite::SetDirection(uint16 dir)
+}
 
 
 
@@ -225,13 +177,13 @@ void VirtualSprite::SetRandomDirection() {
 
 
 float VirtualSprite::CalculateDistanceMoved() {
-	float distance_moved = static_cast<float>(SystemManager->GetUpdateTime()) / movement_speed;
+	float distance_moved = static_cast<float>(SystemManager->GetUpdateTime()) / _movement_speed;
 
 	// Double the distance to move if the sprite is running
-	if (is_running == true)
+	if (_running == true)
 		distance_moved *= 2.0f;
 	// If the movement is diagonal, decrease the lateral movement distance by sin(45 degress)
-	if (direction & MOVING_DIAGONALLY)
+	if (_direction & MOVING_DIAGONALLY)
 		distance_moved *= 0.707f;
 
 	return distance_moved;
@@ -245,11 +197,11 @@ void VirtualSprite::AcquireControl(SpriteEvent* event) {
 		return;
 	}
 
-	if (control_event != NULL) {
+	if (_control_event != NULL) {
 		IF_PRINT_WARNING(MAP_DEBUG) << "a new event is acquiring control when the previous event has not "
 			"released control over this sprite, object id: " << GetObjectID() << endl;
 	}
-	control_event = event;
+	_control_event = event;
 }
 
 
@@ -260,14 +212,14 @@ void VirtualSprite::ReleaseControl(SpriteEvent* event) {
 		return;
 	}
 
-	if (control_event == NULL) {
+	if (_control_event == NULL) {
 		IF_PRINT_WARNING(MAP_DEBUG) << "no event had control over this sprite, object id: " << GetObjectID() << endl;
 	}
-	else if (control_event != event) {
+	else if (_control_event != event) {
 		IF_PRINT_WARNING(MAP_DEBUG) << "a different event has control of this sprite, object id: " << GetObjectID() << endl;
 	}
 	else {
-		control_event = NULL;
+		_control_event = NULL;
 	}
 }
 
@@ -275,11 +227,11 @@ void VirtualSprite::ReleaseControl(SpriteEvent* event) {
 
 void VirtualSprite::SaveState() {
 	_state_saved = true;
-	_saved_direction = direction;
-	_saved_movement_speed = movement_speed;
-	_saved_moving = moving;
-	if (control_event != NULL)
-		MapMode::CurrentInstance()->GetEventSupervisor()->PauseEvent(control_event->GetEventID());
+	_saved_direction = _direction;
+	_saved_movement_speed = _movement_speed;
+	_saved_moving = _moving;
+	if (_control_event != NULL)
+		MapMode::CurrentInstance()->GetEventSupervisor()->PauseEvent(_control_event->GetEventID());
 }
 
 
@@ -289,11 +241,48 @@ void VirtualSprite::RestoreState() {
 		IF_PRINT_WARNING(MAP_DEBUG) << "restoring state when no saved state was detected" << endl;
 
 	_state_saved = false;
-	 direction = _saved_direction;
-	 movement_speed = _saved_movement_speed;
-	 moving = _saved_moving;
-	 if (control_event != NULL)
-		MapMode::CurrentInstance()->GetEventSupervisor()->ResumeEvent(control_event->GetEventID());
+	 _direction = _saved_direction;
+	 _movement_speed = _saved_movement_speed;
+	 _moving = _saved_moving;
+	 if (_control_event != NULL)
+		MapMode::CurrentInstance()->GetEventSupervisor()->ResumeEvent(_control_event->GetEventID());
+}
+
+
+
+void VirtualSprite::SetDirection(uint16 direction) {
+	// Nothing complicated needed for lateral directions
+	if (direction & (NORTH | SOUTH | EAST | WEST)) {
+		_direction = direction;
+	}
+	// Otherwise if the direction is diagonal we must figure out which way the sprite should face.
+	else if (direction & MOVING_NORTHWEST) {
+		if (_direction & (FACING_NORTH | FACING_EAST))
+			_direction = NW_NORTH;
+		else
+			_direction = NW_WEST;
+	}
+	else if (direction & MOVING_SOUTHWEST) {
+		if (_direction & (FACING_SOUTH | FACING_EAST))
+			_direction = SW_SOUTH;
+		else
+			_direction = SW_WEST;
+	}
+	else if (direction & MOVING_NORTHEAST) {
+		if (_direction & (FACING_NORTH | FACING_WEST))
+			_direction = NE_NORTH;
+		else
+			_direction = NE_EAST;
+	}
+	else if (direction & MOVING_SOUTHEAST) {
+		if (_direction & (FACING_SOUTH | FACING_WEST))
+			_direction = SE_SOUTH;
+		else
+			_direction = SE_EAST;
+	}
+	else {
+		IF_PRINT_WARNING(MAP_DEBUG) << "attempted to set an invalid direction: " << direction << endl;
+	}
 }
 
 
@@ -310,8 +299,10 @@ void VirtualSprite::_ResolveCollision(COLLISION_TYPE coll_type, MapObject* coll_
 		}
 
 		// If these two conditions are true, begin the battle
-		if (enemy != NULL && enemy->NumberEnemyParties() != 0 && (enemy->IsStateActive() || enemy->IsStateActiveZoned()) && MapMode::CurrentInstance()->AttackAllowed()) {
-			enemy->ChangeStateInactive();
+		if (enemy != NULL && enemy->HasEnemyParties() == true && (enemy->GetState() == EnemySprite::ACTIVE || enemy->GetState() == EnemySprite::HUNT)
+				&& MapMode::CurrentInstance()->AttackAllowed())
+		{
+			enemy->ChangeState(EnemySprite::INACTIVE);
 
 			BattleMode *BM = new BattleMode();
 
@@ -331,8 +322,7 @@ void VirtualSprite::_ResolveCollision(COLLISION_TYPE coll_type, MapObject* coll_
 			string enemy_battle_script = enemy->GetBattleScriptFile();
 			if (enemy_battle_script != "")
 				BM->LoadBattleScript(enemy_battle_script);
-
-                        MapMode::CurrentInstance()->_TransitionToMode(BM);
+			MapMode::CurrentInstance()->TransitionToNewMode(BM);
 
 			// TODO: some sort of map-to-battle transition animation sequence needs to start here
 			return;
@@ -341,19 +331,19 @@ void VirtualSprite::_ResolveCollision(COLLISION_TYPE coll_type, MapObject* coll_
 
 	// ---------- (2) Adjust the sprite's position if no event was controlling this sprite
 	// This sprite is assumed in this case to be controlled by the player since sprites don't move by themselves
-	if (control_event == NULL) {
+	if (_control_event == NULL) {
 		MapMode::CurrentInstance()->GetObjectSupervisor()->AdjustSpriteAroundCollision(this, coll_type, coll_obj);
 		return;
 	}
 
 	// ---------- (3) Call the appropriate collision resolution function for the various control events
-	EVENT_TYPE event_type = control_event->GetEventType();
+	EVENT_TYPE event_type = _control_event->GetEventType();
 	if (event_type == PATH_MOVE_SPRITE_EVENT) {
-		PathMoveSpriteEvent* path_event = dynamic_cast<PathMoveSpriteEvent*>(control_event);
+		PathMoveSpriteEvent* path_event = dynamic_cast<PathMoveSpriteEvent*>(_control_event);
 		path_event->_ResolveCollision(coll_type, coll_obj);
 	}
 	else if (event_type == RANDOM_MOVE_SPRITE_EVENT) {
-		RandomMoveSpriteEvent* random_event = dynamic_cast<RandomMoveSpriteEvent*>(control_event);
+		RandomMoveSpriteEvent* random_event = dynamic_cast<RandomMoveSpriteEvent*>(_control_event);
 		random_event->_ResolveCollision(coll_type, coll_obj);
 	}
 	else {
@@ -366,16 +356,21 @@ void VirtualSprite::_ResolveCollision(COLLISION_TYPE coll_type, MapObject* coll_
 // ****************************************************************************
 
 MapSprite::MapSprite() :
+	_name(ustring()),
 	_face_portrait(NULL),
-	_has_running_animations(false),
 	_current_animation(ANIM_STANDING_SOUTH),
+	_has_running_animations(false),
+	_stationary_movement(false),
+	_reverse_movement(false),
+	_custom_animation_on(false),
+	_saved_current_animation(0),
 	_next_dialogue(-1),
 	_has_available_dialogue(false),
-	_has_unseen_dialogue(false),
-	_custom_animation_on(false),
-	_saved_current_animation(0)
+	_has_unseen_dialogue(false)
 {
 	MapObject::_object_type = SPRITE_TYPE;
+	visible = true;
+	collidable = true;
 }
 
 
@@ -385,6 +380,15 @@ MapSprite::~MapSprite() {
 		delete _face_portrait;
 		_face_portrait = NULL;
 	}
+}
+
+
+
+MapSprite* MapSprite::Create(int16 object_id) {
+	MapSprite* sprite = new MapSprite();
+	sprite->SetObjectID(object_id);
+	MapMode::CurrentInstance()->GetObjectSupervisor()->AddObject(sprite);
+	return sprite;
 }
 
 
@@ -407,39 +411,39 @@ bool MapSprite::LoadStandardAnimations(std::string filename) {
 		}
 
 		// Add standing frames to _animations
-		_animations[ANIM_STANDING_SOUTH].AddFrame(frames[0], movement_speed);
-		_animations[ANIM_STANDING_NORTH].AddFrame(frames[7], movement_speed);
-		_animations[ANIM_STANDING_WEST].AddFrame(frames[14], movement_speed);
-		_animations[ANIM_STANDING_EAST].AddFrame(frames[21], movement_speed);
+		_animations[ANIM_STANDING_SOUTH].AddFrame(frames[0], _movement_speed);
+		_animations[ANIM_STANDING_NORTH].AddFrame(frames[7], _movement_speed);
+		_animations[ANIM_STANDING_WEST].AddFrame(frames[14], _movement_speed);
+		_animations[ANIM_STANDING_EAST].AddFrame(frames[21], _movement_speed);
 
 		// Add walking frames to _animations
-		_animations[ANIM_WALKING_SOUTH].AddFrame(frames[1], movement_speed);
-		_animations[ANIM_WALKING_SOUTH].AddFrame(frames[2], movement_speed);
-		_animations[ANIM_WALKING_SOUTH].AddFrame(frames[3], movement_speed);
-		_animations[ANIM_WALKING_SOUTH].AddFrame(frames[4], movement_speed);
-		_animations[ANIM_WALKING_SOUTH].AddFrame(frames[5], movement_speed);
-		_animations[ANIM_WALKING_SOUTH].AddFrame(frames[6], movement_speed);
+		_animations[ANIM_WALKING_SOUTH].AddFrame(frames[1], _movement_speed);
+		_animations[ANIM_WALKING_SOUTH].AddFrame(frames[2], _movement_speed);
+		_animations[ANIM_WALKING_SOUTH].AddFrame(frames[3], _movement_speed);
+		_animations[ANIM_WALKING_SOUTH].AddFrame(frames[4], _movement_speed);
+		_animations[ANIM_WALKING_SOUTH].AddFrame(frames[5], _movement_speed);
+		_animations[ANIM_WALKING_SOUTH].AddFrame(frames[6], _movement_speed);
 
-		_animations[ANIM_WALKING_NORTH].AddFrame(frames[8], movement_speed);
-		_animations[ANIM_WALKING_NORTH].AddFrame(frames[9], movement_speed);
-		_animations[ANIM_WALKING_NORTH].AddFrame(frames[10], movement_speed);
-		_animations[ANIM_WALKING_NORTH].AddFrame(frames[11], movement_speed);
-		_animations[ANIM_WALKING_NORTH].AddFrame(frames[12], movement_speed);
-		_animations[ANIM_WALKING_NORTH].AddFrame(frames[13], movement_speed);
+		_animations[ANIM_WALKING_NORTH].AddFrame(frames[8], _movement_speed);
+		_animations[ANIM_WALKING_NORTH].AddFrame(frames[9], _movement_speed);
+		_animations[ANIM_WALKING_NORTH].AddFrame(frames[10], _movement_speed);
+		_animations[ANIM_WALKING_NORTH].AddFrame(frames[11], _movement_speed);
+		_animations[ANIM_WALKING_NORTH].AddFrame(frames[12], _movement_speed);
+		_animations[ANIM_WALKING_NORTH].AddFrame(frames[13], _movement_speed);
 
-		_animations[ANIM_WALKING_WEST].AddFrame(frames[15], movement_speed);
-		_animations[ANIM_WALKING_WEST].AddFrame(frames[16], movement_speed);
-		_animations[ANIM_WALKING_WEST].AddFrame(frames[17], movement_speed);
-		_animations[ANIM_WALKING_WEST].AddFrame(frames[18], movement_speed);
-		_animations[ANIM_WALKING_WEST].AddFrame(frames[19], movement_speed);
-		_animations[ANIM_WALKING_WEST].AddFrame(frames[20], movement_speed);
+		_animations[ANIM_WALKING_WEST].AddFrame(frames[15], _movement_speed);
+		_animations[ANIM_WALKING_WEST].AddFrame(frames[16], _movement_speed);
+		_animations[ANIM_WALKING_WEST].AddFrame(frames[17], _movement_speed);
+		_animations[ANIM_WALKING_WEST].AddFrame(frames[18], _movement_speed);
+		_animations[ANIM_WALKING_WEST].AddFrame(frames[19], _movement_speed);
+		_animations[ANIM_WALKING_WEST].AddFrame(frames[20], _movement_speed);
 
-		_animations[ANIM_WALKING_EAST].AddFrame(frames[22], movement_speed);
-		_animations[ANIM_WALKING_EAST].AddFrame(frames[23], movement_speed);
-		_animations[ANIM_WALKING_EAST].AddFrame(frames[24], movement_speed);
-		_animations[ANIM_WALKING_EAST].AddFrame(frames[25], movement_speed);
-		_animations[ANIM_WALKING_EAST].AddFrame(frames[26], movement_speed);
-		_animations[ANIM_WALKING_EAST].AddFrame(frames[27], movement_speed);
+		_animations[ANIM_WALKING_EAST].AddFrame(frames[22], _movement_speed);
+		_animations[ANIM_WALKING_EAST].AddFrame(frames[23], _movement_speed);
+		_animations[ANIM_WALKING_EAST].AddFrame(frames[24], _movement_speed);
+		_animations[ANIM_WALKING_EAST].AddFrame(frames[25], _movement_speed);
+		_animations[ANIM_WALKING_EAST].AddFrame(frames[26], _movement_speed);
+		_animations[ANIM_WALKING_EAST].AddFrame(frames[27], _movement_speed);
 		return true;
 	}
 
@@ -453,39 +457,39 @@ bool MapSprite::LoadStandardAnimations(std::string filename) {
 	}
 
 	// Add standing frames to _animations
-	_animations[ANIM_STANDING_SOUTH].AddFrame(frames[0], movement_speed);
-	_animations[ANIM_STANDING_NORTH].AddFrame(frames[6], movement_speed);
-	_animations[ANIM_STANDING_WEST].AddFrame(frames[12], movement_speed);
-	_animations[ANIM_STANDING_EAST].AddFrame(frames[18], movement_speed);
+	_animations[ANIM_STANDING_SOUTH].AddFrame(frames[0], _movement_speed);
+	_animations[ANIM_STANDING_NORTH].AddFrame(frames[6], _movement_speed);
+	_animations[ANIM_STANDING_WEST].AddFrame(frames[12], _movement_speed);
+	_animations[ANIM_STANDING_EAST].AddFrame(frames[18], _movement_speed);
 
 	// Add walking frames to _animations
-	_animations[ANIM_WALKING_SOUTH].AddFrame(frames[1], movement_speed);
-	_animations[ANIM_WALKING_SOUTH].AddFrame(frames[2], movement_speed);
-	_animations[ANIM_WALKING_SOUTH].AddFrame(frames[3], movement_speed);
-	_animations[ANIM_WALKING_SOUTH].AddFrame(frames[1], movement_speed);
-	_animations[ANIM_WALKING_SOUTH].AddFrame(frames[4], movement_speed);
-	_animations[ANIM_WALKING_SOUTH].AddFrame(frames[5], movement_speed);
+	_animations[ANIM_WALKING_SOUTH].AddFrame(frames[1], _movement_speed);
+	_animations[ANIM_WALKING_SOUTH].AddFrame(frames[2], _movement_speed);
+	_animations[ANIM_WALKING_SOUTH].AddFrame(frames[3], _movement_speed);
+	_animations[ANIM_WALKING_SOUTH].AddFrame(frames[1], _movement_speed);
+	_animations[ANIM_WALKING_SOUTH].AddFrame(frames[4], _movement_speed);
+	_animations[ANIM_WALKING_SOUTH].AddFrame(frames[5], _movement_speed);
 
-	_animations[ANIM_WALKING_NORTH].AddFrame(frames[7], movement_speed);
-	_animations[ANIM_WALKING_NORTH].AddFrame(frames[8], movement_speed);
-	_animations[ANIM_WALKING_NORTH].AddFrame(frames[9], movement_speed);
-	_animations[ANIM_WALKING_NORTH].AddFrame(frames[7], movement_speed);
-	_animations[ANIM_WALKING_NORTH].AddFrame(frames[10], movement_speed);
-	_animations[ANIM_WALKING_NORTH].AddFrame(frames[11], movement_speed);
+	_animations[ANIM_WALKING_NORTH].AddFrame(frames[7], _movement_speed);
+	_animations[ANIM_WALKING_NORTH].AddFrame(frames[8], _movement_speed);
+	_animations[ANIM_WALKING_NORTH].AddFrame(frames[9], _movement_speed);
+	_animations[ANIM_WALKING_NORTH].AddFrame(frames[7], _movement_speed);
+	_animations[ANIM_WALKING_NORTH].AddFrame(frames[10], _movement_speed);
+	_animations[ANIM_WALKING_NORTH].AddFrame(frames[11], _movement_speed);
 
-	_animations[ANIM_WALKING_WEST].AddFrame(frames[13], movement_speed);
-	_animations[ANIM_WALKING_WEST].AddFrame(frames[14], movement_speed);
-	_animations[ANIM_WALKING_WEST].AddFrame(frames[15], movement_speed);
-	_animations[ANIM_WALKING_WEST].AddFrame(frames[13], movement_speed);
-	_animations[ANIM_WALKING_WEST].AddFrame(frames[16], movement_speed);
-	_animations[ANIM_WALKING_WEST].AddFrame(frames[17], movement_speed);
+	_animations[ANIM_WALKING_WEST].AddFrame(frames[13], _movement_speed);
+	_animations[ANIM_WALKING_WEST].AddFrame(frames[14], _movement_speed);
+	_animations[ANIM_WALKING_WEST].AddFrame(frames[15], _movement_speed);
+	_animations[ANIM_WALKING_WEST].AddFrame(frames[13], _movement_speed);
+	_animations[ANIM_WALKING_WEST].AddFrame(frames[16], _movement_speed);
+	_animations[ANIM_WALKING_WEST].AddFrame(frames[17], _movement_speed);
 
-	_animations[ANIM_WALKING_EAST].AddFrame(frames[19], movement_speed);
-	_animations[ANIM_WALKING_EAST].AddFrame(frames[20], movement_speed);
-	_animations[ANIM_WALKING_EAST].AddFrame(frames[21], movement_speed);
-	_animations[ANIM_WALKING_EAST].AddFrame(frames[19], movement_speed);
-	_animations[ANIM_WALKING_EAST].AddFrame(frames[22], movement_speed);
-	_animations[ANIM_WALKING_EAST].AddFrame(frames[23], movement_speed);
+	_animations[ANIM_WALKING_EAST].AddFrame(frames[19], _movement_speed);
+	_animations[ANIM_WALKING_EAST].AddFrame(frames[20], _movement_speed);
+	_animations[ANIM_WALKING_EAST].AddFrame(frames[21], _movement_speed);
+	_animations[ANIM_WALKING_EAST].AddFrame(frames[19], _movement_speed);
+	_animations[ANIM_WALKING_EAST].AddFrame(frames[22], _movement_speed);
+	_animations[ANIM_WALKING_EAST].AddFrame(frames[23], _movement_speed);
 
 	return true;
 } // bool MapSprite::LoadStandardAnimations(std::string filename)
@@ -507,33 +511,33 @@ bool MapSprite::LoadRunningAnimations(std::string filename) {
 	}
 
 	// Add walking frames to _animations
-	_animations[ANIM_RUNNING_SOUTH].AddFrame(frames[1], movement_speed);
-	_animations[ANIM_RUNNING_SOUTH].AddFrame(frames[2], movement_speed);
-	_animations[ANIM_RUNNING_SOUTH].AddFrame(frames[3], movement_speed);
-	_animations[ANIM_RUNNING_SOUTH].AddFrame(frames[1], movement_speed);
-	_animations[ANIM_RUNNING_SOUTH].AddFrame(frames[4], movement_speed);
-	_animations[ANIM_RUNNING_SOUTH].AddFrame(frames[5], movement_speed);
+	_animations[ANIM_RUNNING_SOUTH].AddFrame(frames[1], _movement_speed);
+	_animations[ANIM_RUNNING_SOUTH].AddFrame(frames[2], _movement_speed);
+	_animations[ANIM_RUNNING_SOUTH].AddFrame(frames[3], _movement_speed);
+	_animations[ANIM_RUNNING_SOUTH].AddFrame(frames[1], _movement_speed);
+	_animations[ANIM_RUNNING_SOUTH].AddFrame(frames[4], _movement_speed);
+	_animations[ANIM_RUNNING_SOUTH].AddFrame(frames[5], _movement_speed);
 
-	_animations[ANIM_RUNNING_NORTH].AddFrame(frames[7], movement_speed);
-	_animations[ANIM_RUNNING_NORTH].AddFrame(frames[8], movement_speed);
-	_animations[ANIM_RUNNING_NORTH].AddFrame(frames[9], movement_speed);
-	_animations[ANIM_RUNNING_NORTH].AddFrame(frames[7], movement_speed);
-	_animations[ANIM_RUNNING_NORTH].AddFrame(frames[10], movement_speed);
-	_animations[ANIM_RUNNING_NORTH].AddFrame(frames[11], movement_speed);
+	_animations[ANIM_RUNNING_NORTH].AddFrame(frames[7], _movement_speed);
+	_animations[ANIM_RUNNING_NORTH].AddFrame(frames[8], _movement_speed);
+	_animations[ANIM_RUNNING_NORTH].AddFrame(frames[9], _movement_speed);
+	_animations[ANIM_RUNNING_NORTH].AddFrame(frames[7], _movement_speed);
+	_animations[ANIM_RUNNING_NORTH].AddFrame(frames[10], _movement_speed);
+	_animations[ANIM_RUNNING_NORTH].AddFrame(frames[11], _movement_speed);
 
-	_animations[ANIM_RUNNING_WEST].AddFrame(frames[13], movement_speed);
-	_animations[ANIM_RUNNING_WEST].AddFrame(frames[14], movement_speed);
-	_animations[ANIM_RUNNING_WEST].AddFrame(frames[15], movement_speed);
-	_animations[ANIM_RUNNING_WEST].AddFrame(frames[13], movement_speed);
-	_animations[ANIM_RUNNING_WEST].AddFrame(frames[16], movement_speed);
-	_animations[ANIM_RUNNING_WEST].AddFrame(frames[17], movement_speed);
+	_animations[ANIM_RUNNING_WEST].AddFrame(frames[13], _movement_speed);
+	_animations[ANIM_RUNNING_WEST].AddFrame(frames[14], _movement_speed);
+	_animations[ANIM_RUNNING_WEST].AddFrame(frames[15], _movement_speed);
+	_animations[ANIM_RUNNING_WEST].AddFrame(frames[13], _movement_speed);
+	_animations[ANIM_RUNNING_WEST].AddFrame(frames[16], _movement_speed);
+	_animations[ANIM_RUNNING_WEST].AddFrame(frames[17], _movement_speed);
 
-	_animations[ANIM_RUNNING_EAST].AddFrame(frames[19], movement_speed);
-	_animations[ANIM_RUNNING_EAST].AddFrame(frames[20], movement_speed);
-	_animations[ANIM_RUNNING_EAST].AddFrame(frames[21], movement_speed);
-	_animations[ANIM_RUNNING_EAST].AddFrame(frames[19], movement_speed);
-	_animations[ANIM_RUNNING_EAST].AddFrame(frames[22], movement_speed);
-	_animations[ANIM_RUNNING_EAST].AddFrame(frames[23], movement_speed);
+	_animations[ANIM_RUNNING_EAST].AddFrame(frames[19], _movement_speed);
+	_animations[ANIM_RUNNING_EAST].AddFrame(frames[20], _movement_speed);
+	_animations[ANIM_RUNNING_EAST].AddFrame(frames[21], _movement_speed);
+	_animations[ANIM_RUNNING_EAST].AddFrame(frames[19], _movement_speed);
+	_animations[ANIM_RUNNING_EAST].AddFrame(frames[22], _movement_speed);
+	_animations[ANIM_RUNNING_EAST].AddFrame(frames[23], _movement_speed);
 
 	_has_running_animations = true;
 	return true;
@@ -556,11 +560,11 @@ bool MapSprite::LoadAttackAnimations(std::string filename) {
 	}
 
 	// Add attack frames to _animations
-	_animations[ANIM_ATTACKING_EAST].AddFrame(frames[0], movement_speed);
-	_animations[ANIM_ATTACKING_EAST].AddFrame(frames[1], movement_speed);
-	_animations[ANIM_ATTACKING_EAST].AddFrame(frames[2], movement_speed);
-	_animations[ANIM_ATTACKING_EAST].AddFrame(frames[3], movement_speed);
-	_animations[ANIM_ATTACKING_EAST].AddFrame(frames[4], movement_speed);
+	_animations[ANIM_ATTACKING_EAST].AddFrame(frames[0], _movement_speed);
+	_animations[ANIM_ATTACKING_EAST].AddFrame(frames[1], _movement_speed);
+	_animations[ANIM_ATTACKING_EAST].AddFrame(frames[2], _movement_speed);
+	_animations[ANIM_ATTACKING_EAST].AddFrame(frames[3], _movement_speed);
+	_animations[ANIM_ATTACKING_EAST].AddFrame(frames[4], _movement_speed);
 
 	return true;
 } // bool MapSprite::LoadAttackAnimations(std::string filename)
@@ -583,81 +587,12 @@ void MapSprite::LoadFacePortrait(std::string pn) {
 
 
 void MapSprite::Update() {
-	// Stores the last value of moved_position to determine when a change in sprite movement between calls to this function occurs
-	static bool was_moved = moved_position;
-
 	// This call will update the sprite's position and perform collision detection
 	VirtualSprite::Update();
-
-	// if it's a custom animation, just display that and ignore everything else
-	if (_custom_animation_on == true) {
-		_animations[_current_animation].Update();
-	}
-	// Set the sprite's animation to the standing still position if movement has just stopped
-	else if (moved_position == false) {
-		if (was_moved == true) {
-			// Reset the movement animation to zero progress
-			_animations[_current_animation].ResetAnimation();
-		}
-
-		// Determine the correct standing frame to display
-		if (control_event == NULL || _state_saved == true) {
-			if (direction & FACING_NORTH) {
-				_current_animation = ANIM_STANDING_NORTH;
-			}
-			else if (direction & FACING_SOUTH) {
-				_current_animation = ANIM_STANDING_SOUTH;
-			}
-			else if (direction & FACING_WEST) {
-				_current_animation = ANIM_STANDING_WEST;
-			}
-			else if (direction & FACING_EAST) {
-				_current_animation = ANIM_STANDING_EAST;
-			}
-			else {
-				PRINT_ERROR << "invalid sprite direction, could not find proper standing animation to draw" << endl;
-			}
-		}
-	}
-
-	else { // then (moved_position == true)
-		// Save the previous animation
-		uint8 last_animation = _current_animation;
-
-		// Determine the correct animation to display
-		if (direction & FACING_NORTH) {
-			_current_animation = ANIM_WALKING_NORTH;
-		}
-		else if (direction & FACING_SOUTH) {
-			_current_animation = ANIM_WALKING_SOUTH;
-		}
-		else if (direction & FACING_WEST) {
-			_current_animation = ANIM_WALKING_WEST;
-		}
-		else if (direction & FACING_EAST) {
-			_current_animation = ANIM_WALKING_EAST;
-		}
-		else {
-			PRINT_ERROR << "invalid sprite direction, could not find proper standing animation to draw" << endl;
-		}
-
-		// Increasing the animation index by four from the walking _animations leads to the running _animations
-		if (is_running && _has_running_animations) {
-			_current_animation += 4;
-		}
-
-		// If the direction of movement changed in mid-flight, update the animation timer on the
-		// new animated image to reflect the old, so the walking _animations do not appear to
-		// "start and stop" whenever the direction is changed.
-		if (_current_animation != last_animation) {
-			_animations[_current_animation].SetTimeProgress(_animations[last_animation].GetTimeProgress());
-			_animations[last_animation].ResetAnimation();
-		}
-		_animations[_current_animation].Update();
-	}
-
-	was_moved = moved_position;
-} // void MapSprite::Update()
+// 	if (_animations.empty()) return;
+// 	PRINT_DEBUG << "CA: " << _current_animation << ", size: " << _animations.size() << endl;
+	_animations[_current_animation].Update();
+}
 
 
 // Draw the appropriate sprite frame at the correct position on the screen
@@ -732,7 +667,7 @@ void MapSprite::InitiateDialogue() {
 	}
 
 	SaveState();
-	moving = false;
+	_moving = false;
 	SetDirection(CalculateOppositeDirection(MapMode::CurrentInstance()->GetCamera()->GetDirection()));
 	MapMode::CurrentInstance()->GetDialogueSupervisor()->BeginDialogue(_dialogue_references[_next_dialogue]);
 	IncrementNextDialogue();
@@ -812,7 +747,6 @@ void MapSprite::SetNextDialogue(uint16 next) {
 
 void MapSprite::SaveState() {
 	VirtualSprite::SaveState();
-
 	_saved_current_animation = _current_animation;
 }
 
@@ -820,15 +754,125 @@ void MapSprite::SaveState() {
 
 void MapSprite::RestoreState() {
 	VirtualSprite::RestoreState();
-
 	_current_animation = _saved_current_animation;
 }
+
+
+
+void MapSprite::_ChangeCurrentAnimation() {
+	// Don't change the animation if a custom one has been selected
+	if (_custom_animation_on)
+		return;
+
+	uint8 last_animation = _current_animation;
+	bool stationary_animation = (_moving == false && _stationary_movement == false);
+
+	// TODO: It would be nice to replace all this conditional logic with a lookup table to find the current animation
+	if (stationary_animation == true) {
+		if (_direction & FACING_NORTH) {
+			_current_animation = ANIM_STANDING_NORTH;
+		}
+		else if (_direction & FACING_SOUTH) {
+			_current_animation = ANIM_STANDING_SOUTH;
+		}
+		else if (_direction & FACING_WEST) {
+			_current_animation = ANIM_STANDING_WEST;
+		}
+		else if (_direction & FACING_EAST) {
+			_current_animation = ANIM_STANDING_EAST;
+		}
+	}
+	else if (_has_running_animations == true && _running == true) {
+		if (_direction & FACING_NORTH) {
+			_current_animation = ANIM_RUNNING_NORTH;
+		}
+		else if (_direction & FACING_SOUTH) {
+			_current_animation = ANIM_RUNNING_SOUTH;
+		}
+		else if (_direction & FACING_WEST) {
+			_current_animation = ANIM_RUNNING_WEST;
+		}
+		else if (_direction & FACING_EAST) {
+			_current_animation = ANIM_RUNNING_EAST;
+		}
+	}
+	// All other cases use the walking animations
+	else {
+		if (_direction & FACING_NORTH) {
+			_current_animation = ANIM_WALKING_NORTH;
+		}
+		else if (_direction & FACING_SOUTH) {
+			_current_animation = ANIM_WALKING_SOUTH;
+		}
+		else if (_direction & FACING_WEST) {
+			_current_animation = ANIM_WALKING_WEST;
+		}
+		else if (_direction & FACING_EAST) {
+			_current_animation = ANIM_WALKING_EAST;
+		}
+	}
+	// If movement animation is reversed, swap the current animation with it's directional opposite
+	if (_reverse_movement == true) {
+		switch (_current_animation) {
+			case ANIM_STANDING_SOUTH:
+				_current_animation = ANIM_STANDING_NORTH;
+				break;
+			case ANIM_STANDING_NORTH:
+				_current_animation = ANIM_STANDING_SOUTH;
+				break;
+			case ANIM_STANDING_WEST:
+				_current_animation = ANIM_STANDING_EAST;
+				break;
+			case ANIM_STANDING_EAST:
+				_current_animation = ANIM_STANDING_WEST;
+				break;
+			case ANIM_WALKING_SOUTH:
+				_current_animation = ANIM_WALKING_NORTH;
+				break;
+			case ANIM_WALKING_NORTH:
+				_current_animation = ANIM_WALKING_SOUTH;
+				break;
+			case ANIM_WALKING_WEST:
+				_current_animation = ANIM_WALKING_EAST;
+				break;
+			case ANIM_WALKING_EAST:
+				_current_animation = ANIM_WALKING_WEST;
+				break;
+			case ANIM_RUNNING_SOUTH:
+				_current_animation = ANIM_RUNNING_NORTH;
+				break;
+			case ANIM_RUNNING_NORTH:
+				_current_animation = ANIM_RUNNING_SOUTH;
+				break;
+			case ANIM_RUNNING_WEST:
+				_current_animation = ANIM_RUNNING_EAST;
+				break;
+			case ANIM_RUNNING_EAST:
+				_current_animation = ANIM_RUNNING_WEST;
+				break;
+		}
+	}
+
+	// If the direction changed while _moving, update the animation timer on the new animated image to match the old one.
+	// This is so that movement animations do not appear to "restart" when a sprite changes directions.
+	if (stationary_animation == false && _current_animation != last_animation) {
+		_animations[_current_animation].SetTimeProgress(_animations[last_animation].GetTimeProgress());
+		_animations[last_animation].ResetAnimation();
+	}
+
+	// Reset the progress of the previous animation if the animation changed
+	if (_current_animation != last_animation) {
+		_animations[last_animation].ResetAnimation();
+	}
+} // void MapSprite::_ChangeCurrentAnimation()
 
 // *****************************************************************************
 // ********** EnemySprite class methods
 // *****************************************************************************
 
 EnemySprite::EnemySprite() :
+	_state(INACTIVE),
+	_spawned_state(HUNT),
 	_zone(NULL),
 	_fade_color(1.0f, 1.0f, 1.0f, 0.0f),
 	_pursuit_range(8.0f),
@@ -839,18 +883,28 @@ EnemySprite::EnemySprite() :
 	_battle_script_file("")
 {
 	MapObject::_object_type = ENEMY_TYPE;
+	visible = true;
 	Reset();
+}
+
+
+
+EnemySprite* EnemySprite::Create(int16 object_id) {
+	EnemySprite* sprite = new EnemySprite();
+	sprite->SetObjectID(object_id);
+	MapMode::CurrentInstance()->GetObjectSupervisor()->AddObject(sprite);
+	return sprite;
 }
 
 
 
 void EnemySprite::Reset() {
 	updatable = false;
-	no_collision = true;
+	collidable = false;
 	_state = INACTIVE;
 	_state_timer.Reset();
 	_fade_color.SetAlpha(0.0f);
-	_out_of_zone = false;
+	_returning_to_zone = false;
 }
 
 
@@ -889,17 +943,61 @@ const std::vector<uint32>& EnemySprite::RetrieveRandomParty() {
 
 
 
+void EnemySprite::ChangeState(ENEMY_STATE new_state) {
+	if (_state == new_state)
+		return;
+
+	_state = new_state;
+	switch (_state) {
+		case INACTIVE:
+			Reset();
+			if (_zone)
+				_zone->EnemyDead();
+			break;
+		case SPAWN:
+			updatable = true;
+			collidable = true;
+			_state_timer.Initialize(_fade_time);
+			_state_timer.Run();
+			_fade_color.SetAlpha(0.0f);
+			break;
+		case ACTIVE:
+			updatable = true;
+			collidable = true;
+			break;
+		case HUNT:
+			updatable = true;
+			collidable = true;
+			_moving = true;
+			_state_timer.Initialize(_directional_change_time);
+			_state_timer.Run();
+			break;
+		case DISSIPATE:
+			_state_timer.Initialize(_fade_time);
+			_state_timer.Run();
+			_fade_color.SetAlpha(1.0f);
+			break;
+		default:
+			PRINT_ERROR << "function received unknown state argument: " << _state << endl;
+			updatable = false;
+			collidable = false;
+	}
+}
+
+
+
 void EnemySprite::Update() {
 	switch (_state) {
+		// Nothing should be done in this state. If the enemy has a zone, the zone will change the state back to spawning when appropriate
+		case INACTIVE:
+			break;
+
 		// Gradually increase the fade color alpha while the sprite is fading in spawning
 		case SPAWN:
 			_state_timer.Update();
 			if (_state_timer.IsFinished() == true) {
 				_fade_color.SetAlpha(1.0f);
-				if (_zone == NULL)
-					ChangeStateActive();
-				else
-					ChangeStateActiveZoned();
+				ChangeState(_spawned_state);
 			}
 			else {
 				_fade_color.SetAlpha(_state_timer.PercentComplete());
@@ -911,32 +1009,32 @@ void EnemySprite::Update() {
 			break;
 
 		// Set the sprite's direction so that it seeks to collide with the map camera's position
-		case ACTIVE_ZONED:
+		case HUNT:
 			// Holds the x and y deltas between the sprite and map camera coordinate pairs
 			float xdelta, ydelta;
 			_state_timer.Update();
 
-			xdelta = ComputeXLocation() - MapMode::CurrentInstance()->GetCamera()->ComputeXLocation();
-			ydelta = ComputeYLocation() - MapMode::CurrentInstance()->GetCamera()->ComputeYLocation();
+			xdelta = ComputeXLocation() - MapMode::CurrentInstance()->GetPlayerSprite()->ComputeXLocation();
+			ydelta = ComputeYLocation() - MapMode::CurrentInstance()->GetPlayerSprite()->ComputeYLocation();
 
 			// If the sprite has moved outside of its zone and it should not, reverse the sprite's direction
 			if (_zone != NULL && _zone->IsInsideZone(x_position, y_position) == false && _zone->IsRoamingRestrained()) {
 				// Make sure it wasn't already out (stuck on boundaries fix)
-				if (_out_of_zone == false) {
+				if (_returning_to_zone == false) {
 					SetDirection(CalculateOppositeDirection(GetDirection()));
 					// The sprite is now finding its way back into the zone
-					_out_of_zone = true;
+					_returning_to_zone = true;
 				}
 			}
 			// Otherwise, determine the direction that the sprite should move if the camera is within the sprite's aggression range
 			else {
-				_out_of_zone = false;
+				_returning_to_zone = false;
 
 				// Enemies will only pursue if the camera is inside the zone, or the zone is non-restrictive
 				// TODO: this logic needs to be revisited; it is messy and should be cleaned up
 				if (MapMode::CurrentInstance()->AttackAllowed() && (_zone == NULL || (fabs(xdelta) <= _pursuit_range && fabs(ydelta) <= _pursuit_range
 					 && (!_zone->IsRoamingRestrained() ||
-					 _zone->IsInsideZone(MapMode::CurrentInstance()->GetCamera()->x_position, MapMode::CurrentInstance()->GetCamera()->y_position)))))
+					 _zone->IsInsideZone(MapMode::CurrentInstance()->GetPlayerSprite()->x_position, MapMode::CurrentInstance()->GetPlayerSprite()->y_position)))))
 				{
 					if (xdelta > -0.5 && xdelta < 0.5 && ydelta < 0)
 						SetDirection(SOUTH);
@@ -977,16 +1075,12 @@ void EnemySprite::Update() {
 			}
 			break;
 
-		// Nothing should be done in this state. If the enemy has a zone, the zone will change the state back to spawning when appropriate
-		case INACTIVE:
-			break;
-
 		// Gradually decrease the fade color alpha while the sprite is fading out and disappearing
 		case DISSIPATE:
 			_state_timer.Update();
 			if (_state_timer.IsFinished() == true) {
 				_fade_color.SetAlpha(0.0f);
-				ChangeStateInactive();
+				ChangeState(INACTIVE);
 			}
 			else {
 				_fade_color.SetAlpha(1.0f - _state_timer.PercentComplete());

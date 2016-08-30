@@ -64,7 +64,7 @@
 	support the __concat metamethod. This is a bit tricky, since it cannot be
 	treated as a normal operator. It is a binary operator but we want to use the
 	__tostring implementation for both arguments.
-
+	
 */
 
 #include <luabind/prefix.hpp>
@@ -96,20 +96,20 @@
 #include <luabind/detail/constructor.hpp>
 #include <luabind/detail/call.hpp>
 #include <luabind/detail/deduce_signature.hpp>
-#include <luabind/detail/compute_score.hpp>
 #include <luabind/detail/primitives.hpp>
 #include <luabind/detail/property.hpp>
 #include <luabind/detail/typetraits.hpp>
 #include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/call.hpp>
 #include <luabind/detail/object_rep.hpp>
-#include <luabind/detail/calc_arity.hpp>
 #include <luabind/detail/call_member.hpp>
 #include <luabind/detail/enum_maker.hpp>
 #include <luabind/detail/operator_id.hpp>
 #include <luabind/detail/pointee_typeid.hpp>
 #include <luabind/detail/link_compatibility.hpp>
 #include <luabind/detail/inheritance.hpp>
+#include <luabind/detail/signature_match.hpp>
+#include <luabind/no_dependency.hpp>
 #include <luabind/typeid.hpp>
 
 // to remove the 'this' used in initialization list-warning
@@ -126,7 +126,7 @@ namespace boost
 } // namespace boost
 
 namespace luabind
-{
+{	
 	namespace detail
 	{
 		struct unspecified {};
@@ -225,7 +225,7 @@ namespace luabind
 		// range [start_index, lua_gettop()]
 
 		LUABIND_API std::string stack_content_by_name(lua_State* L, int start_index);
-
+	
 		struct LUABIND_API create_class
 		{
 			static int stage1(lua_State* L);
@@ -252,7 +252,7 @@ namespace luabind
 		private:
 			template<class U> void operator,(U const&) const;
 			void operator=(static_scope const&);
-
+			
 			T& self;
 		};
 
@@ -261,7 +261,7 @@ namespace luabind
 		struct LUABIND_API class_base : scope
 		{
 		public:
-			class_base(char const* name);
+			class_base(char const* name);		
 
 			struct base_desc
 			{
@@ -374,10 +374,24 @@ namespace luabind
             >
         {};
 
+        template <class T>
+        struct reference_argument
+          : mpl::if_<
+                mpl::or_<boost::is_pointer<T>, is_primitive<T> >
+              , T
+              , typename boost::add_reference<
+                    typename boost::add_const<T>::type
+                >::type
+            >
+        {};
+
         template <class T, class Policies>
         struct inject_dependency_policy
           : mpl::if_<
-                is_primitive<T>
+                mpl::or_<
+                    is_primitive<T>
+                  , has_policy<Policies, detail::no_dependency_policy>
+                >
               , Policies
               , policy_cons<dependency_policy<0, 1>, Policies>
             >
@@ -447,10 +461,12 @@ namespace luabind
             template <class T, class D>
             object make_set(lua_State* L, D T::* mem_ptr, mpl::true_) const
             {
+                typedef typename reference_argument<D>::type argument_type;
+
                 return make_function(
                     L
                   , access_member_ptr<T, D>(mem_ptr)
-                  , mpl::vector3<void, Class&, D const&>()
+                  , mpl::vector3<void, Class&, argument_type>()
                   , set_policies
                 );
             }
@@ -484,7 +500,7 @@ namespace luabind
 
 	// registers a class in the lua environment
 	template<class T, class X1, class X2, class X3>
-	struct class_: detail::class_base
+	struct class_: detail::class_base 
 	{
 		typedef class_<T, X1, X2, X3> self_t;
 
@@ -564,7 +580,7 @@ namespace luabind
 #ifndef NDEBUG
 			detail::check_link_compatibility();
 #endif
-		   	init();
+		   	init(); 
 		}
 
 		template<class F>
@@ -573,7 +589,7 @@ namespace luabind
 			return this->virtual_def(
 				name, f, detail::null_type()
 			  , detail::null_type(), boost::mpl::true_());
-		}
+        }
 
 		// virtual functions
 		template<class F, class DefaultOrPolicies>
@@ -591,7 +607,57 @@ namespace luabind
 			return this->virtual_def(
 				name, fn, default_
 			  , policies, boost::mpl::false_());
-		}
+        }
+
+        template<class F>
+        class_& defaultGet(F f)
+        {
+            return this->virtual_def(
+                "__index", f, detail::null_type()
+                , detail::null_type(), boost::mpl::true_());
+        }
+
+        // virtual functions
+        template<class F, class DefaultOrPolicies>
+        class_& defaultGet(F fn, DefaultOrPolicies default_or_policies)
+        {
+            return this->virtual_def(
+                "__index", fn, default_or_policies, detail::null_type()
+                , LUABIND_MSVC_TYPENAME detail::is_policy_cons<DefaultOrPolicies>::type());
+        }
+
+        template<class F, class Default, class Policies>
+        class_& defaultGet(F fn, Default default_, Policies const& policies)
+        {
+            return this->virtual_def(
+                "__index", fn, default_
+                , policies, boost::mpl::false_());
+        }
+
+        template<class F>
+        class_& defaultSet(F f)
+        {
+            return this->virtual_def(
+                "__newindex", f, detail::null_type()
+                , detail::null_type(), boost::mpl::true_());
+        }
+
+        // virtual functions
+        template<class F, class DefaultOrPolicies>
+        class_& defaultSet(F fn, DefaultOrPolicies default_or_policies)
+        {
+            return this->virtual_def(
+                "__newindex", fn, default_or_policies, detail::null_type()
+                , LUABIND_MSVC_TYPENAME detail::is_policy_cons<DefaultOrPolicies>::type());
+        }
+
+        template<class F, class Default, class Policies>
+        class_& defaultSet(F fn, Default default_, Policies const& policies)
+        {
+            return this->virtual_def(
+                "__newindex", fn, default_
+                , policies, boost::mpl::false_());
+        }
 
 		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
 		class_& def(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> sig)
@@ -741,9 +807,9 @@ namespace luabind
 		{
 			return detail::enum_maker<self_t>(*this);
 		}
-
+		
 		detail::static_scope<self_t> scope;
-
+		
 	private:
 		void operator=(class_ const&);
 
@@ -773,12 +839,12 @@ namespace luabind
 				,	no_bases
 			>::type bases_t;
 
-			typedef typename
+			typedef typename 
 				boost::mpl::if_<detail::is_bases<bases_t>
 					,	bases_t
 					,	bases<bases_t>
 				>::type Base;
-
+	
             class_base::init(
                 typeid(T)
               , detail::registered_class<T>::id

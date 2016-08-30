@@ -46,6 +46,21 @@ namespace hoa_map {
 namespace private_map {
 
 // -----------------------------------------------------------------------------
+// ---------- MapEvent Class Methods
+// -----------------------------------------------------------------------------
+
+void MapEvent::_AddRecord(const std::string& record_name, int32 record_value, bool is_global) {
+	if (_event_records == NULL) {
+		_event_records = new MapRecordData();
+	}
+
+	if (is_global == true)
+		_event_records->AddGlobalRecord(record_name, record_value);
+	else
+		_event_records->AddLocalRecord(record_name, record_value);
+}
+
+// -----------------------------------------------------------------------------
 // ---------- PushMapStateEvent Class Methods
 // -----------------------------------------------------------------------------
 
@@ -156,8 +171,8 @@ DialogueEvent* DialogueEvent::Create(uint32 event_id, uint32 dialogue_id) {
 
 void DialogueEvent::_Start() {
 	if (_stop_camera_movement == true) {
-		MapMode::CurrentInstance()->GetCamera()->moving = false;
-		MapMode::CurrentInstance()->GetCamera()->is_running = false;
+		MapMode::CurrentInstance()->GetCamera()->SetMoving(false);
+		MapMode::CurrentInstance()->GetCamera()->SetRunning(false);
 	}
 
 	MapMode::CurrentInstance()->GetDialogueSupervisor()->BeginDialogue(_dialogue_id);
@@ -361,14 +376,16 @@ void BattleEncounterEvent::_Start() {
 	batt_mode->GetMedia().SetBackgroundImage(_battle_background);
 	batt_mode->GetMedia().SetBattleMusic(_battle_music);
 
-    MapMode::CurrentInstance()->_TransitionToMode(batt_mode);
+    MapMode::CurrentInstance()->TransitionToNewMode(batt_mode);
 }
 
 
 
 bool BattleEncounterEvent::_Update() {
-	// TODO
-	return true;
+	if (MapMode::CurrentInstance()->CurrentState() != STATE_TRANSITION)
+		return true;
+	else
+		return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -485,34 +502,45 @@ SpriteEvent::SpriteEvent(uint32 event_id, EVENT_TYPE event_type, VirtualSprite* 
 }
 
 // -----------------------------------------------------------------------------
-// ---------- ChangeDirectionSpriteEvent Class Methods
+// ---------- ChangePropertySpriteEvent Class Methods
 // -----------------------------------------------------------------------------
 
-ChangeDirectionSpriteEvent::ChangeDirectionSpriteEvent(uint32 event_id, VirtualSprite* sprite, uint16 direction) :
-	SpriteEvent(event_id, CHANGE_DIRECTION_SPRITE_EVENT, sprite),
-	_direction(direction)
-{
-	if ((_direction != NORTH) && (_direction != SOUTH) && (_direction != EAST) && (_direction != WEST))
-		IF_PRINT_WARNING(MAP_DEBUG) << "non-standard direction specified (" << direction << ") "
-			<< "when trying to create an event with id: " << event_id << endl;
-}
+ChangePropertySpriteEvent::ChangePropertySpriteEvent(uint32 event_id, VirtualSprite* sprite) :
+	SpriteEvent(event_id, CHANGE_PROPERTY_SPRITE_EVENT, sprite),
+	_sprite_list(1, sprite),
+	_properties(),
+	_relative_position_change(false),
+	_updatable(false),
+	_visible(false),
+	_collidable(false),
+	_context(MAP_CONTEXT_NONE),
+	_x_position(0),
+	_y_position(0),
+	_x_offset(0.0f),
+	_y_offset(0.0f),
+	_direction(NORTH),
+	_movement_speed(NORMAL_SPEED),
+	_moving(false),
+	_running(false),
+	_stationary_movement(false)
+{}
 
 
 
-ChangeDirectionSpriteEvent* ChangeDirectionSpriteEvent::Create(uint32 event_id, VirtualSprite* sprite, uint16 direction) {
+ChangePropertySpriteEvent* ChangePropertySpriteEvent::Create(uint32 event_id, VirtualSprite* sprite) {
 	if (sprite == NULL) {
 		IF_PRINT_WARNING(MAP_DEBUG) << "function received NULL sprite argument when trying to create an event with id: " << event_id << endl;
 		return NULL;
 	}
 
-	ChangeDirectionSpriteEvent* event = new ChangeDirectionSpriteEvent(event_id, sprite, direction);
+	ChangePropertySpriteEvent* event = new ChangePropertySpriteEvent(event_id, sprite);
 	MapMode::CurrentInstance()->GetEventSupervisor()->RegisterEvent(event);
 	return event;
 }
 
 
 
-ChangeDirectionSpriteEvent* ChangeDirectionSpriteEvent::Create(uint32 event_id, uint16 sprite_id, uint16 direction) {
+ChangePropertySpriteEvent* ChangePropertySpriteEvent::Create(uint32 event_id, uint16 sprite_id) {
 	VirtualSprite* sprite = MapMode::CurrentInstance()->GetObjectSupervisor()->GetSprite(sprite_id);
 	if (sprite == NULL) {
 		IF_PRINT_WARNING(MAP_DEBUG) << "no sprite object was registered for the requested sprite_id (" << sprite_id << ") "
@@ -520,19 +548,100 @@ ChangeDirectionSpriteEvent* ChangeDirectionSpriteEvent::Create(uint32 event_id, 
 		return NULL;
 	}
 
-	return Create(event_id, sprite, direction);
+	return Create(event_id, sprite);
 }
 
 
 
-void ChangeDirectionSpriteEvent::_Start() {
-	_sprite->SetDirection(_direction);
+void ChangePropertySpriteEvent::AddSprite(VirtualSprite* sprite) {
+	if (sprite == NULL) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "function received NULL sprite argument when trying to add to event id: " << GetEventID() << endl;
+		return;
+	}
+
+	// Note that we don't bother to check if this sprite is a duplicate of one already in the list. It doesn't matter much since we will
+	// just end up setting the properties for that sprite twice.
+	_sprite_list.push_back(sprite);
 }
 
 
 
-bool ChangeDirectionSpriteEvent::_Update() {
-	return true;
+void ChangePropertySpriteEvent::Position(int16 x_position, float x_offset, int16 y_position, float y_offset) {
+	if (_relative_position_change == false) {
+		if (x_position < 0) {
+			IF_PRINT_WARNING(MAP_DEBUG) << "function received negative x_position value when relative positioning was disabled, event id: " << GetEventID() << endl;
+			x_position = -x_position;
+		}
+		if (y_position < 0) {
+			IF_PRINT_WARNING(MAP_DEBUG) << "function received negative y_position value when relative positioning was disabled, event id: " << GetEventID() << endl;
+			y_position = -y_position;
+		}
+	}
+
+	_x_position = x_position;
+	_x_offset = x_offset;
+	_y_position = y_position;
+	_y_offset = y_offset;
+}
+
+
+void ChangePropertySpriteEvent::_Start() {
+	// When no properties were set by the user, this event effectively becomes a no-op
+	if (_properties.none() == true)
+		return;
+
+	for (uint32 i = 0; i < _sprite_list.size(); ++i) {
+		VirtualSprite* sprite = _sprite_list[i];
+		MapSprite* map_sprite = NULL;
+		if (sprite->GetObjectType() != VIRTUAL_TYPE)
+			map_sprite = dynamic_cast<MapSprite*>(sprite);
+		for (uint32 bit = 0; bit < _properties.size(); ++bit) {
+			if (_properties.test(bit) == true) {
+				switch (bit) {
+					case UPDATABLE:
+						sprite->updatable = _updatable;
+						break;
+					case VISIBLE:
+						sprite->visible = _visible;
+						break;
+					case COLLIDABLE:
+						sprite->collidable = _collidable;
+						break;
+					case CONTEXT:
+						sprite->SetContext(_context);
+						break;
+					case POSITION:
+						if (_relative_position_change == false)
+							sprite->SetPosition(static_cast<uint16>(_x_position), _x_offset, static_cast<uint16>(_y_position), _y_offset);
+						else
+							sprite->ModifyPosition(_x_position, _x_offset, _y_position, _y_offset);
+						break;
+					case DIRECTION:
+						sprite->SetDirection(_direction);
+						break;
+					case MOVEMENTSPEED:
+						sprite->SetMovementSpeed(_movement_speed);
+						break;
+					case MOVING:
+						sprite->SetMoving(_moving);
+						break;
+					case RUNNING:
+						sprite->SetRunning(_running);
+						break;
+					case STATIONARYMOVEMENT:
+						if (map_sprite != NULL)
+							map_sprite->SetStationaryMovement(_stationary_movement);
+						break;
+					case REVERSEMOVEMENT:
+						if (map_sprite != NULL)
+							map_sprite->SetReverseMovement(_reverse_movement);
+						break;
+					default:
+						IF_PRINT_WARNING(MAP_DEBUG) << "unknown property bit set (" << bit << "), event id: " << GetEventID() << endl;
+				}
+			}
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -669,7 +778,7 @@ RandomMoveSpriteEvent* RandomMoveSpriteEvent::Create(uint32 event_id, uint16 spr
 void RandomMoveSpriteEvent::_Start() {
 	SpriteEvent::_Start();
 	_sprite->SetRandomDirection();
-	_sprite->moving = true;
+	_sprite->SetMoving(true);
 }
 
 
@@ -686,7 +795,7 @@ bool RandomMoveSpriteEvent::_Update() {
 
 	if (_movement_timer >= _total_movement_time) {
 		_movement_timer = 0;
-		_sprite->moving = false;
+		_sprite->SetMoving(false);
 		_sprite->ReleaseControl(this);
 		return true;
 	}
@@ -818,14 +927,9 @@ void PathMoveSpriteEvent::_Start() {
 	}
 
 	// TODO: If we already have a path from this source to this destination, re-use it and do not compute a new path
-// 	if ((_path.empty() == false) && (_source_col == _sprite->x_position) && (_source_row == _sprite->y_position)) {
-// 		_sprite->moving = true;
-// 		_SetDirection();
-// 		return;
-// 	}
 
 	if (MapMode::CurrentInstance()->GetObjectSupervisor()->FindPath(_sprite, _path, _destination_node) == true) {
-		_sprite->moving = true;
+		_sprite->SetMoving(true);
 		_SetSpriteDirection();
 	}
 	else {
@@ -838,7 +942,7 @@ void PathMoveSpriteEvent::_Start() {
 
 bool PathMoveSpriteEvent::_Update() {
 	if (_path.empty() == true) {
-		PRINT_ERROR << "no path to destination" << endl;
+		PRINT_ERROR << "no path to destination: [" << _destination_col << ", " << _destination_row << "]" << endl;
 		return true;
 	}
 
@@ -848,7 +952,8 @@ bool PathMoveSpriteEvent::_Update() {
 
 		// When the current node index is at the end of the path, the event is finished
 		if (_current_node >= _path.size() - 1) {
-			_sprite->moving = false;
+			// TODO: don't finish here: instead move the sprite to the specified offset within the grid element then finish
+			_sprite->SetMoving(false);
 			_sprite->ReleaseControl(this);
 			if (_final_direction != 0)
 				_sprite->SetDirection(_final_direction);
@@ -887,21 +992,33 @@ void PathMoveSpriteEvent::_SetSpriteDirection() {
 		direction |= EAST;
 	}
 
-	// Determine if the sprite should move diagonally to the next node
+	// Determine if the sprite is movving diagonally to the next node. If so, we have to determine which direction
+	// the sprite should face during this movement as well
 	if ((direction & (NORTH | SOUTH)) && (direction & (WEST | EAST))) {
-		switch (direction) {
-			case (NORTH | WEST):
-				direction = MOVING_NORTHWEST;
-				break;
-			case (NORTH | EAST):
-				direction = MOVING_NORTHEAST;
-				break;
-			case (SOUTH | WEST):
-				direction = MOVING_SOUTHWEST;
-				break;
-			case (SOUTH | EAST):
-				direction = MOVING_SOUTHEAST;
-				break;
+		uint16 sprite_direction = _sprite->GetDirection();
+		if (direction == (NORTH | WEST)) {
+			if (sprite_direction & FACING_NORTH || sprite_direction & FACING_EAST)
+				direction = NW_NORTH;
+			else
+				direction = NW_WEST;
+		}
+		else if (direction == (NORTH | EAST)) {
+			if (sprite_direction & FACING_NORTH || sprite_direction & FACING_WEST)
+				direction = NE_NORTH;
+			else
+				direction = NE_EAST;
+		}
+		else if (direction == (SOUTH | WEST)) {
+			if (sprite_direction & FACING_SOUTH || sprite_direction & FACING_EAST)
+				direction = SW_SOUTH;
+			else
+				direction = SW_WEST;
+		}
+		else if (direction == (SOUTH | EAST)) {
+			if (sprite_direction & FACING_SOUTH || sprite_direction & FACING_WEST)
+				direction = SE_SOUTH;
+			else
+				direction = SE_EAST;
 		}
 	}
 
@@ -1156,6 +1273,7 @@ void EventSupervisor::StartEvent(MapEvent* event) {
 
 	_active_events.push_back(event);
 	event->_Start();
+	event->_CommitRecords(); // Commit any records for the event now that it has been started
 	_event_history.emplace(event->GetEventID(), 0);
 	_event_history[event->GetEventID()] += 1;
 	_ExamineEventLinks(event, true);
