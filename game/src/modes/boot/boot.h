@@ -26,7 +26,7 @@
 #include "video.h"
 
 #include "boot_menu.h"
-#include "menu_views.h"
+#include "menu.h"
 
 //! \brief All calls to boot mode are wrapped in this namespace.
 namespace hoa_boot {
