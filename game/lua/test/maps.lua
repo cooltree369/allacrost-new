@@ -122,7 +122,7 @@ tests[6] = {
 		GlobalManager:SetDrunes(200);
 		GlobalManager:AddToInventory(1, 5);
 
-		StartMap("lua/scripts/maps/a01_harrvah_capital_attack.lua");
+		StartMap("lua/scripts/maps/a01_harrvah_capital_aftermath.lua");
 	end
 }
 
