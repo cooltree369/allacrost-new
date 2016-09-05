@@ -41,7 +41,7 @@ zones = {};
 objects = {};
 sprites = {};
 dialogues = {};
-events = {};
+event_sequences = {};
 sounds = {};
 
 -- All custom map functions are contained within the following table.
@@ -77,8 +77,6 @@ function Load(m)
 	Map:AddObjectLayerToOrder(0);
 	Map:AddTileLayerToOrder(3);
 	Map:AddTileLayerToOrder(4);
-
-	event_sequences = {}; -- Holds IDs of the starting event for each event chain
 
 	CreateZones();
 	CreateObjects();
