@@ -157,11 +157,12 @@ enum ZONE_TYPE {
 
 //! \brief Used to identify the type of map object
 enum MAP_OBJECT_TYPE {
-	PHYSICAL_TYPE  = 0,
-	VIRTUAL_TYPE   = 1,
-	SPRITE_TYPE    = 2,
-	ENEMY_TYPE     = 3,
-	TREASURE_TYPE  = 4
+	PHYSICAL_TYPE          = 0,
+	VIRTUAL_TYPE           = 1,
+	SPRITE_TYPE            = 2,
+	ENEMY_TYPE             = 3,
+	MAP_TREASURE_TYPE      = 4,
+	GLIMMER_TREASURE_TYPE  = 5,
 };
 
 
