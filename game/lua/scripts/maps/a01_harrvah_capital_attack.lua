@@ -1122,7 +1122,7 @@ function CreateEvents()
 	event = hoa_map.DialogueEvent.Create(event_sequences["locked_door"], dialogues["locked_door"]);
 
 	event_sequences["pop_state"] = 10100;
-	event = hoa_map.PopMapStateEvent.Create(event_sequences["pop_state"])
+	event = hoa_map.PopMapStateEvent.Create(event_sequences["pop_state"]);
 end -- function CreateEvents()
 
 ----------------------------------------------------------------------------
