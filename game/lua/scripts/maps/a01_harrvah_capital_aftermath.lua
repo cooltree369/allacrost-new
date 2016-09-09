@@ -88,9 +88,8 @@ function Load(m)
 	Map:ShowStaminaBar(false);
 	Map:ShowDialogueIcons(true);
 
-	-- All character sprites are initially uncollidable, since they will "merge" into one sprite at the end of the opening scene
 	Map:SetCamera(sprites["claudius"]);
-	sprites["claudius"].collidable = false;
+	Map:SetPlayerSprite(sprites["claudius"]);
 
 	IfPrintDebug(DEBUG, "Map loading complete");
 end -- Load(m)
@@ -315,6 +314,9 @@ function CreateEvents()
 	local event = {};
 	local event_id;
 
+	---------- Miscellaneous Events
+	event_sequences["pop_state"] = 10000;
+	event = hoa_map.PopMapStateEvent.Create(event_sequences["pop_state"]);
 end -- function CreateEvents()
 
 ----------------------------------------------------------------------------
@@ -349,7 +351,6 @@ function HandleCollisionNotification(notification)
 	if (sprite:GetObjectID() ~= Map:GetPlayerSprite():GetObjectID()) then
 		return;
 	elseif (notification.collision_type == hoa_map.MapMode.OBJECT_COLLISION) then
-		-- TODO: we may want to use this collision type to detect if the object was an enemy and start a battle if so
 		return;
 	end
 
@@ -381,7 +382,7 @@ function HandleCollisionNotification(notification)
 			elseif (y_top == 120 and notification.x_position >= 140 and notification.x_position <= 144) then
 				locked_door_collision = true;
 			elseif (y_top == 122 and notification.x_position >= 168 and notification.x_position <= 172) then
-				locked_door_collision = true;
+				SpriteContextTransition("home_inside", sprite);
 			-- City middle row doors
 			elseif (y_top == 150 and notification.x_position >= 20 and notification.x_position <= 24) then
 				locked_door_collision = true;
@@ -412,8 +413,14 @@ function HandleCollisionNotification(notification)
 			-- x96-100, y60 = throne room
 		end
 	elseif (sprite:GetContext() == contexts["interior_a"]) then
-		if (sprite:IsFacingDirection(hoa_map.MapMode.SOUTH)) then
-			if (y_bottom == 60 and notification.x_position >= 96 and notification.x_position <= 100) then
+		if (sprite:IsFacingDirection(hoa_map.MapMode.NORTH)) then
+			if (y_top == 104 and x_left >= 160 and x_right <= 164) then
+				SpriteContextTransition("home_upstairs", sprite);
+			end
+		elseif (sprite:IsFacingDirection(hoa_map.MapMode.SOUTH)) then
+			if (y_bottom == 124 and x_left >= 168 and x_right <= 172) then
+				SpriteContextTransition("home_outside", sprite);
+			elseif (y_bottom == 60 and notification.x_position >= 96 and notification.x_position <= 100) then
 				SpriteContextTransition("throne_to_balcony", sprite);
 			end
 		end
@@ -427,6 +434,28 @@ function HandleCollisionNotification(notification)
 				SpriteContextTransition("ltower_to_balcony", sprite);
 			end
 		end
+	elseif (sprite:GetContext() == contexts["interior_c"]) then
+		if (sprite:IsFacingDirection(hoa_map.MapMode.NORTH)) then
+			if (y_top == 106 and x_left >= 160 and x_right <= 164) then
+				SpriteContextTransition("home_downstairs", sprite);
+			end
+		elseif (sprite:IsFacingDirection(hoa_map.MapMode.EAST)) then
+			if (x_right == 84 and notification.y_position > 60 and notification.y_position <= 66) then
+				SpriteContextTransition("ltower_to_balcony", sprite);
+			end
+		end
+	elseif (sprite:GetContext() == contexts["interior_d"]) then
+		if (sprite:IsFacingDirection(hoa_map.MapMode.SOUTH)) then
+			if (y_bottom == 68 and notification.x_position >= 22 and notification.x_position <= 24) then
+				SpriteContextTransition("exit_lcastle_side", sprite);
+			end
+		elseif (sprite:IsFacingDirection(hoa_map.MapMode.EAST)) then
+			if (x_right == 84 and notification.y_position > 60 and notification.y_position <= 66) then
+				SpriteContextTransition("ltower_to_balcony", sprite);
+			end
+		end
+	elseif (sprite:GetContext() == contexts["interior_e"]) then
+
 	end
 
 	if (locked_door_collision) then
@@ -450,7 +479,21 @@ function SpriteContextTransition(transition_key, sprite)
 	Map:GetVirtualFocus():MoveToObject(sprite, true);
 	Map:SetCamera(Map:GetVirtualFocus());
 
-	if (transition_key == "enter_lcastle_side") then
+	if (transition_key == "home_inside") then
+		new_context = contexts["interior_a"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "home_outside") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(2, 0.5);
+	elseif (transition_key == "home_upstairs") then
+		new_context = contexts["interior_c"];
+		sprite:SetPosition(162, 108);
+		sprite:SetDirection(hoa_map.MapMode.SOUTH);
+	elseif (transition_key == "home_downstairs") then
+		new_context = contexts["interior_a"];
+		sprite:SetPosition(164, 109);
+		sprite:SetDirection(hoa_map.MapMode.SOUTH);
+	elseif (transition_key == "enter_lcastle_side") then
 		new_context = contexts["interior_b"];
 		sprite:ModifyYPosition(-2, -0.5);
 	elseif (transition_key == "exit_lcastle_side") then
