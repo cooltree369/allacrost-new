@@ -45,17 +45,17 @@ namespace hoa_map {
 namespace private_map {
 
 // -----------------------------------------------------------------------------
-// ---------- MapTreasure Class Functions
+// ---------- TreasureContainer Class Functions
 // -----------------------------------------------------------------------------
 
-MapTreasure::MapTreasure() :
+TreasureContainer::TreasureContainer() :
 	_taken(false),
 	_drunes(0)
 {}
 
 
 
-MapTreasure::~MapTreasure() {
+TreasureContainer::~TreasureContainer() {
 	for (uint32 i = 0; i < _objects_list.size(); i++) {
 		delete _objects_list[i];
 	}
@@ -63,7 +63,7 @@ MapTreasure::~MapTreasure() {
 
 
 
-bool MapTreasure::AddObject(uint32 id, uint32 quantity) {
+bool TreasureContainer::AddObject(uint32 id, uint32 quantity) {
 	hoa_global::GlobalObject* obj = GlobalCreateNewObject(id, quantity);
 
 	if (obj == NULL) {
@@ -73,6 +73,283 @@ bool MapTreasure::AddObject(uint32 id, uint32 quantity) {
 
 	_objects_list.push_back(obj);
 	return true;
+}
+
+// ----------------------------------------------------------------------------
+// ---------- MapTreasure Class Functions
+// ----------------------------------------------------------------------------
+
+MapTreasure::MapTreasure(string image_file, uint8 num_total_frames, uint8 num_closed_frames, uint8 num_open_frames) :
+	PhysicalObject()
+{
+	const uint32 DEFAULT_FRAME_TIME = 100; // The default number of milliseconds for frame animations
+
+	_object_type = MAP_TREASURE_TYPE;
+
+	std::vector<StillImage> frames;
+
+	// (1) Load a the single row, multiple column multi image containing all of the treasure frames
+	if (ImageDescriptor::LoadMultiImageFromElementGrid(frames, image_file, 1, num_total_frames) == false ) {
+		PRINT_ERROR << "failed to load image file: " << image_file << endl;
+		// TODO: throw exception
+		return;
+	}
+
+	// Update the frame image sizes to work in the MapMode coordinate system
+	for (uint32 i = 0; i < frames.size(); i++) {
+		frames[i].SetWidth(frames[i].GetWidth() / (GRID_LENGTH / 2));
+		frames[i].SetHeight(frames[i].GetHeight() / (GRID_LENGTH / 2));
+	}
+
+	// (2) Now that we know the total number of frames in the image, make sure the frame count arguments make sense
+	if (num_open_frames == 0 || num_closed_frames == 0 || num_open_frames + num_closed_frames >= num_total_frames) {
+		PRINT_ERROR << "invalid treasure image for image file: " << image_file << endl;
+		// TODO: throw exception
+		return;
+	}
+
+	// (3) Dissect the frames and create the closed, opening, and open animations
+	hoa_video::AnimatedImage closed_anim, opening_anim, open_anim;
+
+	for (uint8 i = 0; i < num_closed_frames; i++) {
+		closed_anim.AddFrame(frames[i], DEFAULT_FRAME_TIME);
+	}
+	for (uint8 i = num_total_frames - num_open_frames; i < num_total_frames; i++) {
+		open_anim.AddFrame(frames[i], DEFAULT_FRAME_TIME);
+	}
+
+	// Loop the opening animation only once
+	opening_anim.SetNumberLoops(0);
+
+	// If there are no additional frames for the opening animation, set the opening animation to be the open animation
+	if (num_total_frames - num_closed_frames - num_open_frames == 0) {
+		opening_anim = open_anim;
+	}
+	else {
+		for (uint8 i = num_closed_frames; i < num_total_frames - num_open_frames; i++) {
+			opening_anim.AddFrame(frames[i], DEFAULT_FRAME_TIME);
+		}
+	}
+
+	AddAnimation(closed_anim);
+	AddAnimation(opening_anim);
+	AddAnimation(open_anim);
+
+	// (4) Set the collision rectangle according to the dimensions of the first frame
+	SetCollHalfWidth(frames[0].GetWidth() / 2.0f);
+	SetCollHeight(frames[0].GetHeight());
+} // MapTreasure::MapTreasure(string image_file, uint8 num_total_frames, uint8 num_closed_frames, uint8 num_open_frames)
+
+
+
+void MapTreasure::LoadState() {
+	string record_name = GetRecordName();
+
+	// Check if the event corresponding to this treasure has already occurred
+	if (MapMode::CurrentInstance()->GetGlobalRecordGroup()->DoesRecordExist(record_name) == true) {
+		// If the event is non-zero, the treasure has already been opened
+		if (MapMode::CurrentInstance()->GetGlobalRecordGroup()->GetRecord(record_name) != 0) {
+			SetCurrentAnimation(TREASURE_OPEN_ANIM);
+			_treasure_container.SetTaken(true);
+		}
+	}
+}
+
+
+
+void MapTreasure::Open() {
+	if (_treasure_container.IsTaken() == true) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "attempted to retrieve an already taken treasure: " << object_id << endl;
+		return;
+	}
+
+	SetCurrentAnimation(TREASURE_OPENING_ANIM);
+}
+
+
+
+void MapTreasure::Update() {
+	PhysicalObject::Update();
+
+	if ((current_animation == TREASURE_OPENING_ANIM) && (animations[TREASURE_OPENING_ANIM].IsLoopsFinished() == true)) {
+		SetCurrentAnimation(TREASURE_OPEN_ANIM);
+		MapMode::CurrentInstance()->GetTreasureSupervisor()->Initialize(this);
+
+		// Add an event to the map group indicating that the treasure has now been opened
+		string record_name = GetRecordName();
+		if (MapMode::CurrentInstance()->GetGlobalRecordGroup()->DoesRecordExist(record_name) == true) {
+			MapMode::CurrentInstance()->GetGlobalRecordGroup()->SetRecord(record_name, 1);
+		}
+		else {
+			MapMode::CurrentInstance()->GetGlobalRecordGroup()->AddNewRecord(record_name, 1);
+		}
+	}
+}
+
+// ----------------------------------------------------------------------------
+// ---------- GlimmerTreasure Class Functions
+// ----------------------------------------------------------------------------
+
+const uint32 GlimmerTreasure::GLIMMER_WAIT_COMMON          = 8000;
+const uint32 GlimmerTreasure::GLIMMER_WAIT_UNCOMMON        = 14000;
+const uint32 GlimmerTreasure::GLIMMER_WAIT_RARE            = 22000;
+const std::string GlimmerTreasure::DEFAULT_IMAGE_FILE      = "img/misc/golden_glimmer.png";
+const uint32 GlimmerTreasure::DEFAULT_FRAME_TIME           = 100;
+const float GlimmerTreasure::DEFAULT_DEVIATION_MULTIPLIER  = 0.05f;
+
+
+
+GlimmerTreasure::GlimmerTreasure(string image_file, uint32 frame_time, uint32 average_delay) :
+	PhysicalObject(),
+	_display_enabled(true),
+	_display_forced(false)
+{
+	_object_type = GLIMMER_TREASURE_TYPE;
+	collidable = false;
+	coll_half_width = 0.5f;
+	coll_height = 1.0f;
+
+	if (image_file == "") {
+		PRINT_ERROR << "empty string argument passed to class constructor" << endl;
+		return;
+	}
+
+	// Load a the single row, multiple column multi image containing all of the treasure frames
+	std::vector<StillImage> frames;
+	if (ImageDescriptor::LoadMultiImageFromElementSize(frames, image_file, 32, 32) == false) {
+		PRINT_ERROR << "failed to load image file: " << image_file << endl;
+		return;
+	}
+
+	// Create the image representing the glimmer animation
+	hoa_video::AnimatedImage glimmer_animation;
+	glimmer_animation.SetNumberLoops(0);
+
+	// Update the frame image sizes to work in the MapMode coordinate system and add them to the animation
+	for (uint32 i = 0; i < frames.size(); i++) {
+		frames[i].SetWidth(frames[i].GetWidth() / (GRID_LENGTH / 2));
+		frames[i].SetHeight(frames[i].GetHeight() / (GRID_LENGTH / 2));
+		glimmer_animation.AddFrame(frames[i], frame_time);
+	}
+
+	AddAnimation(glimmer_animation);
+	SetCurrentAnimation(0);
+
+	// Setup the display timer
+	SetDisplayDelay(average_delay);
+	_ResetWaitTimer();
+}
+
+
+
+void GlimmerTreasure::SetDisplayDelay(uint32 average, float standard_deviation) {
+	if (average == 0) {
+		return;
+	}
+
+	if (standard_deviation <= 0.0f) {
+		return;
+	}
+
+	_average_wait = average;
+	_standard_deviation_wait = standard_deviation;
+	_ResetWaitTimer();
+}
+
+
+
+void GlimmerTreasure::SetDisplayEnabled(bool enable) {
+	if (_display_enabled == enable)
+		return;
+
+	_display_enabled = enable;
+	animations[0].SetLoopsFinished(false);
+	animations[0].SetFrameIndex(0);
+	_ResetWaitTimer();
+}
+
+
+
+void GlimmerTreasure::ForceDisplay() {
+	_display_forced = true;
+	animations[0].SetLoopsFinished(false);
+	animations[0].SetFrameIndex(0);
+}
+
+
+
+void GlimmerTreasure::Acquire() {
+	if (_treasure_container.IsTaken() == true) {
+		IF_PRINT_WARNING(MAP_DEBUG) << "attempted to retrieve an already taken treasure: " << object_id << endl;
+		return;
+	}
+
+	MapMode::CurrentInstance()->GetTreasureSupervisor()->Initialize(&_treasure_container);
+
+	// Add an event to the map group indicating that the treasure has now been opened
+	string record_name = GetRecordName();
+	if (MapMode::CurrentInstance()->GetGlobalRecordGroup()->DoesRecordExist(record_name) == true) {
+		MapMode::CurrentInstance()->GetGlobalRecordGroup()->SetRecord(record_name, 1);
+	}
+	else {
+		MapMode::CurrentInstance()->GetGlobalRecordGroup()->AddNewRecord(record_name, 1);
+	}
+}
+
+
+
+void GlimmerTreasure::Update() {
+	// When forcing the display, update the animation until it is finished, then reset
+	if (_display_forced == true) {
+		// NOTE: we are explicitly ignoring the object's "updatable" member here
+		animations[0].Update();
+		if (animations[0].IsLoopsFinished() == true) {
+			_display_forced = false;
+			animations[0].SetFrameIndex(0);
+			_ResetWaitTimer();
+		}
+		return;
+	}
+
+	// Otherwise if the display is enabled, process the timer and animation updates normally
+	if (_display_enabled == false) {
+		return;
+	}
+
+	bool was_finished = _wait_timer.IsFinished();
+	_wait_timer.Update();
+
+	if (_wait_timer.IsFinished() == true) {
+		if (was_finished == false) {
+			animations[0].SetLoopsFinished(false);
+		}
+		else {
+			// NOTE: we are explicitly ignoring the object's "updatable" member here
+			animations[0].Update();
+			if (animations[0].IsLoopsFinished() == true) {
+				animations[0].SetFrameIndex(0);
+				_ResetWaitTimer();
+			}
+		}
+	}
+}
+
+
+
+void GlimmerTreasure::Draw() {
+	if (_treasure_container.IsTaken() == true)
+		return;
+
+	else if (_display_forced == true || _wait_timer.IsFinished() == true)
+		PhysicalObject::Draw();
+}
+
+
+
+void GlimmerTreasure::_ResetWaitTimer() {
+	uint32 next_time = GaussianRandomValue(_average_wait, _standard_deviation_wait, true);
+	_wait_timer.Initialize(next_time);
+	_wait_timer.Run();
 }
 
 // -----------------------------------------------------------------------------
@@ -145,18 +422,18 @@ TreasureSupervisor::~TreasureSupervisor() {
 
 
 
-void TreasureSupervisor::Initialize(TreasureObject* map_object) {
+void TreasureSupervisor::Initialize(MapTreasure* map_object) {
 	if (map_object == NULL) {
 		IF_PRINT_WARNING(MAP_DEBUG) << "function argument was NULL" << endl;
 		return;
 	}
 
-	Initialize(map_object->GetTreasure());
+	Initialize(map_object->GetTreasureContainer());
 }
 
 
 
-void TreasureSupervisor::Initialize(MapTreasure* treasure) {
+void TreasureSupervisor::Initialize(TreasureContainer* treasure) {
 	if (treasure == NULL) {
 		IF_PRINT_WARNING(MAP_DEBUG) << "function argument was NULL" << endl;
 		return;
@@ -217,7 +494,7 @@ void TreasureSupervisor::Initialize(MapTreasure* treasure) {
 			_objects_to_delete.push_back(obj);
 		}
 	}
-} // void TreasureSupervisor::Initialize(MapTreasure* treasure)
+} // void TreasureSupervisor::Initialize(TreasureContainer* treasure)
 
 
 

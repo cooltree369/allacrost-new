@@ -1049,7 +1049,7 @@ void PathMoveSpriteEvent::_ResolveCollision(COLLISION_TYPE coll_type, MapObject*
 
 	switch (coll_obj->GetObjectType()) {
 		case PHYSICAL_TYPE:
-		case TREASURE_TYPE:
+		case MAP_TREASURE_TYPE:
 			// If the object is a static map object and blocking the destination, give up and terminate the event
 			if (destination_blocked == true) {
 				IF_PRINT_WARNING(MAP_DEBUG) << "path destination was blocked by a non-sprite map object" << endl;

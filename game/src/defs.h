@@ -326,7 +326,9 @@ namespace hoa_map {
 		class AnimateSpriteEvent;
 
 		class TreasureSupervisor;
+		class TreasureContainer;
 		class MapTreasure;
+		class GlimmerTreasure;
 
 		class ZoneSection;
 		class MapZone;

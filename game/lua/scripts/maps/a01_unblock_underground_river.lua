@@ -240,11 +240,11 @@ function CreateObjects()
 	local treasure = {};
 
 	-- TODO: Move this treasure deeper into the cave instead of near the entrance
-	object = hoa_map.TreasureObject("img/misc/chest1.png", 4, 1, 1);
+	object = hoa_map.MapTreasure("img/misc/chest1.png", 4, 1, 1);
 	object:SetObjectID(1001);
 	object:SetXPosition(35, 0);
 	object:SetYPosition(6, 0);
-	treasure = object:GetTreasure();
+	treasure = object:GetTreasureContainer();
 	treasure:AddDrunes(75);
 	treasure:AddObject(1, 2);
 	ObjectManager:AddObject(object);
@@ -1315,7 +1315,7 @@ end
 -- Gives a potion to the player via the treasure menu
 functions["RewardPotion"] = function()
 	AudioManager:PlaySound("snd/obtain.wav");
-	corpse_treasure = hoa_map.MapTreasure();
+	corpse_treasure = hoa_map.TreasureContainer();
 	corpse_treasure:AddObject(1, 1);
 	TreasureManager:Initialize(corpse_treasure);
 end

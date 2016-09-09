@@ -625,12 +625,20 @@ void MapMode::_UpdateExplore() {
 					return;
 				}
 			}
-			else if (obj->GetType() == TREASURE_TYPE) {
-				TreasureObject* treasure_object = reinterpret_cast<TreasureObject*>(obj);
+			else if (obj->GetType() == MAP_TREASURE_TYPE) {
+				MapTreasure* treasure = reinterpret_cast<MapTreasure*>(obj);
 
-				if (treasure_object->GetTreasure()->IsTaken() == false) {
+				if (treasure->GetTreasureContainer()->IsTaken() == false) {
 				    _camera->SetMoving(false);
-					treasure_object->Open();
+					treasure->Open();
+				}
+			}
+			else if (obj->GetType() == GLIMMER_TREASURE_TYPE) {
+				GlimmerTreasure* treasure = reinterpret_cast<GlimmerTreasure*>(obj);
+
+				if (treasure->GetTreasureContainer()->IsTaken() == false) {
+				    _camera->SetMoving(false);
+					treasure->Acquire();
 				}
 			}
 		}

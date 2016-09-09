@@ -743,7 +743,7 @@ public:
 		{ _number_loops = loops; if (_loop_counter >= _number_loops && _number_loops >= 0) _loops_finished = true; }
 
 	/** \brief Set the current number of loops that the animation has completed.
-	*** \param loops The urrent loop count
+	*** \param loops The current loop count
 	**/
 	void SetLoopCounter(int32 loops)
 		{ _loop_counter = loops; if (_loop_counter >= _number_loops && _number_loops >= 0) _loops_finished = true; }

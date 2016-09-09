@@ -168,6 +168,20 @@ end
 
 function CreateObjects()
 	IfPrintDebug(DEBUG, "Creating objects...");
+
+	local object = {};
+	local treasure_container = {};
+
+	-- TEMP: this glimmer treasure is added at the start of this map for testing purposes. Remove later
+	object = hoa_map.GlimmerTreasure();
+	object:SetObjectID(10000);
+	object:SetXPosition(175, 0);
+	object:SetYPosition(118, 0);
+	object:SetContext(contexts["interior_c"]);
+	treasure_container = object:GetTreasureContainer();
+	treasure_container:AddDrunes(275);
+	treasure_container:AddObject(1, 2);
+	ObjectManager:AddObject(object);
 end
 
 

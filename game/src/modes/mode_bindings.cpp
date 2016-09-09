@@ -404,9 +404,29 @@ void BindModeCode() {
 			.def("SetAnimationProgress", &PhysicalObject::SetAnimationProgress)
 			.def("GetCurrentAnimation", &PhysicalObject::GetCurrentAnimation),
 
-		class_<TreasureObject, PhysicalObject>("TreasureObject")
+		class_<MapTreasure, PhysicalObject>("MapTreasure")
 			.def(constructor<std::string, uint8, uint8, uint8>())
-			.def("GetTreasure", &TreasureObject::GetTreasure),
+			.def("GetTreasureContainer", &MapTreasure::GetTreasureContainer),
+
+		class_<GlimmerTreasure, PhysicalObject>("GlimmerTreasure")
+			.def(constructor<>())
+			.def(constructor<std::string, uint32, uint32>())
+			.def("GetTreasureContainer", &GlimmerTreasure::GetTreasureContainer)
+			.def("SetDisplayDelay", (void(GlimmerTreasure::*)(uint32))&GlimmerTreasure::SetDisplayDelay)
+			.def("SetDisplayDelay", (void(GlimmerTreasure::*)(uint32, float))&GlimmerTreasure::SetDisplayDelay)
+			.def("SetDisplayEnabled", &GlimmerTreasure::SetDisplayEnabled)
+			.def("ForceDisplay", &GlimmerTreasure::ForceDisplay)
+			.def("Acquire", &GlimmerTreasure::Acquire)
+			.def("Update", &GlimmerTreasure::Update)
+			.def("Draw", &GlimmerTreasure::Draw)
+
+			// Namespace constants
+			.enum_("constants") [
+				value("GLIMMER_WAIT_COMMON", GlimmerTreasure::GLIMMER_WAIT_COMMON),
+				value("GLIMMER_WAIT_UNCOMMON", GlimmerTreasure::GLIMMER_WAIT_UNCOMMON),
+				value("GLIMMER_WAIT_RARE", GlimmerTreasure::GLIMMER_WAIT_RARE),
+				value("DEFAULT_FRAME_TIME", GlimmerTreasure::DEFAULT_FRAME_TIME)
+			],
 
 		class_<VirtualSprite, MapObject>("VirtualSprite")
 			.def(constructor<>())
@@ -695,16 +715,16 @@ void BindModeCode() {
 				def("Create", (CustomSpriteEvent*(*)(uint32, uint16, std::string, std::string))&CustomSpriteEvent::Create)
 			],
 
-		class_<MapTreasure>("MapTreasure")
+		class_<TreasureContainer>("TreasureContainer")
 			.def(constructor<>())
-			.def("AddDrunes", &MapTreasure::AddDrunes)
-			.def("AddObject", &MapTreasure::AddObject)
-			.def("IsTaken", &MapTreasure::IsTaken)
-			.def("SetTaken", &MapTreasure::SetTaken),
+			.def("AddDrunes", &TreasureContainer::AddDrunes)
+			.def("AddObject", &TreasureContainer::AddObject)
+			.def("IsTaken", &TreasureContainer::IsTaken)
+			.def("SetTaken", &TreasureContainer::SetTaken),
 
 		class_<TreasureSupervisor>("TreasureSupervisor")
-			.def("Initialize", (void(TreasureSupervisor::*)(TreasureObject*))&TreasureSupervisor::Initialize)
 			.def("Initialize", (void(TreasureSupervisor::*)(MapTreasure*))&TreasureSupervisor::Initialize)
+			.def("Initialize", (void(TreasureSupervisor::*)(TreasureContainer*))&TreasureSupervisor::Initialize)
 	];
 
 	} // End using map mode namespaces
