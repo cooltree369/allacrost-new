@@ -139,17 +139,17 @@ bool InputEngine::RestoreDefaultKeys() {
 	// Load all default keys from the table
 	settings_file.OpenTable("settings");
 	settings_file.OpenTable("key_defaults");
-	_key.up           = static_cast<SDLKey>(settings_file.ReadInt("up"));
-	_key.down         = static_cast<SDLKey>(settings_file.ReadInt("down"));
-	_key.left         = static_cast<SDLKey>(settings_file.ReadInt("left"));
-	_key.right        = static_cast<SDLKey>(settings_file.ReadInt("right"));
-	_key.confirm      = static_cast<SDLKey>(settings_file.ReadInt("confirm"));
-	_key.cancel       = static_cast<SDLKey>(settings_file.ReadInt("cancel"));
-	_key.menu         = static_cast<SDLKey>(settings_file.ReadInt("menu"));
-	_key.swap         = static_cast<SDLKey>(settings_file.ReadInt("swap"));
-	_key.left_select  = static_cast<SDLKey>(settings_file.ReadInt("left_select"));
-	_key.right_select = static_cast<SDLKey>(settings_file.ReadInt("right_select"));
-	_key.pause        = static_cast<SDLKey>(settings_file.ReadInt("pause"));
+	_key.up           = static_cast<SDL_Keycode>(settings_file.ReadInt("up"));
+	_key.down         = static_cast<SDL_Keycode>(settings_file.ReadInt("down"));
+	_key.left         = static_cast<SDL_Keycode>(settings_file.ReadInt("left"));
+	_key.right        = static_cast<SDL_Keycode>(settings_file.ReadInt("right"));
+	_key.confirm      = static_cast<SDL_Keycode>(settings_file.ReadInt("confirm"));
+	_key.cancel       = static_cast<SDL_Keycode>(settings_file.ReadInt("cancel"));
+	_key.menu         = static_cast<SDL_Keycode>(settings_file.ReadInt("menu"));
+	_key.swap         = static_cast<SDL_Keycode>(settings_file.ReadInt("swap"));
+	_key.left_select  = static_cast<SDL_Keycode>(settings_file.ReadInt("left_select"));
+	_key.right_select = static_cast<SDL_Keycode>(settings_file.ReadInt("right_select"));
+	_key.pause        = static_cast<SDL_Keycode>(settings_file.ReadInt("pause"));
 	settings_file.CloseTable();
 	settings_file.CloseTable();
 
@@ -173,14 +173,14 @@ bool InputEngine::RestoreDefaultJoyButtons()
 	// Load all default buttons from the table
 	settings_file.OpenTable("settings");
 	settings_file.OpenTable("joystick_defaults");
-	_joystick.confirm      = static_cast<uint8>(settings_file.ReadInt("confirm"));
-	_joystick.cancel       = static_cast<uint8>(settings_file.ReadInt("cancel"));
-	_joystick.menu         = static_cast<uint8>(settings_file.ReadInt("menu"));
-	_joystick.swap         = static_cast<uint8>(settings_file.ReadInt("swap"));
-	_joystick.left_select  = static_cast<uint8>(settings_file.ReadInt("left_select"));
-	_joystick.right_select = static_cast<uint8>(settings_file.ReadInt("right_select"));
-	_joystick.pause        = static_cast<uint8>(settings_file.ReadInt("pause"));
-	_joystick.quit		   = static_cast<uint8>(settings_file.ReadInt("quit"));
+	_joystick.confirm      = static_cast<uint32>(settings_file.ReadInt("confirm"));
+	_joystick.cancel       = static_cast<uint32>(settings_file.ReadInt("cancel"));
+	_joystick.menu         = static_cast<uint32>(settings_file.ReadInt("menu"));
+	_joystick.swap         = static_cast<uint32>(settings_file.ReadInt("swap"));
+	_joystick.left_select  = static_cast<uint32>(settings_file.ReadInt("left_select"));
+	_joystick.right_select = static_cast<uint32>(settings_file.ReadInt("right_select"));
+	_joystick.pause        = static_cast<uint32>(settings_file.ReadInt("pause"));
+	_joystick.quit		   = static_cast<uint32>(settings_file.ReadInt("quit"));
 	settings_file.CloseTable();
 	settings_file.CloseTable();
 
@@ -248,7 +248,7 @@ void InputEngine::EventHandler() {
 			break;
 		}
 		// Check if the window was iconified/minimized or restored
-		else if (event.type == SDL_ACTIVEEVENT) {
+		else if (event.type == SDL_WINDOWEVENT) {
 			// TEMP: pausing the game on a context switch between another application proved to
 			// be rather annoying. The code which did this is commented out below. I think it would
 			// be better if instead the application yielded for a certain amount of time when the
@@ -360,7 +360,6 @@ void InputEngine::_KeyEventHandler(SDL_KeyboardEvent& key_event) {
 				return;
 			}
 		} // endif CTRL pressed
-
 		// Note: a switch-case statement won't work here because Key.up is not an
 		// integer value the compiler will whine and cry about it ;_;
 		if (key_event.keysym.sym == SDLK_ESCAPE) {
@@ -382,7 +381,7 @@ void InputEngine::_KeyEventHandler(SDL_KeyboardEvent& key_event) {
 			_left_press = true;
 			return;
 		}
-		else if (key_event.keysym.sym == _key.right) {
+		else if (key_event.keysym.sym == _key.right) {                cout << "up detected correctly" << endl;
 			_right_state = true;
 			_right_press = true;
 			return;
@@ -624,7 +623,7 @@ void InputEngine::_JoystickEventHandler(SDL_Event& js_event) {
 
 
 // Sets a new key over an older one. If the same key is used elsewhere, the older one is removed
-void InputEngine::_SetNewKey(SDLKey & old_key, SDLKey new_key) {
+void InputEngine::_SetNewKey(SDL_Keycode & old_key, SDL_Keycode new_key) {
 	if (_key.up == new_key) { // up key used already
 		_key.up = old_key;
 		old_key = new_key;
@@ -686,7 +685,7 @@ void InputEngine::_SetNewKey(SDLKey & old_key, SDLKey new_key) {
 
 
 // Sets a new joystick button over an older one. If the same button is used elsewhere, the older one is removed
-void InputEngine::_SetNewJoyButton(uint8 & old_button, uint8 new_button) {
+void InputEngine::_SetNewJoyButton(uint32 & old_button, uint32 new_button) {
 	if (_joystick.confirm == new_button) { // confirm button used already
 		_joystick.confirm = old_button;
 		old_button = new_button;
@@ -724,7 +723,7 @@ void InputEngine::_SetNewJoyButton(uint8 & old_button, uint8 new_button) {
 	}
 
 	old_button = new_button; // Otherwise simply overwrite the old value
-} // end InputEngine::_SetNewJoyButton(uint8 & old_button, uint8 new_button)
+} // end InputEngine::_SetNewJoyButton(uint32 & old_button, uint32 new_button)
 
 
 } // namespace hoa_input
