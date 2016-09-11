@@ -23,7 +23,7 @@
 #ifndef __SYSTEM_HEADER__
 #define __SYSTEM_HEADER__
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 #include "defs.h"
 #include "utils.h"
@@ -36,8 +36,8 @@
 #define THREAD_TYPE SDL_THREADS
 
 #if (THREAD_TYPE == SDL_THREADS)
-	#include <SDL/SDL_thread.h>
-	#include <SDL/SDL_mutex.h>
+	#include <SDL2/SDL_thread.h>
+	#include <SDL2/SDL_mutex.h>
 	typedef SDL_Thread Thread;
 	typedef SDL_sem Semaphore;
 #else

@@ -1507,17 +1507,17 @@ bool BootMode::_LoadSettingsFile(const std::string& filename) {
 	SystemManager->SetLanguage(static_cast<std::string>(settings.ReadString("language")));
 
 	settings.OpenTable("key_settings");
-	InputManager->SetUpKey(static_cast<SDLKey>(settings.ReadInt("up")));
-	InputManager->SetDownKey(static_cast<SDLKey>(settings.ReadInt("down")));
-	InputManager->SetLeftKey(static_cast<SDLKey>(settings.ReadInt("left")));
-	InputManager->SetRightKey(static_cast<SDLKey>(settings.ReadInt("right")));
-	InputManager->SetConfirmKey(static_cast<SDLKey>(settings.ReadInt("confirm")));
-	InputManager->SetCancelKey(static_cast<SDLKey>(settings.ReadInt("cancel")));
-	InputManager->SetMenuKey(static_cast<SDLKey>(settings.ReadInt("menu")));
-	InputManager->SetSwapKey(static_cast<SDLKey>(settings.ReadInt("swap")));
-	InputManager->SetLeftSelectKey(static_cast<SDLKey>(settings.ReadInt("left_select")));
-	InputManager->SetRightSelectKey(static_cast<SDLKey>(settings.ReadInt("right_select")));
-	InputManager->SetPauseKey(static_cast<SDLKey>(settings.ReadInt("pause")));
+	InputManager->SetUpKey(static_cast<SDL_Keycode>(settings.ReadInt("up")));
+	InputManager->SetDownKey(static_cast<SDL_Keycode>(settings.ReadInt("down")));
+	InputManager->SetLeftKey(static_cast<SDL_Keycode>(settings.ReadInt("left")));
+	InputManager->SetRightKey(static_cast<SDL_Keycode>(settings.ReadInt("right")));
+	InputManager->SetConfirmKey(static_cast<SDL_Keycode>(settings.ReadInt("confirm")));
+	InputManager->SetCancelKey(static_cast<SDL_Keycode>(settings.ReadInt("cancel")));
+	InputManager->SetMenuKey(static_cast<SDL_Keycode>(settings.ReadInt("menu")));
+	InputManager->SetSwapKey(static_cast<SDL_Keycode>(settings.ReadInt("swap")));
+	InputManager->SetLeftSelectKey(static_cast<SDL_Keycode>(settings.ReadInt("left_select")));
+	InputManager->SetRightSelectKey(static_cast<SDL_Keycode>(settings.ReadInt("right_select")));
+	InputManager->SetPauseKey(static_cast<SDL_Keycode>(settings.ReadInt("pause")));
 	settings.CloseTable();
 
 	if (settings.IsErrorDetected()) {
@@ -1680,11 +1680,11 @@ bool BootMode::_SaveSettingsFile(const std::string& filename) {
 	settings_lua.ModifyFloat("audio_settings.music_vol", AudioManager->GetMusicVolume());
 	settings_lua.ModifyFloat("audio_settings.sound_vol", AudioManager->GetSoundVolume());
 
-	// input
-	settings_lua.ModifyInt("key_settings.up", InputManager->GetUpKey());
-	settings_lua.ModifyInt("key_settings.down", InputManager->GetDownKey());
-	settings_lua.ModifyInt("key_settings.left", InputManager->GetLeftKey());
-	settings_lua.ModifyInt("key_settings.right", InputManager->GetRightKey());
+	// input	std::ostringstream ostr;	ostr << InputManager->GetUpKey();
+	settings_lua.ModifyString("key_settings.up", ostr.str());	ostr.str("");    ostr << InputManager->GetDownKey();
+	settings_lua.ModifyString("key_settings.down", ostr.str());	ostr.str("");    ostr << InputManager->GetLeftKey();
+	settings_lua.ModifyString("key_settings.left", ostr.str());	ostr.str("");    ostr << InputManager->GetRightKey();
+	settings_lua.ModifyString("key_settings.right", ostr.str());    // TODO replace all modifications below with string streams, as above.
 	settings_lua.ModifyInt("key_settings.confirm", InputManager->GetConfirmKey());
 	settings_lua.ModifyInt("key_settings.cancel", InputManager->GetCancelKey());
 	settings_lua.ModifyInt("key_settings.menu", InputManager->GetMenuKey());
@@ -1763,7 +1763,7 @@ void BootMode::_OverwriteProfile() {
 // ***** BootMode input configuration methods
 // ****************************************************************************
 
-SDLKey BootMode::_WaitKeyPress() {
+SDL_Keycode BootMode::_WaitKeyPress() {
 	SDL_Event event;
 	while (SDL_WaitEvent(&event)) {
 		if (event.type == SDL_KEYDOWN)
@@ -1864,66 +1864,66 @@ void BootMode::_RedefinePauseKey() {
 
 
 
-void BootMode::_SetUpKey(const SDLKey &key) {
+void BootMode::_SetUpKey(const SDL_Keycode &key) {
 	InputManager->SetUpKey(key);
 }
 
 
 
-void BootMode::_SetDownKey(const SDLKey &key) {
+void BootMode::_SetDownKey(const SDL_Keycode &key) {
 	InputManager->SetDownKey(key);
 }
 
 
-void BootMode::_SetLeftKey(const SDLKey &key) {
+void BootMode::_SetLeftKey(const SDL_Keycode &key) {
 	InputManager->SetLeftKey(key);
 }
 
 
 
-void BootMode::_SetRightKey(const SDLKey &key) {
+void BootMode::_SetRightKey(const SDL_Keycode &key) {
 	InputManager->SetRightKey(key);
 }
 
 
 
-void BootMode::_SetConfirmKey(const SDLKey &key) {
+void BootMode::_SetConfirmKey(const SDL_Keycode &key) {
 	InputManager->SetConfirmKey(key);
 }
 
 
 
-void BootMode::_SetCancelKey(const SDLKey &key) {
+void BootMode::_SetCancelKey(const SDL_Keycode &key) {
 	InputManager->SetCancelKey(key);
 }
 
 
 
-void BootMode::_SetMenuKey(const SDLKey &key) {
+void BootMode::_SetMenuKey(const SDL_Keycode &key) {
 	InputManager->SetMenuKey(key);
 }
 
 
 
-void BootMode::_SetSwapKey(const SDLKey &key) {
+void BootMode::_SetSwapKey(const SDL_Keycode &key) {
 	InputManager->SetSwapKey(key);
 }
 
 
 
-void BootMode::_SetLeftSelectKey(const SDLKey &key) {
+void BootMode::_SetLeftSelectKey(const SDL_Keycode &key) {
 	InputManager->SetLeftSelectKey(key);
 }
 
 
 
-void BootMode::_SetRightSelectKey(const SDLKey &key) {
+void BootMode::_SetRightSelectKey(const SDL_Keycode &key) {
 	InputManager->SetRightSelectKey(key);
 }
 
 
 
-void BootMode::_SetPauseKey(const SDLKey &key) {
+void BootMode::_SetPauseKey(const SDL_Keycode &key) {
 	InputManager->SetPauseKey(key);
 }
 

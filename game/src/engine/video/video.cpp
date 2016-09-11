@@ -260,29 +260,29 @@ bool VideoEngine::FinalizeInitialization() {
 
 
 void VideoEngine::SetInitialResolution(int32 width, int32 height) {
-	// Get the current system color depth and resolution
-	const SDL_VideoInfo* video_info(0);
-	video_info = SDL_GetVideoInfo();
-
-	if (video_info) {
-		// Set the resolution to be the highest possible (lower than the user one)
-		if (video_info->current_w >= width && video_info->current_h >= height) {
-			SetResolution(width, height);
-		}
-		else if (video_info->current_w >= 1024 && video_info->current_h >= 768) {
-			SetResolution(1024, 768);
-		}
-		else if (video_info->current_w >= 800 && video_info->current_h >= 600) {
-			SetResolution(800, 600);
-		}
-		else {
-			SetResolution(640, 480);
-		}
-	}
-	else {
-		// Default resoltion if we could not retrieve the resolution of the user
-		SetResolution(width, height);
-	}
+	// Get the current system color depth and resolution    SetResolution(width, height);	// TODO loop over SDL_GetDisplayMode properly
+//	const SDL_VideoInfo* video_info(0);
+//	video_info = SDL_GetVideoInfo();
+//
+//	if (video_info) {
+//		// Set the resolution to be the highest possible (lower than the user one)
+//		if (video_info->current_w >= width && video_info->current_h >= height) {
+//			SetResolution(width, height);
+//		}
+//		else if (video_info->current_w >= 1024 && video_info->current_h >= 768) {
+//			SetResolution(1024, 768);
+//		}
+//		else if (video_info->current_w >= 800 && video_info->current_h >= 600) {
+//			SetResolution(800, 600);
+//		}
+//		else {
+//			SetResolution(640, 480);
+//		}
+//	}
+//	else {
+//		// Default resoltion if we could not retrieve the resolution of the user
+//		SetResolution(width, height);
+//	}
 }
 
 //-----------------------------------------------------------------------------
@@ -390,7 +390,7 @@ void VideoEngine::Display(uint32 frame_time) {
 
 	PopState();
 
-	SDL_GL_SwapBuffers();
+	SDL_GL_SwapWindow(window);
 
 } // void VideoEngine::Display(uint32 frame_time)
 
@@ -423,10 +423,10 @@ bool VideoEngine::ApplySettings() {
 			IF_PRINT_WARNING(VIDEO_DEBUG) << "failed to delete OpenGL textures during a context change" << endl;
 		}
 
-		int32 flags = SDL_OPENGL;
+		Uint32 flags = SDL_WINDOW_OPENGL;
 
 		if (_temp_fullscreen == true) {
-			flags |= SDL_FULLSCREEN;
+			flags |= SDL_WINDOW_FULLSCREEN;
 		}
 
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -437,9 +437,9 @@ bool VideoEngine::ApplySettings() {
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 2);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
-		SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
+        SDL_GL_SetSwapInterval(1);		window = SDL_CreateWindow("Hero of Allacrost", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,                       _temp_width, _temp_height, flags);
 
-		if (SDL_SetVideoMode(_temp_width, _temp_height, 0, flags) == false) {
+		if (window == NULL) {
 			// RGB values of 1 for each and 8 for depth seemed to be sufficient.
 			// 565 and 16 here because it works with them on this computer.
 			// NOTE from prophile: this ought to be changed to 5558
@@ -450,9 +450,9 @@ bool VideoEngine::ApplySettings() {
 			SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-			SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
+			SDL_GL_SetSwapInterval(1);			window = SDL_CreateWindow("Hero of Allacrost", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,                       _temp_width, _temp_height, flags);
 
-			if (SDL_SetVideoMode(_temp_width, _temp_height, 0, flags) == false) {
+			if (window == NULL) {
 				IF_PRINT_WARNING(VIDEO_DEBUG) << "SDL_SetVideoMode() failed with error: " << SDL_GetError() << endl;
 
 				_temp_fullscreen = _fullscreen;
@@ -466,7 +466,7 @@ bool VideoEngine::ApplySettings() {
 			}
 		}
 
-		// Only now that SDL_SetVideoMode(...) has been called can we make OpenGL calls
+		// Only now that SDL_SetVideoMode(...) has been called can we make OpenGL calls		glcontext = SDL_GL_CreateContext(window);
 		glDisable(GL_BLEND);
 		glDisable(GL_TEXTURE_2D);
 		glDisable(GL_ALPHA_TEST);
@@ -970,8 +970,8 @@ void VideoEngine::SetGamma(float value) {
 		IF_PRINT_WARNING(VIDEO_DEBUG) << "tried to set gamma below 0.0f" << endl;
 		_gamma_value = 0.0f;
 	}
-
-	SDL_SetGamma(_gamma_value, _gamma_value, _gamma_value);
+    Uint16 ramp[256];    SDL_CalculateGammaRamp(_gamma_value,ramp);
+	SDL_SetWindowGammaRamp(window, ramp, ramp, ramp);
 }
 
 
@@ -1315,6 +1315,6 @@ void VideoEngine::DrawLight(float radius, float x, float y, const Color &color) 
 	// This function has been left unimplemented as the old implementation was broken
 	// FBOs have been removed and the old implementation was no longer valid
 	// TODO: Re-implement this method
-}
-
+}void VideoEngine::SetWindowTitle(const char* title) {    SDL_SetWindowTitle(window, title);}
+void VideoEngine::SetWindowIcon(SDL_Surface* icon) {    SDL_SetWindowIcon(window, icon);}
 }  // namespace hoa_video

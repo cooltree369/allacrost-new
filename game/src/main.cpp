@@ -118,17 +118,17 @@ bool LoadSettings()
 	SystemManager->SetLanguage(static_cast<std::string>(settings.ReadString("language")));
 
 	settings.OpenTable("key_settings");
-	InputManager->SetUpKey(static_cast<SDLKey>(settings.ReadInt("up")));
-	InputManager->SetDownKey(static_cast<SDLKey>(settings.ReadInt("down")));
-	InputManager->SetLeftKey(static_cast<SDLKey>(settings.ReadInt("left")));
-	InputManager->SetRightKey(static_cast<SDLKey>(settings.ReadInt("right")));
-	InputManager->SetConfirmKey(static_cast<SDLKey>(settings.ReadInt("confirm")));
-	InputManager->SetCancelKey(static_cast<SDLKey>(settings.ReadInt("cancel")));
-	InputManager->SetMenuKey(static_cast<SDLKey>(settings.ReadInt("menu")));
-	InputManager->SetSwapKey(static_cast<SDLKey>(settings.ReadInt("swap")));
-	InputManager->SetLeftSelectKey(static_cast<SDLKey>(settings.ReadInt("left_select")));
-	InputManager->SetRightSelectKey(static_cast<SDLKey>(settings.ReadInt("right_select")));
-	InputManager->SetPauseKey(static_cast<SDLKey>(settings.ReadInt("pause")));
+	InputManager->SetUpKey(static_cast<SDL_Keycode>(settings.ReadInt("up")));
+	InputManager->SetDownKey(static_cast<SDL_Keycode>(settings.ReadInt("down")));
+	InputManager->SetLeftKey(static_cast<SDL_Keycode>(settings.ReadInt("left")));
+	InputManager->SetRightKey(static_cast<SDL_Keycode>(settings.ReadInt("right")));
+	InputManager->SetConfirmKey(static_cast<SDL_Keycode>(settings.ReadInt("confirm")));
+	InputManager->SetCancelKey(static_cast<SDL_Keycode>(settings.ReadInt("cancel")));
+	InputManager->SetMenuKey(static_cast<SDL_Keycode>(settings.ReadInt("menu")));
+	InputManager->SetSwapKey(static_cast<SDL_Keycode>(settings.ReadInt("swap")));
+	InputManager->SetLeftSelectKey(static_cast<SDL_Keycode>(settings.ReadInt("left_select")));
+	InputManager->SetRightSelectKey(static_cast<SDL_Keycode>(settings.ReadInt("right_select")));
+	InputManager->SetPauseKey(static_cast<SDL_Keycode>(settings.ReadInt("pause")));
 	settings.CloseTable();
 
 	if (settings.IsErrorDetected()) {
@@ -262,14 +262,8 @@ void InitializeEngine() throw (Exception) {
 	if (GlobalManager->SingletonInitialize() == false) {
 		throw Exception("ERROR: unable to initialize GlobalManager", __FILE__, __LINE__, __FUNCTION__);
 	}
-
-	// Set the window icon
-	#ifdef _WIN32
-		SDL_WM_SetIcon(SDL_LoadBMP("img/logos/program_icon.bmp"), NULL);
-	#else
-		// Later, add an icon here for non-Windows systems (which support more than 32x32 .bmp files)
-		SDL_WM_SetIcon(SDL_LoadBMP("img/logos/program_icon.bmp"), NULL);
-	#endif
+	// Set the window icon
+	VideoManager -> SetWindowIcon(SDL_LoadBMP("img/logos/program_icon.bmp"));
 
 	// Load all the settings from lua. This includes some engine configuration settings.
 	if (LoadSettings() == false)
@@ -322,20 +316,20 @@ void InitializeEngine() throw (Exception) {
 	VideoManager->Text()->SetDefaultStyle(TextStyle("text22", Color::white, VIDEO_TEXT_SHADOW_BLACK, 1, -2));
 
 	// Set the window title and icon name
-	SDL_WM_SetCaption("Hero of Allacrost", "Hero of Allacrost");
+	VideoManager -> SetWindowTitle("Hero of Allacrost");
 
 	// Hide the mouse cursor since we don't use or acknowledge mouse input from the user
 	SDL_ShowCursor(SDL_DISABLE);
 
 	// Enabled for multilingual keyboard support
-	SDL_EnableUNICODE(1);
+	//SDL_EnableUNICODE(1); //NOT NECESSARY FOR SDL2
 
 	// Ignore the events that we don't care about so they never appear in the event queue
 	SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
 	SDL_EventState(SDL_MOUSEBUTTONDOWN, SDL_IGNORE);
 	SDL_EventState(SDL_MOUSEBUTTONUP, SDL_IGNORE);
 	SDL_EventState(SDL_SYSWMEVENT, SDL_IGNORE);
-	SDL_EventState(SDL_VIDEOEXPOSE, SDL_IGNORE);
+	SDL_EventState(SDL_WINDOWEVENT, SDL_IGNORE);
 	SDL_EventState(SDL_USEREVENT, SDL_IGNORE);
 
 	if (GUIManager->SingletonInitialize() == false) {
