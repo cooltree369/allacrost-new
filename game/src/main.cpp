@@ -117,18 +117,18 @@ bool LoadSettings()
 	// Load language settings
 	SystemManager->SetLanguage(static_cast<std::string>(settings.ReadString("language")));
 
-	settings.OpenTable("key_settings");
-	InputManager->SetUpKey(static_cast<SDL_Keycode>(settings.ReadInt("up")));
-	InputManager->SetDownKey(static_cast<SDL_Keycode>(settings.ReadInt("down")));
-	InputManager->SetLeftKey(static_cast<SDL_Keycode>(settings.ReadInt("left")));
-	InputManager->SetRightKey(static_cast<SDL_Keycode>(settings.ReadInt("right")));
-	InputManager->SetConfirmKey(static_cast<SDL_Keycode>(settings.ReadInt("confirm")));
-	InputManager->SetCancelKey(static_cast<SDL_Keycode>(settings.ReadInt("cancel")));
-	InputManager->SetMenuKey(static_cast<SDL_Keycode>(settings.ReadInt("menu")));
-	InputManager->SetSwapKey(static_cast<SDL_Keycode>(settings.ReadInt("swap")));
-	InputManager->SetLeftSelectKey(static_cast<SDL_Keycode>(settings.ReadInt("left_select")));
-	InputManager->SetRightSelectKey(static_cast<SDL_Keycode>(settings.ReadInt("right_select")));
-	InputManager->SetPauseKey(static_cast<SDL_Keycode>(settings.ReadInt("pause")));
+	settings.OpenTable("key_settings");	// TODO: Figure out why reading long UInts is invariably broken and remove the hacks below
+	InputManager->SetUpKey(static_cast<SDL_Keycode>(1073741824+settings.ReadUInt("up"))); //hack
+	InputManager->SetDownKey(static_cast<SDL_Keycode>(1073741824+settings.ReadUInt("down"))); //hack
+	InputManager->SetLeftKey(static_cast<SDL_Keycode>(1073741824+settings.ReadUInt("left"))); //hack
+	InputManager->SetRightKey(static_cast<SDL_Keycode>(1073741824+settings.ReadUInt("right"))); //hack
+	InputManager->SetConfirmKey(static_cast<SDL_Keycode>(settings.ReadUInt("confirm")));
+	InputManager->SetCancelKey(static_cast<SDL_Keycode>(settings.ReadUInt("cancel")));
+	InputManager->SetMenuKey(static_cast<SDL_Keycode>(settings.ReadUInt("menu")));
+	InputManager->SetSwapKey(static_cast<SDL_Keycode>(settings.ReadUInt("swap")));
+	InputManager->SetLeftSelectKey(static_cast<SDL_Keycode>(settings.ReadUInt("left_select")));
+	InputManager->SetRightSelectKey(static_cast<SDL_Keycode>(settings.ReadUInt("right_select")));
+	InputManager->SetPauseKey(static_cast<SDL_Keycode>(settings.ReadUInt("pause")));
 	settings.CloseTable();
 
 	if (settings.IsErrorDetected()) {

@@ -1680,11 +1680,11 @@ bool BootMode::_SaveSettingsFile(const std::string& filename) {
 	settings_lua.ModifyFloat("audio_settings.music_vol", AudioManager->GetMusicVolume());
 	settings_lua.ModifyFloat("audio_settings.sound_vol", AudioManager->GetSoundVolume());
 
-	// input
-	settings_lua.ModifyUInt("key_settings.up", InputManager->GetUpKey());
-	settings_lua.ModifyUInt("key_settings.down", InputManager->GetDownKey());
-	settings_lua.ModifyUInt("key_settings.left", InputManager->GetLeftKey());
-	settings_lua.ModifyUInt("key_settings.right", InputManager->GetRightKey());
+	// input	// TODO: Get rid of hacks
+	settings_lua.ModifyUInt("key_settings.up", InputManager->GetUpKey()-1073741824); //hack
+	settings_lua.ModifyUInt("key_settings.down", InputManager->GetDownKey()-1073741824); //hack
+	settings_lua.ModifyUInt("key_settings.left", InputManager->GetLeftKey()-1073741824); //hack
+	settings_lua.ModifyUInt("key_settings.right", InputManager->GetRightKey()-1073741824); //hack
 	settings_lua.ModifyUInt("key_settings.confirm", InputManager->GetConfirmKey());
 	settings_lua.ModifyUInt("key_settings.cancel", InputManager->GetCancelKey());
 	settings_lua.ModifyUInt("key_settings.menu", InputManager->GetMenuKey());
