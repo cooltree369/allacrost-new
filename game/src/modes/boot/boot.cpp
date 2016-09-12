@@ -1680,27 +1680,27 @@ bool BootMode::_SaveSettingsFile(const std::string& filename) {
 	settings_lua.ModifyFloat("audio_settings.music_vol", AudioManager->GetMusicVolume());
 	settings_lua.ModifyFloat("audio_settings.sound_vol", AudioManager->GetSoundVolume());
 
-	// input	std::ostringstream ostr;	ostr << InputManager->GetUpKey();
-	settings_lua.ModifyString("key_settings.up", ostr.str());	ostr.str("");    ostr << InputManager->GetDownKey();
-	settings_lua.ModifyString("key_settings.down", ostr.str());	ostr.str("");    ostr << InputManager->GetLeftKey();
-	settings_lua.ModifyString("key_settings.left", ostr.str());	ostr.str("");    ostr << InputManager->GetRightKey();
-	settings_lua.ModifyString("key_settings.right", ostr.str());    // TODO replace all modifications below with string streams, as above.
-	settings_lua.ModifyInt("key_settings.confirm", InputManager->GetConfirmKey());
-	settings_lua.ModifyInt("key_settings.cancel", InputManager->GetCancelKey());
-	settings_lua.ModifyInt("key_settings.menu", InputManager->GetMenuKey());
-	settings_lua.ModifyInt("key_settings.swap", InputManager->GetSwapKey());
-	settings_lua.ModifyInt("key_settings.left_select", InputManager->GetLeftSelectKey());
-	settings_lua.ModifyInt("key_settings.right_select", InputManager->GetRightSelectKey());
-	settings_lua.ModifyInt("key_settings.pause", InputManager->GetPauseKey());
-	settings_lua.ModifyInt("joystick_settings.x_axis", InputManager->GetXAxisJoy());
-	settings_lua.ModifyInt("joystick_settings.y_axis", InputManager->GetYAxisJoy());
-	settings_lua.ModifyInt("joystick_settings.confirm", InputManager->GetConfirmJoy());
-	settings_lua.ModifyInt("joystick_settings.cancel", InputManager->GetCancelJoy());
-	settings_lua.ModifyInt("joystick_settings.menu", InputManager->GetMenuJoy());
-	settings_lua.ModifyInt("joystick_settings.swap", InputManager->GetSwapJoy());
-	settings_lua.ModifyInt("joystick_settings.left_select", InputManager->GetLeftSelectJoy());
-	settings_lua.ModifyInt("joystick_settings.right_select", InputManager->GetRightSelectJoy());
-	settings_lua.ModifyInt("joystick_settings.pause", InputManager->GetPauseJoy());
+	// input
+	settings_lua.ModifyUInt("key_settings.up", InputManager->GetUpKey());
+	settings_lua.ModifyUInt("key_settings.down", InputManager->GetDownKey());
+	settings_lua.ModifyUInt("key_settings.left", InputManager->GetLeftKey());
+	settings_lua.ModifyUInt("key_settings.right", InputManager->GetRightKey());
+	settings_lua.ModifyUInt("key_settings.confirm", InputManager->GetConfirmKey());
+	settings_lua.ModifyUInt("key_settings.cancel", InputManager->GetCancelKey());
+	settings_lua.ModifyUInt("key_settings.menu", InputManager->GetMenuKey());
+	settings_lua.ModifyUInt("key_settings.swap", InputManager->GetSwapKey());
+	settings_lua.ModifyUInt("key_settings.left_select", InputManager->GetLeftSelectKey());
+	settings_lua.ModifyUInt("key_settings.right_select", InputManager->GetRightSelectKey());
+	settings_lua.ModifyUInt("key_settings.pause", InputManager->GetPauseKey());
+	settings_lua.ModifyUInt("joystick_settings.x_axis", InputManager->GetXAxisJoy());
+	settings_lua.ModifyUInt("joystick_settings.y_axis", InputManager->GetYAxisJoy());
+	settings_lua.ModifyUInt("joystick_settings.confirm", InputManager->GetConfirmJoy());
+	settings_lua.ModifyUInt("joystick_settings.cancel", InputManager->GetCancelJoy());
+	settings_lua.ModifyUInt("joystick_settings.menu", InputManager->GetMenuJoy());
+	settings_lua.ModifyUInt("joystick_settings.swap", InputManager->GetSwapJoy());
+	settings_lua.ModifyUInt("joystick_settings.left_select", InputManager->GetLeftSelectJoy());
+	settings_lua.ModifyUInt("joystick_settings.right_select", InputManager->GetRightSelectJoy());
+	settings_lua.ModifyUInt("joystick_settings.pause", InputManager->GetPauseJoy());
 
 	// and save it!
 	settings_lua.CommitChanges();
