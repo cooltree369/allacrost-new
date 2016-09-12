@@ -381,7 +381,7 @@ void InputEngine::_KeyEventHandler(SDL_KeyboardEvent& key_event) {
 			_left_press = true;
 			return;
 		}
-		else if (key_event.keysym.sym == _key.right) {                cout << "up detected correctly" << endl;
+		else if (key_event.keysym.sym == _key.right) {
 			_right_state = true;
 			_right_press = true;
 			return;

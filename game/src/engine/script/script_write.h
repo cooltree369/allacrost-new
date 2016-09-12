@@ -20,7 +20,7 @@
 #include "utils.h"
 #include "defs.h"
 
-#include "script.h"
+#include "script.h"#include <iomanip>
 
 namespace hoa_script {
 
@@ -259,13 +259,13 @@ private:
 // Template Function Definitions
 //-----------------------------------------------------------------------------
 
-template <class T> void WriteScriptDescriptor::_WriteData(const std::string &key, T value) {
+template <class T> void WriteScriptDescriptor::_WriteData(const std::string &key, T value) {    _outfile.setf(std::ios::fixed);
 	if (_open_tables.size() == 0) {
-		_outfile << key << " = " << value << std::endl;
+		_outfile << std::setprecision(0) << key << " = " << value << std::endl;
 	}
 	else {
 		_WriteTablePath();
-		_outfile << '.' << key << " = " << value << std::endl;
+		_outfile << std::setprecision(0) << '.' << key << " = " << value << std::endl;
 	}
 }
 
