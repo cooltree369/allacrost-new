@@ -207,7 +207,7 @@ void VideoEngine::DrawFPS(uint32 frame_time) {
 bool VideoEngine::SingletonInitialize() {
 	// check to see if the singleton is already initialized
 	if (_initialized)
-		return true;
+		return true;    // initialize window pointer	window = NULL;
 
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
 		PRINT_ERROR << "SDL video initialization failed" << endl;
@@ -259,30 +259,26 @@ bool VideoEngine::FinalizeInitialization() {
 
 
 
-void VideoEngine::SetInitialResolution(int32 width, int32 height) {
-	// Get the current system color depth and resolution    SetResolution(width, height);	// TODO loop over SDL_GetDisplayMode properly
-//	const SDL_VideoInfo* video_info(0);
-//	video_info = SDL_GetVideoInfo();
-//
-//	if (video_info) {
-//		// Set the resolution to be the highest possible (lower than the user one)
-//		if (video_info->current_w >= width && video_info->current_h >= height) {
-//			SetResolution(width, height);
-//		}
-//		else if (video_info->current_w >= 1024 && video_info->current_h >= 768) {
-//			SetResolution(1024, 768);
-//		}
-//		else if (video_info->current_w >= 800 && video_info->current_h >= 600) {
-//			SetResolution(800, 600);
-//		}
-//		else {
-//			SetResolution(640, 480);
-//		}
-//	}
-//	else {
-//		// Default resoltion if we could not retrieve the resolution of the user
-//		SetResolution(width, height);
-//	}
+void VideoEngine::SetInitialResolution(int32 width, int32 height) {    // TODO loop over SDL_GetNumVideoDisplays() and SDL_GetDisplayMode() somewhere    // until the above is done, defaulting to display 0 mode 0    SDL_DisplayMode display;    // Attempt to get the default display's info
+	if (SDL_GetDisplayMode(0,0, &display) == 0) {
+		// Set the resolution to be the highest possible (lower than the user one)
+		if (display.w >= width && display.h >= height) {
+			SetResolution(width, height);
+		}
+		else if (display.w >= 1024 && display.h >= 768) {
+			SetResolution(1024, 768);
+		}
+		else if (display.w >= 800 && display.h >= 600) {
+			SetResolution(800, 600);
+		}
+		else {
+			SetResolution(640, 480);
+		}
+	}
+	else {	    cerr << "Error acquiring display info : " << SDL_GetError() << endl;
+		// Default resolution if we could not retrieve the resolution of the user
+		SetResolution(width, height);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -426,7 +422,7 @@ bool VideoEngine::ApplySettings() {
 		Uint32 flags = SDL_WINDOW_OPENGL;
 
 		if (_temp_fullscreen == true) {
-			flags |= SDL_WINDOW_FULLSCREEN;
+			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 		}
 
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -437,8 +433,8 @@ bool VideoEngine::ApplySettings() {
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 2);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
-        SDL_GL_SetSwapInterval(1);		window = SDL_CreateWindow("Hero of Allacrost", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,                       _temp_width, _temp_height, flags);
-
+        SDL_GL_SetSwapInterval(1);        // This check is relevant to knowing if a window already exists.        // If a window exists, we destroy it, since we don't want multiple windows.        if (window != NULL)            SDL_DestroyWindow(window);        window = SDL_CreateWindow("Hero of Allacrost", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,                    _temp_width, _temp_height, flags);
+        // This check is relevant to a failed window creation attempt.
 		if (window == NULL) {
 			// RGB values of 1 for each and 8 for depth seemed to be sufficient.
 			// 565 and 16 here because it works with them on this computer.
