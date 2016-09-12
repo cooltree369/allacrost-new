@@ -178,7 +178,7 @@ public:
 		{ return _ReadData<uint32>(key, 0); }
 
 	uint32 ReadUInt(const std::string& key)
-		{ return _ReadData<int32>(key, 0); }
+		{ return _ReadData<uint32>(key, 0); }
 
 	uint32 ReadUInt(int32 key)
 		{ return _ReadData<uint32>(key, 0); }
@@ -288,10 +288,10 @@ public:
 	std::string OpenTablespace();
 
 	/** \param table_name The name of the table to open
-	*** \param use_global If true, overrides the open_tables vector. 
-	*** 
-	*** The reason for the use_global argument is for when a function is called from Lua, as any open tables 
-	*** are no longer on the stack when passed to the function. So to start a new chain of open tables we 
+	*** \param use_global If true, overrides the open_tables vector.
+	***
+	*** The reason for the use_global argument is for when a function is called from Lua, as any open tables
+	*** are no longer on the stack when passed to the function. So to start a new chain of open tables we
 	*** have to ignore the _open_tables data.
 	**/
 	void OpenTable(const std::string& table_name, bool use_global = false);
