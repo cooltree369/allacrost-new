@@ -22,7 +22,7 @@ map_name = "Harrvah Capital";
 sound_filenames = {};
 
 music_filenames = {};
-music_filenames[1] = "mus/Claudius.ogg";
+music_filenames[1] = "mus/Theme_of_Tragedy.ogg";
 
 -- Primary Map Classes
 Map = {};
@@ -69,9 +69,10 @@ function Load(m)
 	Map:ClearLayerOrder();
 	Map:AddTileLayerToOrder(0);
 	Map:AddTileLayerToOrder(1);
-	Map:AddObjectLayerToOrder(0);
 	Map:AddTileLayerToOrder(2);
+	Map:AddObjectLayerToOrder(0);
 	Map:AddTileLayerToOrder(3);
+	Map:AddTileLayerToOrder(4);
 
 	CreateZones();
 	CreateObjects();
@@ -110,58 +111,7 @@ end
 
 function CreateZones()
 	IfPrintDebug(DEBUG, "Creating zones...");
-	---------- Context Zones
 
-	-- The following zone implements the context switching for all structures found in the town.
-	-- The zone sections correspond to the area just outside of the doors to these buildings.
-	-- They are ordered starting from the bottom left of the map, going toward the right.
-	zones["town_doors"] = hoa_map.ContextZone(contexts["exterior"], contexts["interior_a"]);
-	-- Southwest home 1
-	zones["town_doors"]:AddSection(22, 26, 176, 177, true);
-	zones["town_doors"]:AddSection(22, 26, 175, 176, false);
-	-- Soutwest home 2
-	zones["town_doors"]:AddSection(48, 52, 180, 181, true);
-	zones["town_doors"]:AddSection(48, 52, 179, 180, false);
-	-- Item Shop
-	zones["town_doors"]:AddSection(80, 84, 180, 181, true);
-	zones["town_doors"]:AddSection(80, 84, 179, 180, false);
-	-- Inn
-	zones["town_doors"]:AddSection(116, 120, 182, 183, true);
-	zones["town_doors"]:AddSection(116, 120, 181, 182, false);
-
-	-- West home 1
-	zones["town_doors"]:AddSection(20, 24, 152, 153, true);
-	zones["town_doors"]:AddSection(20, 24, 151, 152, false);
-	-- West home 2
-	zones["town_doors"]:AddSection(48, 52, 150, 151, true);
-	zones["town_doors"]:AddSection(48, 52, 149, 150, false);
-	-- West home 3
-	zones["town_doors"]:AddSection(78, 82, 152, 153, true);
-	zones["town_doors"]:AddSection(78, 82, 151, 152, false);
-	-- Weapon Shop
-	zones["town_doors"]:AddSection(148, 152, 154, 155, true);
-	zones["town_doors"]:AddSection(148, 152, 153, 154, false);
-	-- East home
-	zones["town_doors"]:AddSection(178, 182, 148, 149, true);
-	zones["town_doors"]:AddSection(178, 182, 147, 148, false);
-
-	-- Northwest home 1
-	zones["town_doors"]:AddSection(12, 16, 122, 123, true);
-	zones["town_doors"]:AddSection(12, 16, 121, 122, false);
-	-- Northwest home 2
-	zones["town_doors"]:AddSection(50, 54, 126, 127, true);
-	zones["town_doors"]:AddSection(50, 54, 125, 126, false);
-	-- Northeast home 1
-	zones["town_doors"]:AddSection(116, 120, 126, 127, true);
-	zones["town_doors"]:AddSection(116, 120, 125, 126, false);
-	-- Northwest home 2
-	zones["town_doors"]:AddSection(140, 144, 122, 123, true);
-	zones["town_doors"]:AddSection(140, 144, 121, 122, false);
-	-- Claudius' home
-	zones["town_doors"]:AddSection(168, 172, 124, 125, true);
-	zones["town_doors"]:AddSection(168, 172, 123, 124, false);
-
-	Map:AddZone(zones["town_doors"]);
 end
 
 
@@ -375,101 +325,175 @@ function HandleCollisionNotification(notification)
 	local y_bottom = RoundToInteger(notification.y_position + notification.y_offset);
 
 	local locked_door_collision = false;
-	-- Collisions should now be checked to see if they play a "locked door" sound, or start a context switch
+	-- Collisions should now be checked to see if they should start a context switch
 	if (sprite:GetContext() == contexts["exterior"]) then
 		if (sprite:IsFacingDirection(hoa_map.MapMode.NORTH)) then
-			-- There are a lot of south-facing doors, some which are locked (play a sound) and others which need to trigger a context switch
-			-- The list below are the coordinates for every reachable door, starting from the top left of the map and going across and down
-			-- TODO: there's probably a better/faster way to do this position checking (a lookup table?). For now this solution works fine though
+			-- There are a lot of south-facing doors in this context. The list below are the coordinates for every reachable door, starting from
+			-- the top left of the map and going across and down. Because their are so many buildings in the city, we enumerate them from a-z in
+			-- this order
+
 			-- Castle doors
-			if (y_top == 68 and notification.x_position >= 22 and notification.x_position <= 24) then
-				SpriteContextTransition("enter_lcastle_side", sprite);
-			elseif (y_top == 60 and notification.x_position >= 96 and notification.x_position <= 100) then
-				SpriteContextTransition("balcony_to_throne", sprite);
-			-- City top row doors
-			elseif (y_top == 120 and notification.x_position > 12 and notification.x_position <= 16) then
-				locked_door_collision = true;
-			elseif (y_top == 124 and notification.x_position >= 50 and notification.x_position <= 54) then
-				locked_door_collision = true;
-			elseif (y_top == 124 and notification.x_position >= 116 and notification.x_position <= 120) then
-				locked_door_collision = true;
-			elseif (y_top == 120 and notification.x_position >= 140 and notification.x_position <= 144) then
-				locked_door_collision = true;
-			elseif (y_top == 122 and notification.x_position >= 168 and notification.x_position <= 172) then
-				SpriteContextTransition("home_inside", sprite);
-			-- City middle row doors
-			elseif (y_top == 150 and notification.x_position >= 20 and notification.x_position <= 24) then
-				locked_door_collision = true;
-			elseif (y_top == 148 and notification.x_position >= 48 and notification.x_position <= 52) then
-				locked_door_collision = true;
-			elseif (y_top == 150 and notification.x_position >= 78 and notification.x_position <= 82) then
-				locked_door_collision = true;
-			elseif (y_top == 152 and notification.x_position >= 148 and notification.x_position <= 152) then
-				locked_door_collision = true;
-			elseif (y_top == 146 and notification.x_position >= 178 and notification.x_position <= 182) then
-				locked_door_collision = true;
-			-- City bottom row doors
-			elseif (y_top == 174 and notification.x_position >= 22 and notification.x_position <= 26) then
-				locked_door_collision = true;
-			elseif (y_top == 178 and notification.x_position >= 48 and notification.x_position <= 52) then
-				locked_door_collision = true;
-			elseif (y_top == 178 and notification.x_position >= 80 and notification.x_position <= 84) then
-				locked_door_collision = true;
-			elseif (y_top == 180 and notification.x_position >= 116 and notification.x_position <= 120) then
-				locked_door_collision = true;
+			if (y_top == 68 and x_left >= 22 and x_right <= 24) then
+				SpriteContextTransition("enter-left-castle-side", sprite);
+			elseif (y_top == 70 and x_left >= 72 and x_right <= 76) then
+				SpriteContextTransition("enter-left-castle", sprite);
+			elseif (y_top == 60 and x_left >= 96 and x_right <= 100) then
+				SpriteContextTransition("enter-throne", sprite);
+			elseif (y_top == 70 and x_left >= 120 and x_right <= 124) then
+				SpriteContextTransition("enter-right-castle", sprite);
+			elseif (y_top == 68 and x_left >= 172 and x_right <= 174) then
+				SpriteContextTransition("enter-left-castle-side", sprite);
+
+			-- City structures top row
+			elseif (y_top == 120 and x_left > 12 and x_right <= 16) then
+				SpriteContextTransition("enter-building-a", sprite);
+			elseif (y_top == 124 and x_left >= 50 and x_right <= 54) then
+				SpriteContextTransition("enter-building-b", sprite); -- Pub
+			elseif (y_top == 124 and x_left >= 116 and x_right <= 120) then
+				SpriteContextTransition("enter-building-c", sprite);
+			elseif (y_top == 120 and x_left >= 140 and x_right <= 144) then
+				SpriteContextTransition("enter-building-d", sprite);
+			elseif (y_top == 122 and x_left >= 168 and x_right <= 172) then
+				SpriteContextTransition("enter-building-e", sprite); -- Claudius' home
+
+			--- City structures middle row
+			elseif (y_top == 150 and x_left >= 20 and x_right <= 24) then
+				SpriteContextTransition("enter-building-f", sprite);
+			elseif (y_top == 148 and x_left >= 48 and x_right <= 52) then
+				SpriteContextTransition("enter-building-g", sprite);
+			elseif (y_top == 150 and x_left >= 78 and x_right <= 82) then
+				SpriteContextTransition("enter-building-h", sprite);
+			elseif (y_top == 152 and x_left >= 148 and x_right <= 152) then
+				SpriteContextTransition("enter-building-i", sprite); -- Weapon/armor shop
+			elseif (y_top == 146 and x_left >= 178 and x_right <= 182) then
+				SpriteContextTransition("enter-building-j", sprite);
+
+			-- City structures bottom row
+			elseif (y_top == 174 and x_left >= 22 and x_right <= 26) then
+				SpriteContextTransition("enter-building-k", sprite);
+			elseif (y_top == 178 and x_left >= 48 and x_right <= 52) then
+				SpriteContextTransition("enter-building-l", sprite);
+			elseif (y_top == 178 and x_left >= 80 and x_right <= 84) then
+				SpriteContextTransition("enter-building-m", sprite); -- Item shop
+			elseif (y_top == 180 and x_left >= 116 and nx_right <= 120) then
+				SpriteContextTransition("enter-building-n", sprite); -- Inn
 			end
 		elseif (sprite:IsFacingDirection(hoa_map.MapMode.WEST)) then
 			-- Castle Balcony, left side entrance
-			if (x_left == 84 and notification.y_position > 60 and notification.y_position <= 66) then
-				SpriteContextTransition("balcony_to_ltower", sprite);
+			if (x_left == 84 and notification.y_top >= 60 and notification.y_bottom <= 66) then
+				SpriteContextTransition("balcony-to-left-tower", sprite);
 			end
-			-- x22-24, y68 = left side door
-			-- x96-100, y60 = throne room
+		elseif (sprite:IsFacingDirection(hoa_map.MapMode.WEST)) then
+			-- Castle Balcony, right side entrance
+			if (x_right == 112 and notification.y_top >= 60 and notification.y_bottom <= 66) then
+				SpriteContextTransition("balcony-to-right-tower", sprite);
+			end
 		end
+
 	elseif (sprite:GetContext() == contexts["interior_a"]) then
 		if (sprite:IsFacingDirection(hoa_map.MapMode.NORTH)) then
 			if (y_top == 104 and x_left >= 160 and x_right <= 164) then
-				SpriteContextTransition("home_upstairs", sprite);
+				SpriteContextTransition("upstairs-building-e", sprite);
+			elseif (y_top == 159 and x_left >= 126 and x_right <= 130) then
+				SpriteContextTransition("upstairs-building-n", sprite);
 			end
 		elseif (sprite:IsFacingDirection(hoa_map.MapMode.SOUTH)) then
-			if (y_bottom == 124 and x_left >= 168 and x_right <= 172) then
-				SpriteContextTransition("home_outside", sprite);
-			elseif (y_bottom == 60 and notification.x_position >= 96 and notification.x_position <= 100) then
+			if (y_bottom == 60 and notification.x_position >= 96 and x_right <= 100) then
 				SpriteContextTransition("throne_to_balcony", sprite);
+			elseif (y_bottom == 128 and x_left >= 50 and x_right <= 54) then
+				SpriteContextTransition("exit-building-b", sprite);
+			elseif (y_bottom == 124 and x_left >= 168 and x_right <= 172) then
+				SpriteContextTransition("exit-building-e", sprite);
+			elseif (y_bottom == 182 and x_left >= 48 and x_right <= 52) then
+				SpriteContextTransition("exit-building-l", sprite);
+			elseif (y_bottom == 184 and x_left >= 116 and x_right <= 120) then
+				SpriteContextTransition("exit-building-n", sprite);
 			end
 		end
+
 	elseif (sprite:GetContext() == contexts["interior_b"]) then
-		if (sprite:IsFacingDirection(hoa_map.MapMode.SOUTH)) then
-			if (y_bottom == 68 and notification.x_position >= 22 and notification.x_position <= 24) then
-				SpriteContextTransition("exit_lcastle_side", sprite);
+		if (sprite:IsFacingDirection(hoa_map.MapMode.NORTH)) then
+			if (y_top == 43 and x_left >= 42 and x_right <= 44) then
+				SpriteContextTransition("upstairs-1-left-tower", sprite);
+			elseif (y_top == 37 and x_left >= 120 and x_right <= 124) then
+				SpriteContextTransition("upstairs-2-right-tower", sprite);
+			elseif (y_top == 37 and x_left >= 126 and x_right <= 130) then
+				SpriteContextTransition("downstairs-2-right-tower", sprite);
+			elseif (y_top == 103 and x_left >= 28 and x_right <= 32) then
+				SpriteContextTransition("upstairs-building-a", sprite);
+			end
+		elseif (sprite:IsFacingDirection(hoa_map.MapMode.SOUTH)) then
+			if (y_bottom == 68 and x_left >= 22 and x_right <= 24) then
+				SpriteContextTransition("exit-left-castle-side", sprite);
+			elseif (y_bottom == 70 and x_left >= 72 and x_right <= 76) then
+				SpriteContextTransition("exit-left-castle", sprite);
+			elseif (y_bottom == 124 and x_left >= 12 and x_right <= 16) then
+				SpriteContextTransition("exit-building-a", sprite);
+			elseif (y_bottom == 156 and x_left >= 148 and x_right <= 152) then
+				SpriteContextTransition("exit-building-i", sprite);
+			elseif (y_bottom == 182 and x_left >= 80 and x_right <= 84) then
+				SpriteContextTransition("exit-building-m", sprite);
 			end
 		elseif (sprite:IsFacingDirection(hoa_map.MapMode.EAST)) then
-			if (x_right == 84 and notification.y_position > 60 and notification.y_position <= 66) then
-				SpriteContextTransition("ltower_to_balcony", sprite);
+			if (x_right == 84 and y_top >= 60 and y_bottom <= 66) then
+				SpriteContextTransition("left-tower-to-balcony", sprite);
 			end
 		end
+
 	elseif (sprite:GetContext() == contexts["interior_c"]) then
 		if (sprite:IsFacingDirection(hoa_map.MapMode.NORTH)) then
-			if (y_top == 106 and x_left >= 160 and x_right <= 164) then
-				SpriteContextTransition("home_downstairs", sprite);
+			if (y_top == 37 and x_left >= 66 and x_right <= 70) then
+				SpriteContextTransition("upstairs-2-left-tower", sprite);
+			elseif (y_top == 37 and x_left >= 72 and x_right <= 76) then
+				SpriteContextTransition("downstairs-2-left-tower", sprite);
+			elseif (y_top == 43 and x_left >= 120 and x_right <= 124) then
+				SpriteContextTransition("upstairs-1-right-tower", sprite);
+			elseif (y_top == 103 and x_left >= 28 and x_right <= 32) then
+				SpriteContextTransition("downstairs-building-a", sprite);
+			elseif (y_top == 106 and x_left >= 160 and x_right <= 164) then
+				SpriteContextTransition("downstairs-building-e", sprite);
+			elseif (y_top == 159 and x_left >= 126 and x_right <= 130) then
+				SpriteContextTransition("downstairs-building-n", sprite);
 			end
-		elseif (sprite:IsFacingDirection(hoa_map.MapMode.EAST)) then
-			if (x_right == 84 and notification.y_position > 60 and notification.y_position <= 66) then
-				SpriteContextTransition("ltower_to_balcony", sprite);
+		elseif (sprite:IsFacingDirection(hoa_map.MapMode.SOUTH)) then
+			if (y_bottom == 70 and x_left >= 120 and x_right <= 124) then
+				SpriteContextTransition("exit-right-castle", sprite);
+			elseif (y_bottom == 68 and x_left >= 172 and x_right <= 174) then
+				SpriteContextTransition("exit-right-castle-side", sprite);
+			elseif (y_bottom == 178 and x_left >= 22 and x_right <= 26) then
+				SpriteContextTransition("exit-building-k", sprite);
+			end
+		elseif (sprite:IsFacingDirection(hoa_map.MapMode.WEST)) then
+			if (x_left == 112 and notification.y_position > 60 and notification.y_position <= 66) then
+				SpriteContextTransition("right-tower-to-balcony", sprite);
 			end
 		end
 	elseif (sprite:GetContext() == contexts["interior_d"]) then
-		if (sprite:IsFacingDirection(hoa_map.MapMode.SOUTH)) then
-			if (y_bottom == 68 and notification.x_position >= 22 and notification.x_position <= 24) then
-				SpriteContextTransition("exit_lcastle_side", sprite);
+		if (sprite:IsFacingDirection(hoa_map.MapMode.NORTH)) then
+			if (y_top == 31 and x_left >= 126 and x_right <= 130) then
+				SpriteContextTransition("downstairs-3-right-tower", sprite);
 			end
-		elseif (sprite:IsFacingDirection(hoa_map.MapMode.EAST)) then
-			if (x_right == 84 and notification.y_position > 60 and notification.y_position <= 66) then
-				SpriteContextTransition("ltower_to_balcony", sprite);
+		elseif (sprite:IsFacingDirection(hoa_map.MapMode.SOUTH)) then
+			if (y_bottom == 154 and notification.x_position >= 20 and notification.x_position <= 24) then
+				SpriteContextTransition("exit-building-f", sprite);
+			elseif (y_bottom == 154 and notification.x_position >= 78 and notification.x_position <= 82) then
+				SpriteContextTransition("exit-building-h", sprite);
 			end
 		end
 	elseif (sprite:GetContext() == contexts["interior_e"]) then
-
+		if (sprite:IsFacingDirection(hoa_map.MapMode.NORTH)) then
+			if (y_top == 31 and x_left >= 72 and x_right <= 76) then
+				SpriteContextTransition("downstairs-3-left-tower", sprite);
+			end
+		elseif (sprite:IsFacingDirection(hoa_map.MapMode.SOUTH)) then
+			if (y_bottom == 128 and notification.x_position >= 116 and notification.x_position <= 120) then
+				SpriteContextTransition("exit-building-c", sprite);
+			elseif (y_bottom == 152 and notification.x_position >= 48 and notification.x_position <= 52) then
+				SpriteContextTransition("exit-building-g", sprite);
+			elseif (y_bottom == 150 and notification.x_position >= 178 and notification.x_position <= 182) then
+				SpriteContextTransition("exit-building-j", sprite);
+			end
+		end
 	end
 
 	if (locked_door_collision) then
@@ -493,30 +517,69 @@ function SpriteContextTransition(transition_key, sprite)
 	Map:GetVirtualFocus():MoveToObject(sprite, true);
 	Map:SetCamera(Map:GetVirtualFocus());
 
-	if (transition_key == "home_inside") then
+	if (transition_key == "enter-building-a") then
+		new_context = contexts["interior_b"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "enter-building-b") then
 		new_context = contexts["interior_a"];
 		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "home_outside") then
+	elseif (transition_key == "enter-building-c") then
+		new_context = contexts["interior_e"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "enter-building-d") then
+		new_context = contexts["interior_d"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "enter-building-e") then
+		new_context = contexts["interior_a"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "enter-building-f") then
+		new_context = contexts["interior_d"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "enter-building-g") then
+		new_context = contexts["interior_e"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "enter-building-h") then
+		new_context = contexts["interior_d"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "enter-building-i") then
+		new_context = contexts["interior_b"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "enter-building-j") then
+		new_context = contexts["interior_e"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "enter-building-k") then
+		new_context = contexts["interior_c"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "enter-building-l") then
+		new_context = contexts["interior_a"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "enter-building-m") then
+		new_context = contexts["interior_b"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "enter-building-n") then
+		new_context = contexts["interior_a"];
+		sprite:ModifyYPosition(-2, -0.5);
+	elseif (transition_key == "exit-building-e") then
 		new_context = contexts["exterior"];
 		sprite:ModifyYPosition(2, 0.5);
-	elseif (transition_key == "home_upstairs") then
+	elseif (transition_key == "upstairs-building-e") then
 		new_context = contexts["interior_c"];
 		sprite:SetPosition(162, 108);
 		sprite:SetDirection(hoa_map.MapMode.SOUTH);
-	elseif (transition_key == "home_downstairs") then
+	elseif (transition_key == "downstairs-building-e") then
 		new_context = contexts["interior_a"];
 		sprite:SetPosition(164, 109);
 		sprite:SetDirection(hoa_map.MapMode.SOUTH);
 	elseif (transition_key == "enter_lcastle_side") then
 		new_context = contexts["interior_b"];
 		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "exit_lcastle_side") then
+	elseif (transition_key == "exit-left-castle-side") then
 		new_context = contexts["exterior"];
 		sprite:ModifyYPosition(2, 0.5);
 	elseif (transition_key == "balcony_to_ltower") then
 		new_context = contexts["interior_b"];
 		sprite:ModifyXPosition(-2, -0.5);
-	elseif (transition_key == "ltower_to_balcony") then
+	elseif (transition_key == "left-tower-to-balcony") then
 		new_context = contexts["exterior"];
 		sprite:ModifyXPosition(2, 0.5);
 	elseif (transition_key == "balcony_to_throne") then
