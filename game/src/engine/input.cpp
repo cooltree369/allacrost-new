@@ -139,17 +139,17 @@ bool InputEngine::RestoreDefaultKeys() {
 	// Load all default keys from the table
 	settings_file.OpenTable("settings");
 	settings_file.OpenTable("key_defaults");
-	_key.up           = static_cast<SDL_Keycode>(settings_file.ReadInt("up"));
-	_key.down         = static_cast<SDL_Keycode>(settings_file.ReadInt("down"));
-	_key.left         = static_cast<SDL_Keycode>(settings_file.ReadInt("left"));
-	_key.right        = static_cast<SDL_Keycode>(settings_file.ReadInt("right"));
-	_key.confirm      = static_cast<SDL_Keycode>(settings_file.ReadInt("confirm"));
-	_key.cancel       = static_cast<SDL_Keycode>(settings_file.ReadInt("cancel"));
-	_key.menu         = static_cast<SDL_Keycode>(settings_file.ReadInt("menu"));
-	_key.swap         = static_cast<SDL_Keycode>(settings_file.ReadInt("swap"));
-	_key.left_select  = static_cast<SDL_Keycode>(settings_file.ReadInt("left_select"));
-	_key.right_select = static_cast<SDL_Keycode>(settings_file.ReadInt("right_select"));
-	_key.pause        = static_cast<SDL_Keycode>(settings_file.ReadInt("pause"));
+	_key.up           = SDL_GetKeyFromName(settings_file.ReadString("up").c_str());
+	_key.down         = SDL_GetKeyFromName(settings_file.ReadString("down").c_str());
+	_key.left         = SDL_GetKeyFromName(settings_file.ReadString("left").c_str());
+	_key.right        = SDL_GetKeyFromName(settings_file.ReadString("right").c_str());
+	_key.confirm      = SDL_GetKeyFromName(settings_file.ReadString("confirm").c_str());
+	_key.cancel       = SDL_GetKeyFromName(settings_file.ReadString("cancel").c_str());
+	_key.menu         = SDL_GetKeyFromName(settings_file.ReadString("menu").c_str());
+	_key.swap         = SDL_GetKeyFromName(settings_file.ReadString("swap").c_str());
+	_key.left_select  = SDL_GetKeyFromName(settings_file.ReadString("left_select").c_str());
+	_key.right_select = SDL_GetKeyFromName(settings_file.ReadString("right_select").c_str());
+	_key.pause        = SDL_GetKeyFromName(settings_file.ReadString("pause").c_str());
 	settings_file.CloseTable();
 	settings_file.CloseTable();
 

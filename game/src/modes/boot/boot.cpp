@@ -1507,17 +1507,17 @@ bool BootMode::_LoadSettingsFile(const std::string& filename) {
 	SystemManager->SetLanguage(static_cast<std::string>(settings.ReadString("language")));
 
 	settings.OpenTable("key_settings");
-	InputManager->SetUpKey(static_cast<SDL_Keycode>(settings.ReadInt("up")));
-	InputManager->SetDownKey(static_cast<SDL_Keycode>(settings.ReadInt("down")));
-	InputManager->SetLeftKey(static_cast<SDL_Keycode>(settings.ReadInt("left")));
-	InputManager->SetRightKey(static_cast<SDL_Keycode>(settings.ReadInt("right")));
-	InputManager->SetConfirmKey(static_cast<SDL_Keycode>(settings.ReadInt("confirm")));
-	InputManager->SetCancelKey(static_cast<SDL_Keycode>(settings.ReadInt("cancel")));
-	InputManager->SetMenuKey(static_cast<SDL_Keycode>(settings.ReadInt("menu")));
-	InputManager->SetSwapKey(static_cast<SDL_Keycode>(settings.ReadInt("swap")));
-	InputManager->SetLeftSelectKey(static_cast<SDL_Keycode>(settings.ReadInt("left_select")));
-	InputManager->SetRightSelectKey(static_cast<SDL_Keycode>(settings.ReadInt("right_select")));
-	InputManager->SetPauseKey(static_cast<SDL_Keycode>(settings.ReadInt("pause")));
+	InputManager->SetUpKey(SDL_GetKeyFromName(settings.ReadString("up").c_str()));
+	InputManager->SetDownKey(SDL_GetKeyFromName(settings.ReadString("down").c_str()));
+	InputManager->SetLeftKey(SDL_GetKeyFromName(settings.ReadString("left").c_str()));
+	InputManager->SetRightKey(SDL_GetKeyFromName(settings.ReadString("right").c_str()));
+	InputManager->SetConfirmKey(SDL_GetKeyFromName(settings.ReadString("confirm").c_str()));
+	InputManager->SetCancelKey(SDL_GetKeyFromName(settings.ReadString("cancel").c_str()));
+	InputManager->SetMenuKey(SDL_GetKeyFromName(settings.ReadString("menu").c_str()));
+	InputManager->SetSwapKey(SDL_GetKeyFromName(settings.ReadString("swap").c_str()));
+	InputManager->SetLeftSelectKey(SDL_GetKeyFromName(settings.ReadString("left_select").c_str()));
+	InputManager->SetRightSelectKey(SDL_GetKeyFromName(settings.ReadString("right_select").c_str()));
+	InputManager->SetPauseKey(SDL_GetKeyFromName(settings.ReadString("pause").c_str()));
 	settings.CloseTable();
 
 	if (settings.IsErrorDetected()) {
@@ -1680,18 +1680,18 @@ bool BootMode::_SaveSettingsFile(const std::string& filename) {
 	settings_lua.ModifyFloat("audio_settings.music_vol", AudioManager->GetMusicVolume());
 	settings_lua.ModifyFloat("audio_settings.sound_vol", AudioManager->GetSoundVolume());
 
-	// input	// TODO: Get rid of hacks
-	settings_lua.ModifyUInt("key_settings.up", InputManager->GetUpKey()-1073741824); //hack
-	settings_lua.ModifyUInt("key_settings.down", InputManager->GetDownKey()-1073741824); //hack
-	settings_lua.ModifyUInt("key_settings.left", InputManager->GetLeftKey()-1073741824); //hack
-	settings_lua.ModifyUInt("key_settings.right", InputManager->GetRightKey()-1073741824); //hack
-	settings_lua.ModifyUInt("key_settings.confirm", InputManager->GetConfirmKey());
-	settings_lua.ModifyUInt("key_settings.cancel", InputManager->GetCancelKey());
-	settings_lua.ModifyUInt("key_settings.menu", InputManager->GetMenuKey());
-	settings_lua.ModifyUInt("key_settings.swap", InputManager->GetSwapKey());
-	settings_lua.ModifyUInt("key_settings.left_select", InputManager->GetLeftSelectKey());
-	settings_lua.ModifyUInt("key_settings.right_select", InputManager->GetRightSelectKey());
-	settings_lua.ModifyUInt("key_settings.pause", InputManager->GetPauseKey());
+	// input
+	settings_lua.ModifyString("key_settings.up", SDL_GetKeyName(InputManager->GetUpKey()));
+	settings_lua.ModifyString("key_settings.down", SDL_GetKeyName(InputManager->GetDownKey()));
+	settings_lua.ModifyString("key_settings.left", SDL_GetKeyName(InputManager->GetLeftKey()));
+	settings_lua.ModifyString("key_settings.right", SDL_GetKeyName(InputManager->GetRightKey()));
+	settings_lua.ModifyString("key_settings.confirm", SDL_GetKeyName(InputManager->GetConfirmKey()));
+	settings_lua.ModifyString("key_settings.cancel", SDL_GetKeyName(InputManager->GetCancelKey()));
+	settings_lua.ModifyString("key_settings.menu", SDL_GetKeyName(InputManager->GetMenuKey()));
+	settings_lua.ModifyString("key_settings.swap", SDL_GetKeyName(InputManager->GetSwapKey()));
+	settings_lua.ModifyString("key_settings.left_select", SDL_GetKeyName(InputManager->GetLeftSelectKey()));
+	settings_lua.ModifyString("key_settings.right_select", SDL_GetKeyName(InputManager->GetRightSelectKey()));
+	settings_lua.ModifyString("key_settings.pause", SDL_GetKeyName(InputManager->GetPauseKey()));
 	settings_lua.ModifyUInt("joystick_settings.x_axis", InputManager->GetXAxisJoy());
 	settings_lua.ModifyUInt("joystick_settings.y_axis", InputManager->GetYAxisJoy());
 	settings_lua.ModifyUInt("joystick_settings.confirm", InputManager->GetConfirmJoy());
