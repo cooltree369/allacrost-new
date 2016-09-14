@@ -480,8 +480,8 @@ template <class T> Thread* SystemEngine::SpawnThread(void (T::*func)(), T* mycla
 	// Winter Knight: There is a potential, but unlikely race condition here.
 	// gen may be overwritten prematurely if this function, SpawnThread, gets
 	// called a second time before SpawnThread_Intermediate calls myclass->*func
-	// This will result in a segfault.	// TODO: SDL_CreateThread requires 3 arguments in SDL2, not 2 as in SDL1.2. This won't compile in Windows	// until a third argument, but the 2-arg version seems to work fine in Linux
-	// thread = SDL_CreateThread(gen.SpawnThread_Intermediate, &gen);
+	// This will result in a segfault.	// TODO: Figure out a way to name threads that's not the empty string
+    thread = SDL_CreateThread(gen.SpawnThread_Intermediate, "", &gen);
 	if (thread == NULL) {
 		PRINT_ERROR << "Unable to create thread: " << SDL_GetError() << std::endl;
 		return NULL;
