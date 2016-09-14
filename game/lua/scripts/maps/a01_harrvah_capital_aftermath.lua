@@ -375,7 +375,7 @@ function HandleCollisionNotification(notification)
 				SpriteContextTransition("enter-building-l", sprite);
 			elseif (y_top == 178 and x_left >= 80 and x_right <= 84) then
 				SpriteContextTransition("enter-building-m", sprite); -- Item shop
-			elseif (y_top == 180 and x_left >= 116 and nx_right <= 120) then
+			elseif (y_top == 180 and x_left >= 116 and x_right <= 120) then
 				SpriteContextTransition("enter-building-n", sprite); -- Inn
 			end
 		elseif (sprite:IsFacingDirection(hoa_map.MapMode.WEST)) then
@@ -392,7 +392,7 @@ function HandleCollisionNotification(notification)
 
 	elseif (sprite:GetContext() == contexts["interior_a"]) then
 		if (sprite:IsFacingDirection(hoa_map.MapMode.NORTH)) then
-			if (y_top == 104 and x_left >= 160 and x_right <= 164) then
+			if (y_top == 103 and x_left >= 160 and x_right <= 164) then
 				SpriteContextTransition("upstairs-building-e", sprite);
 			elseif (y_top == 159 and x_left >= 126 and x_right <= 130) then
 				SpriteContextTransition("upstairs-building-n", sprite);
@@ -474,7 +474,9 @@ function HandleCollisionNotification(notification)
 				SpriteContextTransition("downstairs-3-right-tower", sprite);
 			end
 		elseif (sprite:IsFacingDirection(hoa_map.MapMode.SOUTH)) then
-			if (y_bottom == 154 and notification.x_position >= 20 and notification.x_position <= 24) then
+			if (y_bottom == 124 and notification.x_position >= 140 and notification.x_position <= 144) then
+				SpriteContextTransition("exit-building-d", sprite);
+			elseif (y_bottom == 154 and notification.x_position >= 20 and notification.x_position <= 24) then
 				SpriteContextTransition("exit-building-f", sprite);
 			elseif (y_bottom == 154 and notification.x_position >= 78 and notification.x_position <= 82) then
 				SpriteContextTransition("exit-building-h", sprite);
@@ -517,66 +519,13 @@ function SpriteContextTransition(transition_key, sprite)
 	Map:GetVirtualFocus():MoveToObject(sprite, true);
 	Map:SetCamera(Map:GetVirtualFocus());
 
-	if (transition_key == "enter-building-a") then
-		new_context = contexts["interior_b"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "enter-building-b") then
-		new_context = contexts["interior_a"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "enter-building-c") then
-		new_context = contexts["interior_e"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "enter-building-d") then
-		new_context = contexts["interior_d"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "enter-building-e") then
-		new_context = contexts["interior_a"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "enter-building-f") then
-		new_context = contexts["interior_d"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "enter-building-g") then
-		new_context = contexts["interior_e"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "enter-building-h") then
-		new_context = contexts["interior_d"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "enter-building-i") then
-		new_context = contexts["interior_b"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "enter-building-j") then
-		new_context = contexts["interior_e"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "enter-building-k") then
-		new_context = contexts["interior_c"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "enter-building-l") then
-		new_context = contexts["interior_a"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "enter-building-m") then
-		new_context = contexts["interior_b"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "enter-building-n") then
-		new_context = contexts["interior_a"];
-		sprite:ModifyYPosition(-2, -0.5);
-	elseif (transition_key == "exit-building-e") then
-		new_context = contexts["exterior"];
-		sprite:ModifyYPosition(2, 0.5);
-	elseif (transition_key == "upstairs-building-e") then
-		new_context = contexts["interior_c"];
-		sprite:SetPosition(162, 108);
-		sprite:SetDirection(hoa_map.MapMode.SOUTH);
-	elseif (transition_key == "downstairs-building-e") then
-		new_context = contexts["interior_a"];
-		sprite:SetPosition(164, 109);
-		sprite:SetDirection(hoa_map.MapMode.SOUTH);
-	elseif (transition_key == "enter_lcastle_side") then
+	if (transition_key == "enter-left-castle-side") then
 		new_context = contexts["interior_b"];
 		sprite:ModifyYPosition(-2, -0.5);
 	elseif (transition_key == "exit-left-castle-side") then
 		new_context = contexts["exterior"];
 		sprite:ModifyYPosition(2, 0.5);
-	elseif (transition_key == "balcony_to_ltower") then
+	elseif (transition_key == "balcony-to-left-tower") then
 		new_context = contexts["interior_b"];
 		sprite:ModifyXPosition(-2, -0.5);
 	elseif (transition_key == "left-tower-to-balcony") then
@@ -588,6 +537,114 @@ function SpriteContextTransition(transition_key, sprite)
 	elseif (transition_key == "throne_to_balcony") then
 		new_context = contexts["exterior"];
 		sprite:ModifyYPosition(2, 0.5);
+	elseif (transition_key == "enter-building-a") then
+		new_context = contexts["interior_b"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-a") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "upstairs-building-a") then
+		new_context = contexts["interior_c"];
+		sprite:ModifyYPosition(1, 0);
+		sprite:SetDirection(hoa_map.MapMode.SOUTH);
+	elseif (transition_key == "downstairs-building-a") then
+		new_context = contexts["interior_b"];
+		sprite:ModifyYPosition(1, 0);
+		sprite:SetDirection(hoa_map.MapMode.SOUTH);
+	elseif (transition_key == "enter-building-b") then
+		new_context = contexts["interior_a"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-b") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "enter-building-c") then
+		new_context = contexts["interior_e"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-c") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "enter-building-d") then
+		new_context = contexts["interior_d"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-d") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "enter-building-e") then
+		new_context = contexts["interior_a"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-e") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "upstairs-building-e") then
+		new_context = contexts["interior_c"];
+		sprite:SetPosition(162, 108);
+		sprite:SetDirection(hoa_map.MapMode.SOUTH);
+	elseif (transition_key == "downstairs-building-e") then
+		new_context = contexts["interior_a"];
+		sprite:SetPosition(164, 109);
+		sprite:SetDirection(hoa_map.MapMode.SOUTH);
+	elseif (transition_key == "enter-building-f") then
+		new_context = contexts["interior_d"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-f") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "enter-building-g") then
+		new_context = contexts["interior_e"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-g") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "enter-building-h") then
+		new_context = contexts["interior_d"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-h") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "enter-building-i") then
+		new_context = contexts["interior_b"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-i") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "enter-building-j") then
+		new_context = contexts["interior_e"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-j") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "enter-building-k") then
+		new_context = contexts["interior_c"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-k") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "enter-building-l") then
+		new_context = contexts["interior_a"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-l") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "enter-building-m") then
+		new_context = contexts["interior_b"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-m") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "enter-building-n") then
+		new_context = contexts["interior_a"];
+		sprite:ModifyYPosition(0, -0.5);
+	elseif (transition_key == "exit-building-n") then
+		new_context = contexts["exterior"];
+		sprite:ModifyYPosition(0, 0.5);
+	elseif (transition_key == "upstairs-building-n") then
+		new_context = contexts["interior_c"];
+		sprite:ModifyYPosition(1, 0);
+		sprite:SetDirection(hoa_map.MapMode.SOUTH);
+	elseif (transition_key == "downstairs-building-n") then
+		new_context = contexts["interior_a"];
+		sprite:ModifyYPosition(1, 0);
+		sprite:SetDirection(hoa_map.MapMode.SOUTH);
 	else
 		new_context = contexts["exterior"];
 		-- TODO: print warning message about unknown transition key
