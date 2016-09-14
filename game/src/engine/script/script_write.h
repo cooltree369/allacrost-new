@@ -259,13 +259,13 @@ private:
 // Template Function Definitions
 //-----------------------------------------------------------------------------
 
-template <class T> void WriteScriptDescriptor::_WriteData(const std::string &key, T value) {    _outfile.setf(std::ios::fixed);
+template <class T> void WriteScriptDescriptor::_WriteData(const std::string &key, T value) {
 	if (_open_tables.size() == 0) {
-		_outfile << std::setprecision(0) << key << " = " << value << std::endl;
+		_outfile << key << " = " << value << std::endl;
 	}
 	else {
 		_WriteTablePath();
-		_outfile << std::setprecision(0) << '.' << key << " = " << value << std::endl;
+		_outfile << '.' << key << " = " << value << std::endl;
 	}
 }
 
