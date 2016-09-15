@@ -119,7 +119,7 @@ function Load(m)
 end -- Load(m)
 
 
--- Makes appropriate adjustments to the map state to reflect different debug
+-- Makes appropriate adjustments to the map state to put the player at distinguished locations/times for map debugging
 function DEBUG_Load()
 	sprites["mark"].collidable = false;
 	sprites["lukar"].collidable = false;
