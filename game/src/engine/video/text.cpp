@@ -852,7 +852,6 @@ void TextSupervisor::_CacheGlyphs(const uint16* text, FontProperties* fp) {
 		glyph->texture = texture;
 		glyph->min_x = minx;
 		glyph->min_y = miny;
-		glyph->top_y = fp->ascent - maxy;
 		glyph->width = initial->w;
 		glyph->height = initial->h;
 		glyph->max_x = static_cast<float>(initial->w) / static_cast<float>(w);
@@ -1034,7 +1033,7 @@ bool TextSupervisor::_RenderText(hoa_utils::ustring& string, TextStyle& style, I
 	}
 
 	// Go through the string and render each glyph one by one
-	SDL_Rect surf_target;
+	SDL_Rect surf_target = {0};
 	int32 xpos = -line_start_x;
 	for (char_ptr = string.c_str(); *char_ptr != '\0'; ++char_ptr) {
 		FontGlyph* glyphinfo = (*fp->glyph_cache)[*char_ptr];
