@@ -20,7 +20,7 @@
 #include "utils.h"
 #include "defs.h"
 
-#include "script.h"
+#include "script.h"#include <iomanip>
 
 namespace hoa_script {
 

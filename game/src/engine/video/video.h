@@ -53,9 +53,9 @@ extern "C" {
 }
 
 #ifdef __APPLE__
-	#include <SDL_ttf/SDL_ttf.h>
+	#include <SDL2_ttf/SDL_ttf.h> //A complete guess, this might not work?
 #else
-	#include <SDL/SDL_ttf.h>
+	#include <SDL2/SDL_ttf.h>
 #endif
 
 #include "defs.h"
@@ -637,7 +637,7 @@ public:
 	*** prior to drawing GUI, text, or other elements that should not be affected by the
 	*** lightning.
 	**/
-	void DrawLightning();
+	void DrawLightning();    /** \brief Sets the title of the window to the given string.	 */    void SetWindowTitle(const char*);    void SetWindowIcon(SDL_Surface*);
 
 	//-- Fading ---------------------------------------------------------------
 
@@ -955,7 +955,7 @@ private:
 	std::stack<private_video::Context> _context_stack;
 
 	//! check to see if the VideoManager has already been setup.
-	bool _initialized;
+	bool _initialized;	//! Pointer to current window (SDL2)	SDL_Window* window;	//! OpenGL context (SDL2)	SDL_GLContext glcontext;
 
 	//-- Private methods ------------------------------------------------------
 
