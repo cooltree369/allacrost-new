@@ -32,9 +32,9 @@
 					<Add library="shell32" />
 					<Add library="user32" />
 					<Add library="mingw32" />
-					<Add library="SDLMain" />
-					<Add library="SDL" />
-					<Add library="SDL_TTF" />
+					<Add library="SDL2Main" />
+					<Add library="SDL2" />
+					<Add library="SDL2_TTF" />
 					<Add library="OpenAL32" />
 					<Add library="ogg" />
 					<Add library="vorbis" />
@@ -75,9 +75,9 @@
 					<Add library="shell32" />
 					<Add library="user32" />
 					<Add library="mingw32" />
-					<Add library="SDLMain" />
-					<Add library="SDL" />
-					<Add library="SDL_TTF" />
+					<Add library="SDL2Main" />
+					<Add library="SDL2" />
+					<Add library="SDL2_TTF" />
 					<Add library="OpenAL32" />
 					<Add library="ogg" />
 					<Add library="vorbis" />
@@ -99,8 +99,8 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O3" />
-					<Add option="-m64" />
 					<Add option="-W" />
+					<Add option="`sdl-config --cflags`" />
 					<Add option='-DDATADIR=\\\&quot;/usr/local/share/games/allacrost\\\&quot;' />
 					<Add option='-DLOCALEDIR=\\\&quot;/usr/local/share/games/allacrost/txt\\\&quot;' />
 					<Add option='-DPACKAGE=\\\&quot;allacrost\\\&quot;' />
@@ -109,12 +109,12 @@
 					<Add directory="/usr/include/lua5.1" />
 					<Add directory="/usr/include/luabind" />
 					<Add directory="/usr/include/GL" />
-					<Add directory="/usr/include/SDL2" />
+					<Add directory="/usr/include/SDL" />
 				</Compiler>
 				<Linker>
-					<Add option="-m64" />
+					<Add option="`sdl-config --libs`" />
 					<Add library="lua5.1" />
-					<Add library="SDL2_ttf" />
+					<Add library="SDL_ttf" />
 					<Add library="vorbisfile" />
 					<Add library="openal" />
 					<Add library="jpeg" />
@@ -122,7 +122,6 @@
 					<Add library="GLU" />
 					<Add library="GL" />
 					<Add library="X11" />
-					<Add library="SDL2" />
 					<Add directory="/usr/lib" />
 				</Linker>
 				<MakeCommands>
@@ -131,7 +130,7 @@
 					<Clean command="$make -f $makefile clean" />
 					<DistClean command="$make -f $makefile distclean" />
 					<AskRebuildNeeded command="$make -q -f $makefile $target" />
-					<SilentBuild command="$make -f $makefile &gt; $(CMD_NULL)" />
+					<SilentBuild command="$make -s -f $makefile $target" />
 				</MakeCommands>
 			</Target>
 			<Target title="Debug Linux">
@@ -142,10 +141,10 @@
 				<Option compiler="gcc" />
 				<Option use_console_runner="0" />
 				<Compiler>
-					<Add option="-m64" />
 					<Add option="-g" />
 					<Add option="-W" />
 					<Add option="-O0" />
+					<Add option="`sdl-config --cflags`" />
 					<Add option='-DDATADIR=\\\&quot;/usr/local/share/games/allacrost\\\&quot;' />
 					<Add option='-DLOCALEDIR=\\\&quot;/usr/local/share/games/allacrost/txt\\\&quot;' />
 					<Add option='-DPACKAGE=\\\&quot;allacrost\\\&quot;' />
@@ -154,12 +153,12 @@
 					<Add directory="/usr/include/lua5.1" />
 					<Add directory="/usr/include/luabind" />
 					<Add directory="/usr/include/GL" />
-					<Add directory="/usr/include/SDL2" />
+					<Add directory="/usr/include/SDL" />
 				</Compiler>
 				<Linker>
-					<Add option="-m64" />
+					<Add option="`sdl-config --libs`" />
 					<Add library="lua5.1" />
-					<Add library="SDL2_ttf" />
+					<Add library="SDL_ttf" />
 					<Add library="vorbisfile" />
 					<Add library="openal" />
 					<Add library="jpeg" />
@@ -167,7 +166,6 @@
 					<Add library="GLU" />
 					<Add library="GL" />
 					<Add library="X11" />
-					<Add library="SDL2" />
 					<Add directory="/usr/lib" />
 				</Linker>
 				<MakeCommands>
@@ -176,7 +174,7 @@
 					<Clean command="$make -f $makefile clean" />
 					<DistClean command="$make -f $makefile distclean" />
 					<AskRebuildNeeded command="$make -q -f $makefile $target" />
-					<SilentBuild command="$make -f $makefile &gt; $(CMD_NULL)" />
+					<SilentBuild command="$make -s -f $makefile $target" />
 				</MakeCommands>
 			</Target>
 		</Build>
@@ -226,9 +224,6 @@
 			<Add directory="src/luabind/luabind/detail" />
 			<Add directory="src/luabind" />
 		</ResourceCompiler>
-		<Linker>
-			<Add option="-m32" />
-		</Linker>
 		<Unit filename="icon.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
