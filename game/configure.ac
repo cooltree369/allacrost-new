@@ -69,8 +69,8 @@ AC_CHECK_LIB([png], [png_read_info], [], \
 AC_CHECK_LIB([jpeg], [jpeg_read_raw_data], [], \
 	[echo "Could not find the jpeg library. Check that it is properly installed on your system"
 	 exit -1])
-AC_CHECK_LIB([SDL], [SDL_InitSubSystem], [], \
-	[echo "Could not find the SDL library. Check that it is properly installed on your system"
+AC_CHECK_LIB([SDL2], [SDL_InitSubSystem], [], \
+	[echo "Could not find the SDL2 library. Check that it is properly installed on your system"
 	 exit -1])
 AC_CHECK_LIB([openal], [alGetError], [], \
 	[echo "Could not find the OpenAL library. Check that it is properly installed on your system"
@@ -78,8 +78,8 @@ AC_CHECK_LIB([openal], [alGetError], [], \
 AC_CHECK_LIB([vorbisfile], [ov_open], [], \
 	[echo "Could not find the vorbis library. Check that it is properly installed on your system"
 	 exit -1])
-AC_CHECK_LIB([SDL_ttf], [TTF_Init], [], \
-	[echo "Could not find the SDL_ttf library. Check that it is properly installed on your system"
+AC_CHECK_LIB([SDL2_ttf], [TTF_Init], [], \
+	[echo "Could not find the SDL2_ttf library. Check that it is properly installed on your system"
 	 exit -1])
 AC_CHECK_LIB([lua5.1], [lua_newstate], [], \
 	[AC_CHECK_LIB([lua51], [lua_newstate], [], \

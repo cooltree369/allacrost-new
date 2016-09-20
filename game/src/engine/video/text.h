@@ -70,9 +70,6 @@ public:
 
 	//! \brief The amount of space between glyphs.
 	int32 advance;
-
-	//! \brief The top y value of the glyph.
-	int top_y;
 }; // class FontGlyph
 
 
