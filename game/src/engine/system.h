@@ -23,7 +23,7 @@
 #ifndef __SYSTEM_HEADER__
 #define __SYSTEM_HEADER__
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 #include "defs.h"
 #include "utils.h"
@@ -36,8 +36,8 @@
 #define THREAD_TYPE SDL_THREADS
 
 #if (THREAD_TYPE == SDL_THREADS)
-	#include <SDL/SDL_thread.h>
-	#include <SDL/SDL_mutex.h>
+	#include <SDL2/SDL_thread.h>
+	#include <SDL2/SDL_mutex.h>
 	typedef SDL_Thread Thread;
 	typedef SDL_sem Semaphore;
 #else
@@ -480,8 +480,8 @@ template <class T> Thread* SystemEngine::SpawnThread(void (T::*func)(), T* mycla
 	// Winter Knight: There is a potential, but unlikely race condition here.
 	// gen may be overwritten prematurely if this function, SpawnThread, gets
 	// called a second time before SpawnThread_Intermediate calls myclass->*func
-	// This will result in a segfault.
-	thread = SDL_CreateThread(gen.SpawnThread_Intermediate, &gen);
+	// This will result in a segfault.	// TODO: Figure out a way to name threads that's not the empty string
+    thread = SDL_CreateThread(gen.SpawnThread_Intermediate, "", &gen);
 	if (thread == NULL) {
 		PRINT_ERROR << "Unable to create thread: " << SDL_GetError() << std::endl;
 		return NULL;
