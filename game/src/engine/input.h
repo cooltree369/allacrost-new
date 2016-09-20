@@ -36,7 +36,7 @@
 #ifndef __INPUT_HEADER__
 #define __INPUT_HEADER__
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 #include "utils.h"
 #include "defs.h"
@@ -65,17 +65,17 @@ public:
 	*** \brief Each member holds the actual keyboard key that corresponds to the named key event.
 	**/
 	//@{
-	SDLKey up;
-	SDLKey down;
-	SDLKey left;
-	SDLKey right;
-	SDLKey confirm;
-	SDLKey cancel;
-	SDLKey menu;
-	SDLKey swap;
-	SDLKey left_select;
-	SDLKey right_select;
-	SDLKey pause;
+	SDL_Keycode up;
+	SDL_Keycode down;
+	SDL_Keycode left;
+	SDL_Keycode right;
+	SDL_Keycode confirm;
+	SDL_Keycode cancel;
+	SDL_Keycode menu;
+	SDL_Keycode swap;
+	SDL_Keycode left_select;
+	SDL_Keycode right_select;
+	SDL_Keycode pause;
 	//@}
 }; // class KeyState
 
@@ -103,14 +103,14 @@ public:
 	**/
 	//@{
 	//! \brief Each member retains the index that refers to the joystick button registered to the event.
-	uint8 confirm;
-	uint8 cancel;
-	uint8 menu;
-	uint8 swap;
-	uint8 left_select;
-	uint8 right_select;
-	uint8 pause;
-	uint8 quit;
+	uint32 confirm;
+	uint32 cancel;
+	uint32 menu;
+	uint32 swap;
+	uint32 left_select;
+	uint32 right_select;
+	uint32 pause;
+	uint32 quit;
 	//@}
 
 	//! \brief Identify which axes to use for x and y.
@@ -215,7 +215,7 @@ public:
 	/** \brief Returns the last joystick axis that has moved
 	*** \return True if any joystick axis has moved
 	**/
-	uint8 GetLastAxisMoved()
+	uint32 GetLastAxisMoved()
 		{ return _last_axis_moved; }
 
 	void ResetLastAxisMoved()
@@ -428,40 +428,40 @@ public:
 	//@}
 
 	/** \name Key re-mapping functions
-	*** \paramkey New key for the action
+	*** \param key New key for the action
 	**/
 	//@{
-	void SetUpKey(const SDLKey& key)
+	void SetUpKey(const SDL_Keycode& key)
 		{ _SetNewKey(_key.up, key); }
 
-	void SetDownKey(const SDLKey& key)
+	void SetDownKey(const SDL_Keycode& key)
 		{ _SetNewKey(_key.down, key); }
 
-	void SetLeftKey(const SDLKey& key)
+	void SetLeftKey(const SDL_Keycode& key)
 		{ _SetNewKey(_key.left, key); }
 
-	void SetRightKey(const SDLKey& key)
+	void SetRightKey(const SDL_Keycode& key)
 		{ _SetNewKey(_key.right, key); }
 
-	void SetConfirmKey(const SDLKey& key)
+	void SetConfirmKey(const SDL_Keycode& key)
 		{ _SetNewKey(_key.confirm, key); }
 
-	void SetCancelKey(const SDLKey& key)
+	void SetCancelKey(const SDL_Keycode& key)
 		{ _SetNewKey(_key.cancel, key); }
 
-	void SetMenuKey(const SDLKey& key)
+	void SetMenuKey(const SDL_Keycode& key)
 		{ _SetNewKey(_key.menu, key); }
 
-	void SetSwapKey(const SDLKey& key)
+	void SetSwapKey(const SDL_Keycode& key)
 		{ _SetNewKey(_key.swap, key); }
 
-	void SetLeftSelectKey(const SDLKey& key)
+	void SetLeftSelectKey(const SDL_Keycode& key)
 		{ _SetNewKey(_key.left_select, key); }
 
-	void SetRightSelectKey(const SDLKey& key)
+	void SetRightSelectKey(const SDL_Keycode& key)
 		{ _SetNewKey(_key.right_select, key); }
 
-	void SetPauseKey(const SDLKey& key)
+	void SetPauseKey(const SDL_Keycode& key)
 		{ _SetNewKey(_key.pause, key); }
 	//@}
 
@@ -472,28 +472,28 @@ public:
 	void SetJoyIndex(int32 joy_index)
 		{ _joystick.joy_index = joy_index; }
 
-	void SetConfirmJoy(uint8 button)
+	void SetConfirmJoy(uint32 button)
 		{ _SetNewJoyButton(_joystick.confirm, button); }
 
-	void SetCancelJoy(uint8 button)
+	void SetCancelJoy(uint32 button)
 		{ _SetNewJoyButton(_joystick.cancel, button); }
 
-	void SetMenuJoy(uint8 button)
+	void SetMenuJoy(uint32 button)
 		{ _SetNewJoyButton(_joystick.menu, button); }
 
-	void SetSwapJoy(uint8 button)
+	void SetSwapJoy(uint32 button)
 		{ _SetNewJoyButton(_joystick.swap, button); }
 
-	void SetLeftSelectJoy(uint8 button)
+	void SetLeftSelectJoy(uint32 button)
 		{ _SetNewJoyButton(_joystick.left_select, button); }
 
-	void SetRightSelectJoy(uint8 button)
+	void SetRightSelectJoy(uint32 button)
 		{ _SetNewJoyButton(_joystick.right_select, button); }
 
-	void SetPauseJoy(uint8 button)
+	void SetPauseJoy(uint32 button)
 		{ _SetNewJoyButton(_joystick.pause, button); }
 
-	void SetQuitJoy(uint8 button)
+	void SetQuitJoy(uint32 button)
 		{ _SetNewJoyButton(_joystick.quit, button); }
 
 	void SetXAxisJoy(int8 axis)
@@ -646,13 +646,13 @@ private:
 	*** \param old_key key to be replaced (_key.up for example)
 	*** \param new_key key to replace the old value
 	**/
-	void _SetNewKey(SDLKey & old_key, SDLKey new_key);
+	void _SetNewKey(SDL_Keycode & old_key, SDL_Keycode new_key);
 
 	/** \brief Sets a new joystick button over an older one. If the same button is used elsewhere, the older one is removed
 	*** \param old_button to be replaced (_joystick.confirm for example)
 	*** \param new_button button to replace the old value
 	**/
-	void _SetNewJoyButton(uint8 & old_button, uint8 new_button);
+	void _SetNewJoyButton(uint32 & old_button, uint32 new_button);
 }; // class InputEngine : public hoa_utils::Singleton<InputEngine>
 
 } // namespace hoa_input
