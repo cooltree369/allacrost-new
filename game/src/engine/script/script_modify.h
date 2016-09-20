@@ -201,7 +201,7 @@ template <class T> void ModifyScriptDescriptor::_ModifyData(const std::string& k
 	std::string search_key = key;
 	int32 period = key.find('.');
 	std::string tablename;
-	std::vector<std::string> subkeys;
+	std::vector<std::string> subkeys;
 	if (period != static_cast<int32>(std::string::npos)) {
 		// This key is a table with sub-keys
 		tablename = key.substr(0, period);

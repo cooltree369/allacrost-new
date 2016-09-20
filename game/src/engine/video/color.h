@@ -2,7 +2,7 @@
 //            Copyright (C) 2004-2015 by The Allacrost Project
 //                         All Rights Reserved
 //
-// This code is licensed under the GNU GPL version 2. It is free software 
+// This code is licensed under the GNU GPL version 2. It is free software
 // and you may modify it and/or redistribute it under the terms of this license.
 // See http://www.gnu.org/copyleft/gpl.html for details.
 ////////////////////////////////////////////////////////////////////////////////
@@ -16,7 +16,7 @@
 #ifndef __COLOR_HEADER__
 #define __COLOR_HEADER__
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 #include "defs.h"
 #include "utils.h"
@@ -113,7 +113,7 @@ public:
 			sdl_color.r = static_cast<uint8>(_colors[0] * 0xFF);
 			sdl_color.g = static_cast<uint8>(_colors[1] * 0xFF);
 			sdl_color.b = static_cast<uint8>(_colors[2] * 0xFF);
-			sdl_color.unused = static_cast<uint8>(_colors[3] * 0xFF);
+			sdl_color.a = static_cast<uint8>(_colors[3] * 0xFF);
 			return sdl_color;
 		}
 

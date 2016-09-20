@@ -186,10 +186,10 @@ bool PrintSystemInformation() {
 		cerr << "ERROR: Unable to initialize SDL: " << SDL_GetError() << endl;
 		return false;
 	}
-	atexit(SDL_Quit);
+	atexit(SDL_Quit);	SDL_version compiled;	SDL_version linked;	SDL_VERSION(&compiled);	SDL_GetVersion(&linked);
 
-	printf("SDL version (compiled):  %d.%d.%d\n", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
-	printf("SDL version (linked):    %d.%d.%d\n", SDL_Linked_Version()->major, SDL_Linked_Version()->minor, SDL_Linked_Version()->patch);
+	printf("SDL version (compiled):  %d.%d.%d\n", compiled.major, compiled.minor, compiled.patch);
+	printf("SDL version (linked):    %d.%d.%d\n", linked.major, linked.minor, linked.patch);
 
 	SDL_Joystick *js_test;
 	int32 js_num = SDL_NumJoysticks();
@@ -198,8 +198,8 @@ bool PrintSystemInformation() {
 	// Print out information about each joystick
 	for (int32 i = 0; i < js_num; i++) {
 		printf("  Joystick #%d\n", i);
-		printf("    Joystick Name: %s\n", SDL_JoystickName(i));
-		js_test = SDL_JoystickOpen(i);
+		printf("    Joystick Name: %s\n", SDL_JoystickNameForIndex(i));
+		js_test = SDL_JoystickOpen(i);		// TODO figure out why this won't link
 		if (js_test == NULL)
 			printf("    ERROR: SDL was unable to open joystick #%d!\n", i);
 		else {
@@ -228,61 +228,61 @@ bool PrintSystemInformation() {
 
 	printf("SDL_ttf version (compiled): %d.%d.%d\n", SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, SDL_TTF_PATCHLEVEL);
 	// printf("SDL_ttf version (linked):   %d.%d.%d\n", Ttf_Linked_Version()->major, Ttf_Linked_Version()->minor, Ttf_Linked_Version()->patch);
-
-	char video_driver[80];
-	SDL_VideoDriverName(video_driver, 80);
-	printf("Name of video driver: %s\n", video_driver);
-
-	const SDL_VideoInfo *user_video;
-	user_video = SDL_GetVideoInfo(); // Get information about the user's video system
-	cout << "  Best available video mode" << endl;
-	cout << "    Creates hardware surfaces: ";
-	if (user_video->hw_available == 1)
-		cout << "yes\n";
-	else
-		cout << "no\n";
-	cout << "    Has window manager available: ";
-	if (user_video->wm_available == 1)
-		cout << "yes\n";
-	else
-		cout << "no\n";
-	cout << "    Hardware to hardware blits accelerated: ";
-	if (user_video->blit_hw == 1)
-		cout << "yes\n";
-	else
-		cout << "no\n";
-	cout << "    Hardware to hardware colorkey blits accelerated: ";
-	if (user_video->blit_hw_CC == 1)
-		cout << "yes\n";
-	else
-		cout << "no\n";
-	cout << "    Hardware to hardware alpha blits accelerated: ";
-	if (user_video->blit_hw_A == 1)
-		cout << "yes\n";
-	else
-		cout << "no\n";
-	cout << "    Software to hardware blits acceleerated: ";
-	if (user_video->blit_sw == 1)
-		cout << "yes\n";
-	else
-		cout << "no\n";
-	cout << "    Software to hardware colorkey blits accelerated: ";
-	if (user_video->blit_sw_CC == 1)
-		cout << "yes\n";
-	else
-		cout << "no\n";
-	cout << "    Software to hardware alpha blits accelerated: ";
-	if (user_video->blit_sw_A == 1)
-		cout << "yes\n";
-	else
-		cout << "no\n";
-	cout << "    Color fills accelerated: ";
-	if (user_video->blit_fill == 1)
-		cout << "yes\n";
-	else
-		cout << "no\n";
-	cout << "    Total video memory: " << user_video->video_mem << " kilobytes" << endl;
-	// cout << "    Best pixel format: " << user_video->vfmt << endl;
+	// This function is known to give deceptive output.	cout << "Current video driver is reported to be: " << SDL_GetCurrentVideoDriver() << endl;	// The stuff commented out below is not available with SDL2. The OpenGL API should be used to query for it instead.
+//	char video_driver[80];
+//	SDL_VideoDriverName(video_driver, 80);
+//	printf("Name of video driver: %s\n", video_driver);
+//
+//	const SDL_VideoInfo *user_video;
+//	user_video = SDL_GetVideoInfo(); // Get information about the user's video system
+//	cout << "  Best available video mode" << endl;
+//	cout << "    Creates hardware surfaces: ";
+//	if (user_video->hw_available == 1)
+//		cout << "yes\n";
+//	else
+//		cout << "no\n";
+//	cout << "    Has window manager available: ";
+//	if (user_video->wm_available == 1)
+//		cout << "yes\n";
+//	else
+//		cout << "no\n";
+//	cout << "    Hardware to hardware blits accelerated: ";
+//	if (user_video->blit_hw == 1)
+//		cout << "yes\n";
+//	else
+//		cout << "no\n";
+//	cout << "    Hardware to hardware colorkey blits accelerated: ";
+//	if (user_video->blit_hw_CC == 1)
+//		cout << "yes\n";
+//	else
+//		cout << "no\n";
+//	cout << "    Hardware to hardware alpha blits accelerated: ";
+//	if (user_video->blit_hw_A == 1)
+//		cout << "yes\n";
+//	else
+//		cout << "no\n";
+//	cout << "    Software to hardware blits acceleerated: ";
+//	if (user_video->blit_sw == 1)
+//		cout << "yes\n";
+//	else
+//		cout << "no\n";
+//	cout << "    Software to hardware colorkey blits accelerated: ";
+//	if (user_video->blit_sw_CC == 1)
+//		cout << "yes\n";
+//	else
+//		cout << "no\n";
+//	cout << "    Software to hardware alpha blits accelerated: ";
+//	if (user_video->blit_sw_A == 1)
+//		cout << "yes\n";
+//	else
+//		cout << "no\n";
+//	cout << "    Color fills accelerated: ";
+//	if (user_video->blit_fill == 1)
+//		cout << "yes\n";
+//	else
+//		cout << "no\n";
+//	cout << "    Total video memory: " << user_video->video_mem << " kilobytes" << endl;
+//	// cout << "    Best pixel format: " << user_video->vfmt << endl;
 
 	printf("\n===== Audio Information\n");
 
