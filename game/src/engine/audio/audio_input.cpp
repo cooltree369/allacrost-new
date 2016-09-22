@@ -21,7 +21,7 @@
 *** ***************************************************************************/
 
 #include "audio_input.h"
-#include <SDL/SDL_endian.h>
+#include <SDL2/SDL_endian.h>
 
 using namespace std;
 

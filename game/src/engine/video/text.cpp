@@ -794,8 +794,8 @@ void TextSupervisor::_CacheGlyphs(const uint16* text, FontProperties* fp) {
 			}
 		}
 
-		w = RoundUpPow2(initial->w + 1);
-		h = RoundUpPow2(initial->h + 1);
+		w = RoundUpPow2(initial->w);
+		h = RoundUpPow2(initial->h);
 
 		intermediary = SDL_CreateRGBSurface(0, w, h, 32, RMASK, GMASK, BMASK, AMASK);
 		if (intermediary == NULL) {
@@ -852,11 +852,10 @@ void TextSupervisor::_CacheGlyphs(const uint16* text, FontProperties* fp) {
 		glyph->texture = texture;
 		glyph->min_x = minx;
 		glyph->min_y = miny;
-		glyph->top_y = fp->ascent - maxy;
-		glyph->width = initial->w + 1;
-		glyph->height = initial->h + 1;
-		glyph->max_x = static_cast<float>(initial->w + 1) / static_cast<float>(w);
-		glyph->max_y = static_cast<float>(initial->h + 1) / static_cast<float>(h);
+		glyph->width = initial->w;
+		glyph->height = initial->h;
+		glyph->max_x = static_cast<float>(initial->w) / static_cast<float>(w);
+		glyph->max_y = static_cast<float>(initial->h) / static_cast<float>(h);
 		glyph->advance = advance;
 
 		fp->glyph_cache->at(character) = glyph;
@@ -927,9 +926,7 @@ void TextSupervisor::_DrawTextHelper(const uint16* const text, FontProperties* f
 		if (cs.GetVerticalDirection() < 0.0f)
 			y_hi = -y_hi;
 
-		int min_x, min_y;
-		min_x = glyph_info->min_x * static_cast<int>(cs.GetHorizontalDirection()) + xpos;
-		min_y = glyph_info->min_y * static_cast<int>(cs.GetVerticalDirection());
+		int min_x = xpos, min_y = 0;
 
 		float tx, ty;
 		tx = glyph_info->max_x;
@@ -1007,13 +1004,8 @@ bool TextSupervisor::_RenderText(hoa_utils::ustring& string, TextStyle& style, I
 	const uint16* char_ptr;
 	for (char_ptr = string.c_str(); *char_ptr != '\0'; ++char_ptr) {
 		FontGlyph* glyphinfo = (*fp->glyph_cache)[*char_ptr];
-		if (glyphinfo->top_y < min_y)
-			min_y = glyphinfo->top_y;
 		calc_line_width += glyphinfo->advance;
 	}
-
-	// Subtract one pixel from the minimum y value (TODO: explain why)
-	min_y -= 1;
 
 	// Check if the first character starts left of pixel 0, and set
 // 	char_ptr = string.c_str();
@@ -1041,9 +1033,8 @@ bool TextSupervisor::_RenderText(hoa_utils::ustring& string, TextStyle& style, I
 	}
 
 	// Go through the string and render each glyph one by one
-	SDL_Rect surf_target;
+	SDL_Rect surf_target = {0};
 	int32 xpos = -line_start_x;
-	int32 ypos = -min_y;
 	for (char_ptr = string.c_str(); *char_ptr != '\0'; ++char_ptr) {
 		FontGlyph* glyphinfo = (*fp->glyph_cache)[*char_ptr];
 
@@ -1055,7 +1046,6 @@ bool TextSupervisor::_RenderText(hoa_utils::ustring& string, TextStyle& style, I
 		}
 
 		surf_target.x = xpos + glyphinfo->min_x;
-		surf_target.y = ypos + glyphinfo->top_y;
 
 		// Add the glyph to the end of the rendered string
 		if (SDL_BlitSurface(initial, NULL, intermediary, &surf_target) < 0) {
@@ -1069,8 +1059,7 @@ bool TextSupervisor::_RenderText(hoa_utils::ustring& string, TextStyle& style, I
 		xpos += glyphinfo->advance;
 	}
 
-	SDL_LockSurface(intermediary);
-
+	SDL_LockSurface(intermediary);	// Note: Valyria Tear had this line added when repairing glyph rendering for SDL2.	assert(line_w * line_h == intermediary->w * intermediary->h);
 	uint8 color_mult[] = {
 		static_cast<uint8>(style.color[0] * 0xFF),
 		static_cast<uint8>(style.color[1] * 0xFF),
@@ -1085,8 +1074,8 @@ bool TextSupervisor::_RenderText(hoa_utils::ustring& string, TextStyle& style, I
 		((uint8*)intermediary->pixels)[j+2] = color_mult[2];
 	}
 
-	buffer.width = line_w;
-	buffer.height = line_h;
+	buffer.width = intermediary->w;
+	buffer.height = intermediary->h;
 	buffer.pixels = intermed_buf;
 
 	SDL_UnlockSurface(intermediary);
