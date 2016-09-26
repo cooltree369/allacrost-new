@@ -1,35 +1,39 @@
 syntax: glob
 
 # Dependencies and compiled objects
-game/.deps/*
-game/*.o
-game/src/editor/*.moc.cpp
-game/allacrost-win32-depends/
+.deps/*
+*.o
+src/editor/*.moc.cpp
+build/*
 
 # Binaries
-game/allacrost
-game/allacrost-editor
+allacrost
+allacrost-editor
+allacrost.exe
+allacrost-editor.exe
 
 # Build files
-game/autom4te.cache/*
-game/Makefile
-game/Makefile.in
-game/Makefile.am.orig
-game/aclocal.m4
-game/compile
-game/config.guess
-game/config.h
-game/config.h.in
-game/config.log
-game/config.status
-game/config.sub
-game/configure
-game/configure.ac.orig
-game/m4/qt.m4.orig
+autom4te.cache/*
+Makefile
+Makefile.in
+Makefile.am.orig
+aclocal.m4
+compile
+config.guess
+config.h
+config.h.in
+config.log
+config.status
+config.sub
+configure
+configure.ac.orig
+gmon.out
+stamp-h1
+m4/qt.m4.orig
 
 # Translation build files and objects
-game/txt/Makefile
-game/txt/Makefile.in
-game/txt/POTFILES
-game/txt/*.gmo
-game/txt/stamp-po
+txt/Makefile
+txt/Makefile.in
+txt/POTFILES
+txt/*.gmo
+txt/stamp-po
