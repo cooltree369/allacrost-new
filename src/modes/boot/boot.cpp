@@ -283,8 +283,7 @@ void BootMode::Update() {
 		return;
 	}	//todo:add _joy_settings_menu. Maybe with XOR ?
 	if(InputManager->UnmappedKeyPress() == true)
-	{        if(_active_menu != &_key_settings_menu)        {            _welcome_window->Show();
-            return;        }
+	{        if(_active_menu != &_key_settings_menu)        {					if(_active_menu != &_joy_settings_menu)					{						_welcome_window->Show();	          return;					}				}
 	}
 
 	// Check for waiting keypresses or joystick button presses
