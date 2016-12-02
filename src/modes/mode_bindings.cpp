@@ -132,7 +132,7 @@ void BindModeCode() {
 			.def("TotalPhysicalDefense", &BattleActor::TotalPhysicalDefense)
 			.def("TotalEtherealDefense", &BattleActor::TotalEtherealDefense)
 			.def("TotalEvadeRating", &BattleActor::TotalEvadeRating)
-			.def("SetStatePaused", &BattleActor::SetStatePaused),
+			.def("SetStatePaused", &BattleActor::SetStatePaused)
 
 		class_<BattleCharacter, BattleActor>("BattleCharacter")
 			.def("ChangeSpriteAnimation", &BattleCharacter::ChangeSpriteAnimation),

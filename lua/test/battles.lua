@@ -85,4 +85,21 @@ tests[1002] = {
 	end
 }
 
+tests[1003] = {
+	name = "victory screen";
+	description = "The character fights against one monster with low hp, which will return enough xp for the character to   " ..
+		"level up.";
+	ExecuteTest = function()
+		GlobalManager:SetBattleSetting(hoa_global.GameGlobal.GLOBAL_BATTLE_WAIT);
+		GlobalManager:AddCharacter(1); -- Claudius
+
+		local claudius = GlobalManager:GetCharacter(1);
+
+		local battle = hoa_battle.BattleMode();
+		battle:AddEnemy(93);
+
+		ModeManager:Push(battle);
+	end
+}
+
 -- Begin tests intended for battle balancing

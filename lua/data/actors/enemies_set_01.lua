@@ -739,3 +739,45 @@ enemies[92] = {
 	}
 }
 
+-- Traits -----------------------------------------------------------------------
+-- Testing enemy
+-- very low hp, returns a huge amount of xp.
+--------------------------------------------------------------------------------
+enemies[93] = {
+	name = hoa_system.Translate("Green Slime"),
+	filename = "green_slime",
+	sprite_width = 64,
+	sprite_height = 64,
+
+	base_stats = {
+		hit_points = 5,
+		skill_points = 10,
+		strength = 45,
+		vigor = 0,
+		fortitude = 10,
+		protection = 10,
+		agility = 25,
+		evade = 2.0,
+		experience_points = 1800,
+		drunes = 10
+	},
+
+	attack_points = {
+		[1] = {
+			name = hoa_system.Translate("Body"),
+			x_position = 5,
+			y_position = 34,
+			fortitude_modifier = 0.0,
+			protection_modifier = 0.0,
+			evade_modifier = 0.0
+		}
+	},
+
+	skills = {
+		1001
+	},
+
+	drop_objects = {
+
+	}
+}
