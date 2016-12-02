@@ -744,7 +744,7 @@ enemies[92] = {
 -- very low hp, returns a huge amount of xp.
 --------------------------------------------------------------------------------
 enemies[93] = {
-	name = hoa_system.Translate("Green Slime"),
+	name = hoa_system.Translate("Test Green Slime"),
 	filename = "green_slime",
 	sprite_width = 64,
 	sprite_height = 64,
