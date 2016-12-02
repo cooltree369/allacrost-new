@@ -83,7 +83,7 @@ BootMode::BootMode() :
 	string date_text(__DATE__);
 	_version_text.SetText(UTranslate("Development Release") + MakeUnicodeString(" - ") + MakeUnicodeString(date_text));
 	_copyright_text.SetStyle(TextStyle("text20"));
-	_copyright_text.SetText(UTranslate("Â© 2004 â€” 2015 The Allacrost Project"));
+	_copyright_text.SetText(UTranslate("© 2004 — 2015 The Allacrost Project"));
 
 	ReadScriptDescriptor read_data;
 	if (!read_data.OpenFile("lua/data/config/boot.lua")) {
@@ -281,9 +281,18 @@ void BootMode::Update() {
 			_SaveSettingsFile("");
 		}
 		return;
-	}	//todo:add _joy_settings_menu. Maybe with XOR ?
+	}
+	//if an unmapped key is pressed, check if any of the settings_menu is active.
 	if(InputManager->UnmappedKeyPress() == true)
-	{        if(_active_menu != &_key_settings_menu)        {					if(_active_menu != &_joy_settings_menu)					{						_welcome_window->Show();	          return;					}				}
+	{
+        if(_active_menu != &_key_settings_menu)
+        {
+			if(_active_menu != &_joy_settings_menu)
+			{
+				_welcome_window->Show();
+	            return;
+			}
+		}
 	}
 
 	// Check for waiting keypresses or joystick button presses
