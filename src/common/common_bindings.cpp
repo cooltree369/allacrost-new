@@ -348,8 +348,6 @@ void BindCommonCode() {
 			.def("AddExperienceForNextLevel", &GlobalCharacter::AddExperienceForNextLevel)
 			.def("AddSkill", &GlobalCharacter::AddSkill)
 			.def("AddNewSkillLearned", &GlobalCharacter::AddNewSkillLearned)
-			//TODO:test
-			.def("AddExperiencePoints", &GlobalCharacter::AddExperiencePoints)
 	];
 
 	module(hoa_script::ScriptManager->GetGlobalState(), "hoa_global")
