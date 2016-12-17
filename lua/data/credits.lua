@@ -100,6 +100,7 @@ credits_text =
 	"Dale Ma (eguitarz) - map editor\n" ..
 	"DongHa Lee (MoOshiCow) - internationalization\n" ..
 	"Farooq Mela (CamelJockey) - video engine\n" ..
+	"Jibran Khan (Atypikal_Arkitect) - various\n" ..
 	"Kevin Martin (kev82) - video engine, game engine\n" ..
 	"Nick Weihs (nickw) - video engine\n" ..
 	"Raj Sharma (roos) - video engine\n" ..
