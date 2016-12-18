@@ -669,24 +669,18 @@ COLLISION_TYPE ObjectSupervisor::DetectCollision(VirtualSprite* sprite, MapObjec
 	// Note that because the sprite's collision rectangle was previously determined to be within the map bounds,
 	// the map grid tile indeces referenced in this loop are all valid entries and do not need to be checked for out-of-bounds conditions
 	uint32 left, right, top, bottom;
-	float integer, fraction;
+	float integer;
 
-	// We need to figure out what range of collision grid coordinates need to be examined. Separate the sprite's collision rectangle coordinates
-	// into integer and fractional components. Normally just casting the integer component will give us the correct value. But if the collision rectangle
-	// is perfectly aligned with the collision grid elements on the right or bottom, we have to subtract one from these coordinates because otherwise we
-	// will be checking areas of the grid that don't truly overlap with the collision rectangle.
-	fraction = modf(coll_rect.left, &integer);
+	// We need to figure out what range of collision grid coordinates need to be examined. Extract the integer component from each side of the
+	// collision rectangle. These will directly translate into the row and column indeces of the collision grid that we need to check against.
+	modf(coll_rect.left, &integer);
 	left = static_cast<uint32>(integer);
-	fraction = modf(coll_rect.right, &integer);
+	modf(coll_rect.right, &integer);
 	right = static_cast<uint32>(integer);
-	if (IsFloatEqual(fraction, 0.0f, 0.01f) == true)
-		right -= 1;
-	fraction = modf(coll_rect.top, &integer);
+	modf(coll_rect.top, &integer);
 	top = static_cast<uint32>(integer);
-	fraction = modf(coll_rect.bottom, &integer);
+	modf(coll_rect.bottom, &integer);
 	bottom = static_cast<uint32>(integer);
-	if (IsFloatEqual(fraction, 0.0f, 0.01f) == true)
-		bottom -= 1;
 
 	for (uint32 r = top; r <= bottom; r++) {
 		for (uint32 c = left; c <= right; c++) {
