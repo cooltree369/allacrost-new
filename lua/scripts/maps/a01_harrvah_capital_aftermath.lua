@@ -93,12 +93,6 @@ function Load(m)
 	Map:SetPlayerSprite(sprites["claudius"]);
 	if (DEBUG_LOAD_STATE ~= 0) then
 		DEBUG_Load();
-	else
-		-- The map starts with Claudius in his bedroom
-		sprites["claudius"]:SetXPosition(187, 0);
-		sprites["claudius"]:SetYPosition(110, 0);
-		sprites["claudius"]:SetDirection(hoa_map.MapMode.SOUTH);
-		sprites["claudius"]:SetContext(contexts["interior_c"]);
 	end
 
 	IfPrintDebug(DEBUG, "Map loading complete");
@@ -116,7 +110,6 @@ function DEBUG_Load()
 	elseif (DEBUG_LOAD_STATE == 2) then
 		sprites["claudius"]:SetXPosition(78, 0);
 		sprites["claudius"]:SetYPosition(128, 0);
-
 		sprites["claudius"]:SetContext(contexts["exterior"]);
 	-- Move player to right outside the throne room area
 	elseif (DEBUG_LOAD_STATE == 3) then
@@ -178,7 +171,7 @@ function CreateSprites()
 
 	-- The map opens with Claudius in his room, and his mother downstairs
 	sprite = ConstructSprite("Claudius", 1, 187, 108);
-	sprite:SetDirection(hoa_map.MapMode.NORTH);
+	sprite:SetDirection(hoa_map.MapMode.SOUTH);
 	sprite:SetContext(contexts["interior_c"]);
 	sprites["claudius"] = sprite;
 
@@ -239,13 +232,9 @@ function CreateSprites()
 
 	-- Around buildings
 	sprite_id = sprite_id + 1; sprite = ConstructSprite("Man01", sprite_id, 158, 118);
-	sprite:SetDirection(hoa_map.MapMode.SOUTH);
-	sprite:SetContext(contexts["exterior"]);
-
-	sprite_id = sprite_id + 1; sprite = ConstructSprite("Man01", sprite_id, 134, 145);
 	sprite:SetDirection(hoa_map.MapMode.NORTH);
 	sprite:SetContext(contexts["exterior"]);
-	sprite:SetStationaryMovement(true);
+ 	sprite:SetStationaryMovement(true);
 
 	sprite_id = sprite_id + 1; sprite = ConstructSprite("Man01", sprite_id, 74, 124);
 	sprite:SetDirection(hoa_map.MapMode.SOUTH);
@@ -480,13 +469,6 @@ function CreateDialogues()
 		dialogue:AddLine(text, sprites["weapon_merchant"]:GetObjectID());
 		dialogue:AddLineEventAtEnd(1001); -- event_chains["weapon_armor_shop"] = 1001;
 	sprites["weapon_merchant"]:AddDialogueReference(1006);
-
-	----------------------------------------------------------------------------
-	---------- Dialogues triggered by events
-	----------------------------------------------------------------------------
-
-	dialogue = hoa_map.MapDialogue.Create(10000);
-
 end -- function CreateDialogues()
 
 
@@ -974,7 +956,6 @@ end
 ----------------------------------------------------------------------------
 ---------- Event Functions
 ----------------------------------------------------------------------------
-
 
 -- Puts game state into shop mode with items
 functions["LoadItemShop"] = function()
